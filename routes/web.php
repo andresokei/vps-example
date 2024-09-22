@@ -7,7 +7,7 @@ use App\Models\Grupo;
 
 // Ruta pública para la landing page
 Route::get('/', function () {
-    return view('welcome');  // Puedes cambiar 'welcome' a tu vista real de landing
+    return view('landing');  // Puedes cambiar 'welcome' a tu vista real de landing
 })->name('landing');
 
 // Ruta separada para la landing (opcional)
