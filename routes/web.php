@@ -11,8 +11,8 @@ Route::get('/', function () {
 })->name('landing');
 
 // Ruta separada para la landing (opcional)
-Route::get('/landing', function () {
-    return view('landing');  // Vista de la landing page
+Route::get('/pruebas', function () {
+    return view('pruebas');  // Vista de la landing page
 });
 
 // --------------------RUTAS GRUPO-------------------------------------------------------

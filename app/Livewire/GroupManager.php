@@ -1,64 +1,124 @@
 <?php
 
 namespace App\Livewire;
+use App\Models\Estudiante;
 use Illuminate\Support\Facades\DB;
-
 use Livewire\Component;
-use App\Models\Grupo; // Asegúrate de usar el modelo correcto
+use App\Models\Grupo;
 use App\Models\User;
-
 
 class GroupManager extends Component
 {
     public $groupName;
     public $groups;
     public $selectedGroup = null;
-    public $studentId;
-    public $students;
-   
+    public $studentName = '';
+    public $filteredStudents = [];
 
-
+    // Método para crear un grupo
     public function createGroup()
     {
         Grupo::create([
             'nombre_grupo' => $this->groupName,
-            'id_profesor' => auth()->user()->id, // O el valor que corresponda
+            'id_profesor' => auth()->user()->id,
         ]);
-        $this->groupName = ''; // Limpiar el campo
 
-        // Recargar los grupos para reflejar el nuevo en la vista
-        $this->groups = Grupo::where('id_profesor', auth()->user()->id)->get();
+        $this->groupName = ''; // Limpiar el campo
+        $this->groups = Grupo::where('id_profesor', auth()->user()->id)->get();  // Actualizar los grupos del profesor autenticado
     }
 
-
-
+    // Método mount
     public function mount()
     {
-        $this->groups = Grupo::where('id_profesor', auth()->user()->id)->get();
-
-        $this->students = User::where('rol', 'estudiante')->get();
-
+        $this->groups = Grupo::where('id_profesor', auth()->user()->id)->get();  // Cargar solo los grupos del profesor autenticado
+        $this->filteredStudents = [];
     }
 
-    public function selectGroup($groupId)
-    {
-        // Guardamos el grupo seleccionado
-        $this->selectedGroup = $groupId;
-    }
-
+    // Método para añadir un alumno a un grupo
     public function addStudentToGroup()
     {
-        // Verificar que se haya seleccionado un grupo y un alumno
-        if ($this->selectedGroup && $this->studentId) {
+        if ($this->selectedGroup && !empty($this->studentName)) {
+            $student = DB::table('estudiantes')->where('nombre', $this->studentName)->first();
+
+            if (!$student) {
+                $studentId = DB::table('estudiantes')->insertGetId([
+                    'nombre' => $this->studentName,
+                    'id_profesor' => auth()->user()->id,  // Asociar el estudiante al profesor autenticado
+                ]);
+            } else {
+                $studentId = $student->id;
+            }
+
+            // Insertar la relación entre el estudiante y el grupo
             DB::table('estudiantes_grupos')->insert([
                 'id_grupo' => $this->selectedGroup,
-                'id_estudiante' => $this->studentId,
+                'id_estudiante' => $studentId,
             ]);
 
-            // Limpiar el campo después de añadir el alumno
-            $this->studentId = null;
-
+            $this->studentName = '';  // Limpiar el campo
             session()->flash('message', 'El estudiante ha sido añadido al grupo.');
+        } else {
+            session()->flash('error', 'Debes seleccionar un grupo y escribir un nombre de estudiante.');
         }
+    }
+
+    // Método para seleccionar un grupo
+    public function selectGroup($groupId)
+    {
+        if ($this->selectedGroup === $groupId) {
+            $this->selectedGroup = null;
+        } else {
+            $this->selectedGroup = $groupId;
+        }
+    }
+
+    // Método para eliminar un grupo
+    public function deleteGroup($groupId)
+    {
+        $group = Grupo::where('id', $groupId)
+                      ->where('id_profesor', auth()->user()->id)  // Verificar que el grupo pertenece al profesor autenticado
+                      ->first();
+
+        if ($group) {
+            $group->delete();
+            session()->flash('message', 'Grupo eliminado con éxito.');
+            $this->groups = Grupo::where('id_profesor', auth()->user()->id)->get();  // Actualizar los grupos del profesor autenticado
+        } else {
+            session()->flash('error', 'No tienes permiso para eliminar este grupo.');
+        }
+    }
+
+    // Método para eliminar un estudiante de un grupo
+    public function deleteStudentFromGroup($studentId, $groupId)
+    {
+        $group = Grupo::where('id', $groupId)
+                      ->where('id_profesor', auth()->user()->id)  // Verificar que el grupo pertenece al profesor autenticado
+                      ->first();
+
+        if ($group) {
+            // Eliminar al estudiante del grupo (tabla pivot)
+            $group->students()->detach($studentId);
+
+            // Comprobar si el estudiante pertenece a algún otro grupo
+            $studentInOtherGroups = DB::table('estudiantes_grupos')->where('id_estudiante', $studentId)->exists();
+
+            // Si el estudiante no pertenece a ningún otro grupo, lo eliminamos completamente
+            if (!$studentInOtherGroups) {
+                $student = Estudiante::find($studentId);
+                if ($student) {
+                    $student->delete();
+                }
+            }
+
+            session()->flash('message', 'Estudiante eliminado del grupo con éxito.');
+            $this->groups = Grupo::where('id_profesor', auth()->user()->id)->get();  // Actualizar los grupos del profesor autenticado
+        } else {
+            session()->flash('error', 'No tienes permiso para eliminar este estudiante.');
+        }
+    }
+
+    public function render()
+    {
+        return view('livewire.group-manager');
     }
 }

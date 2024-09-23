@@ -2,3 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* input[type="text"] {
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 14px;
+    width: 100%;
+}
+
+ul.list-group {
+    margin-top: 10px;
+    max-height: 200px; /* Limita la altura de la lista */
+    /* overflow-y: auto; Añade un scroll si la lista es muy larga */
+    /* border: 1px solid #ddd; Un borde para separar la lista */
+    /* border-radius: 5px;
+} */ 
+
+ul.list-group li {
+    /* padding: 10px; */
+    cursor: pointer;
+    background-color: #fff;
+    transition: background-color 0.3s ease;
+}
+
+ul.list-group li:hover {
+    background-color: #f0f0f0; /* Color al pasar el cursor */
+}
+
+/* button.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+button.btn-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2653d4;
+}
+
+.input-group {
+    margin-bottom: 20px; /* Separa el input de la lista */
+/* } */ 
