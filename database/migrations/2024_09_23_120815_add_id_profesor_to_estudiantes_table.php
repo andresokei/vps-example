@@ -29,8 +29,20 @@ class AddIdProfesorToEstudiantesTable extends Migration
     public function down()
     {
         Schema::table('estudiantes', function (Blueprint $table) {
-            $table->dropForeign(['id_profesor']); // Eliminar la relación si se revierte
-            $table->dropColumn('id_profesor'); // Eliminar la columna
+            // Verifica si la columna 'id_profesor' existe antes de intentar eliminarla
+            if (Schema::hasColumn('estudiantes', 'id_profesor')) {
+                // Si la clave foránea existe, intenta eliminarla
+                try {
+                    $table->dropForeign(['id_profesor']);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // Si la clave foránea no existe, no hacer nada
+                    // Solo continúa con la eliminación de la columna
+                }
+                // Elimina la columna 'id_profesor'
+                $table->dropColumn('id_profesor');
+            }
         });
     }
+    
+
 }

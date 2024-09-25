@@ -43,7 +43,7 @@ class GroupManager extends Component
             if (!$student) {
                 $studentId = DB::table('estudiantes')->insertGetId([
                     'nombre' => $this->studentName,
-                    'id_profesor' => auth()->user()->id,  // Asociar el estudiante al profesor autenticado
+                    // 'id_profesor' => auth()->user()->id,  // Asociar el estudiante al profesor autenticado
                 ]);
             } else {
                 $studentId = $student->id;
@@ -74,19 +74,41 @@ class GroupManager extends Component
 
     // Método para eliminar un grupo
     public function deleteGroup($groupId)
-    {
-        $group = Grupo::where('id', $groupId)
-                      ->where('id_profesor', auth()->user()->id)  // Verificar que el grupo pertenece al profesor autenticado
-                      ->first();
+{
+    $group = Grupo::where('id', $groupId)
+                  ->where('id_profesor', auth()->user()->id)  // Verificar que el grupo pertenece al profesor autenticado
+                  ->first();
 
-        if ($group) {
-            $group->delete();
-            session()->flash('message', 'Grupo eliminado con éxito.');
-            $this->groups = Grupo::where('id_profesor', auth()->user()->id)->get();  // Actualizar los grupos del profesor autenticado
-        } else {
-            session()->flash('error', 'No tienes permiso para eliminar este grupo.');
+    if ($group) {
+        // Obtener todos los estudiantes relacionados con este grupo
+        $studentsInGroup = DB::table('estudiantes_grupos')
+                             ->where('id_grupo', $groupId)
+                             ->pluck('id_estudiante');
+
+        // Eliminar el grupo y las relaciones en estudiantes_grupos
+        $group->delete();
+        DB::table('estudiantes_grupos')->where('id_grupo', $groupId)->delete();
+
+        // Verificar si cada estudiante está en otros grupos. Si no, eliminar el estudiante.
+        foreach ($studentsInGroup as $studentId) {
+            $isInOtherGroups = DB::table('estudiantes_grupos')
+                                 ->where('id_estudiante', $studentId)
+                                 ->exists();
+
+            if (!$isInOtherGroups) {
+                Estudiante::where('id', $studentId)->delete();
+            }
         }
+
+        // Actualizar los grupos del profesor autenticado
+        $this->groups = Grupo::where('id_profesor', auth()->user()->id)->get();
+        
+        session()->flash('message', 'Grupo y estudiantes eliminados correctamente.');
+    } else {
+        session()->flash('error', 'No tienes permiso para eliminar este grupo.');
     }
+}
+
 
     // Método para eliminar un estudiante de un grupo
     public function deleteStudentFromGroup($studentId, $groupId)

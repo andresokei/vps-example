@@ -1,0 +1,59 @@
+[33mcommit f6661ab713d676cae410a36fb88de9a045470dc5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/default-test[m[33m, [m[1;31mproduction/test-branch[m[33m, [m[1;32mtest-branch[m[33m)[m
+Author: andresokei <andresokei83@gmail.com>
+Date:   Tue Sep 24 00:57:07 2024 +0200
+
+    Actualización: cambios en GroupManager, migraciones y estilos
+
+[33mcommit 92d7b0fbe5f08550dd10fe491db4c7f649f5305a[m[33m ([m[1;31morigin/test-branch[m[33m)[m
+Author: andresokei <andresokei83@gmail.com>
+Date:   Mon Sep 23 00:56:14 2024 +0200
+
+    Set landing page as default route
+
+[33mcommit 457cd46f11794f0cfee541475de79c16650900a0[m
+Author: andresokei <andresokei83@gmail.com>
+Date:   Sun Sep 22 23:54:23 2024 +0200
+
+    Preparando cambios para producción
+
+[33mcommit 4d4e15c2782764d0e65352075d1c8c9b25e0a420[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/backup-before-test[m[33m, [m[1;32mnueva-branch[m[33m, [m[1;32mmain[m[33m, [m[1;32mbackup-before-test[m[33m)[m
+Author: andresokei <andresokei83@gmail.com>
+Date:   Sun Sep 22 19:56:40 2024 +0200
+
+    Instalado Livewire Volt
+
+[33mcommit 7296bf370ab1f5cac8ce6a30b46a71fee2c52b1d[m[33m ([m[1;31mproduction/main[m[33m)[m
+Author: andresokei <andresokei83@gmail.com>
+Date:   Sun Sep 22 18:51:20 2024 +0200
+
+    Instalar Livewire y cambios asociados
+
+[33mcommit f8c6ac55d2df8c2ef5668ee7ddb8afe4a8b904b4[m
+Author: andresokei <andresokei83@gmail.com>
+Date:   Sun Sep 22 18:03:06 2024 +0200
+
+    Cambio de prueba en el h1
+
+[33mcommit 5de4bf5bd5f2b41d2ebf449690d3fdc4a139d600[m
+Author: andresokei <andresokei83@gmail.com>
+Date:   Sun Sep 22 01:18:16 2024 +0200
+
+    test2
+
+[33mcommit af95cc889690c186b5520794095925206c490be9[m
+Author: andresokei <andresokei83@gmail.com>
+Date:   Sun Sep 22 01:03:30 2024 +0200
+
+    test
+
+[33mcommit 12a4e9e2a7913b0bf0b7c4b518dddcf1c57276cf[m
+Author: andresokei <andresokei83@gmail.com>
+Date:   Sun Sep 22 00:32:25 2024 +0200
+
+    Install Breeze
+
+[33mcommit fc613f2bd0ce7d24bcec32adca7f8caec777845a[m
+Author: andresokei <andresokei83@gmail.com>
+Date:   Sun Sep 22 00:23:49 2024 +0200
+
+    Set up a fresh Laravel app
