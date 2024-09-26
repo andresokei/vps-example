@@ -44,3 +44,13 @@ Route::get('/test-grupos', function() {
 // Incluye las rutas de autenticación generadas por Breeze (login, register, etc.)
 require __DIR__.'/auth.php';
 
+
+// RUTAS PARA TESTS
+use App\Http\Controllers\TestController;
+
+Route::get('/test/ingresar', [TestController::class, 'mostrarTestForm'])->name('test.ingresar');
+Route::post('/test/verificar', [TestController::class, 'verificarClave'])->name('test.verificar');
+Route::get('/test/realizar/{id}', [TestController::class, 'mostrarTest'])->name('test.realizar');
+
+Route::get('/test/realizar/{id}', [TestController::class, 'mostrarTest'])->name('test.realizar');
+Route::post('/test/submit/{id}', [TestController::class, 'submitTest'])->name('test.submit');

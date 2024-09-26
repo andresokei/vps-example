@@ -7,6 +7,7 @@ use Livewire\Component;
 use App\Models\Grupo;
 use App\Models\User;
 
+
 class GroupManager extends Component
 {
     public $groupName;
@@ -17,15 +18,18 @@ class GroupManager extends Component
 
     // Método para crear un grupo
     public function createGroup()
-    {
-        Grupo::create([
-            'nombre_grupo' => $this->groupName,
-            'id_profesor' => auth()->user()->id,
-        ]);
+{
+    Grupo::create([
+        'nombre_grupo' => $this->groupName,
+        'id_profesor' => auth()->user()->id,
+    ]);
 
-        $this->groupName = ''; // Limpiar el campo
-        $this->groups = Grupo::where('id_profesor', auth()->user()->id)->get();  // Actualizar los grupos del profesor autenticado
-    }
+    $this->groupName = ''; // Limpiar el campo
+    $this->groups = Grupo::where('id_profesor', auth()->user()->id)->get();  // Actualizar los grupos del profesor autenticado
+
+    // Emitir un evento para notificar a otros componentes
+    $this->dispatch('grupoCreado');
+}
 
     // Método mount
     public function mount()
@@ -72,8 +76,8 @@ class GroupManager extends Component
         }
     }
 
-    // Método para eliminar un grupo
-    public function deleteGroup($groupId)
+ // Método para eliminar un grupo
+public function deleteGroup($groupId)
 {
     $group = Grupo::where('id', $groupId)
                   ->where('id_profesor', auth()->user()->id)  // Verificar que el grupo pertenece al profesor autenticado
@@ -102,6 +106,9 @@ class GroupManager extends Component
 
         // Actualizar los grupos del profesor autenticado
         $this->groups = Grupo::where('id_profesor', auth()->user()->id)->get();
+
+        // Emitir el evento grupoEliminado para actualizar los componentes que dependen de los grupos
+        $this->dispatch('grupoEliminado');
         
         session()->flash('message', 'Grupo y estudiantes eliminados correctamente.');
     } else {
@@ -138,6 +145,9 @@ class GroupManager extends Component
             session()->flash('error', 'No tienes permiso para eliminar este estudiante.');
         }
     }
+
+   
+    
 
     public function render()
     {

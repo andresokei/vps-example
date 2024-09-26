@@ -49,12 +49,41 @@
                     </div>
 
                     <!-- Content Row -->
-                    <div class="row">
+                    {{-- <div class="row">
                         <!-- Your cards go here -->
                         <livewire:group-manager />
+                        <livewire:tests />
 
 
+
+
+
+                        
+                    </div> --}}
+
+                    
+
+                    <div class="row">
+                        <!-- Componente de gestión de grupos -->
+                        <div class="col-md-4 mb-4">
+                            
+                                
+                                    <livewire:group-manager />
+                              
+                        </div>
+                    
+                        <!-- Componente de asignación de tests -->
+                        <div class="col-md-8 mb-4">
+                            
+                               
+                                    <livewire:tests />
+                                
+                            
+                        </div>
+                        
                     </div>
+                    
+                    
                    
                         
                         
@@ -114,6 +143,13 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('mostrar-modal', function () {
+            $('#detalleTestModal').modal('show');
+        });
+    </script>
+    
 
     <!-- Bootstrap core JavaScript-->
     <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
