@@ -84,7 +84,7 @@
                     <p><strong>Grupo:</strong> {{ $testSeleccionado->grupo->nombre_grupo }}</p>
                     <p><strong>Estado:</strong> {{ ucfirst($testSeleccionado->estado) }}</p>
                     <p><strong>Clave de acceso:</strong> {{ $testSeleccionado->clave_acceso }}</p>
-                    <p><strong>Enlace de acceso:</strong> <a href="https:www.aulagraph.com/test/ingresar">https:www.aulagraph.com/test/ingresar</a> </p>
+                    <p><strong>Enlace de acceso:</strong> <a href="https://www.aulagraph.com/test/ingresar">https://www.aulagraph.com/test/ingresar</a> </p>
                     <!-- Añadir más detalles si es necesario -->
                 @else
                     <p>No se ha seleccionado ningún test.</p>
