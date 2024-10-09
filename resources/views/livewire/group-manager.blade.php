@@ -28,47 +28,59 @@
                     <li class="list-group-item d-flex justify-content-between align-items-center shadow-sm rounded mb-2">
                         <span class="font-weight-bold">{{ $group->nombre_grupo }}</span>
                         <div>
-                            <button class="btn btn-outline-primary btn-sm" wire:click.prevent="selectGroup({{ $group->id }})">
-                                {{ $selectedGroup === $group->id ? 'Ocultar' : 'Añadir alumnos' }}
+                            <button class="btn btn-outline-primary btn-sm" wire:click.prevent="openModal({{ $group->id }})">
+                                Añadir alumnos
                             </button>
                             <button class="btn btn-danger btn-sm ml-2" wire:click.prevent="deleteGroup({{ $group->id }})">
                                 Eliminar
                             </button>
                         </div>
                     </li>
-
-                    @if ($selectedGroup === $group->id)
-                        <div class="expandable mt-3 p-3 border rounded bg-light">
-                            <h5 class="font-weight-bold">Añadir alumnos al grupo "{{ $group->nombre_grupo }}"</h5>
-
-                            <!-- Lista de alumnos ya añadidos al grupo -->
-                            <h6 class="mt-4">Alumnos en el grupo:</h6>
-                            @if(count($group->students) > 0)
-                                <ul class="list-group mb-3">
-                                    @foreach ($group->students as $student)
-                                        <li class="list-group-item d-flex justify-content-between align-items-center shadow-sm rounded mb-2">
-                                            {{ $student->nombre }}
-                                            <button class="btn btn-outline-danger btn-sm" wire:click.prevent="deleteStudentFromGroup({{ $student->id }}, {{ $group->id }})">
-                                                Eliminar
-                                            </button>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            @else
-                                <p class="text-muted">No hay alumnos en este grupo aún.</p>
-                            @endif
-
-                            <!-- Formulario para añadir nuevos alumnos -->
-                            <form wire:submit.prevent="addStudentToGroup" class="mt-3">
-                                <div class="input-group mb-3">
-                                    <input type="text" wire:model="studentName" placeholder="Escribe el nombre del alumno" class="form-control">
-                                    <button class="btn btn-primary ml-2" type="submit">Añadir</button>
-                                </div>
-                            </form>
-                        </div>
-                    @endif
                 @endforeach
             </ul>
         </div>
     </div>
+
+    <!-- Modal para añadir alumnos -->
+    <div class="modal fade" id="addStudentsModal" tabindex="-1" aria-labelledby="addStudentsModalLabel" aria-hidden="true" wire:ignore.self>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addStudentsModalLabel">Añadir Alumnos al Grupo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h6>Subir alumnos mediante archivo CSV:</h6>
+                    <div class="input-group mb-3">
+                        <input type="file" wire:model="csvFile" class="form-control" accept=".csv">
+                        <button class="btn btn-primary ml-2" wire:click="uploadCSV">Subir CSV</button>
+                    </div>
+                    @error('csvFile') <span class="text-danger">{{ $message }}</span> @enderror
+
+                    <h6 class="mt-4">Añadir alumnos manualmente (separados por comas):</h6>
+                    <form wire:submit.prevent="addStudentFromList">
+                        <div class="input-group mb-3">
+                            <textarea wire:model="studentNames" class="form-control" placeholder="Escribe los nombres de los alumnos, separados por comas"></textarea>
+                            <button class="btn btn-primary ml-2" type="submit">Añadir</button>
+                        </div>
+                        @error('studentNames') <span class="text-danger">{{ $message }}</span> @enderror
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+<script>
+    window.addEventListener('openModal', () => {
+        $('#addStudentsModal').modal('show');
+    });
+
+    window.addEventListener('closeModal', () => {
+        $('#addStudentsModal').modal('hide');
+    });
+</script>

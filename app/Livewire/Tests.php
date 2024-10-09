@@ -22,7 +22,7 @@ class Tests extends Component
     {
         $this->validate([
             'test_id' => 'required|exists:tests,id',
-            'grupo_id' => 'required|exists:grupos,id',
+            'grupo_id' => 'required|exists:grupos,id,id_profesor,' . auth()->id(),  // Asegurar que el grupo pertenezca al profesor autenticado
         ]);
 
         AsignacionesTest::create([
@@ -40,27 +40,32 @@ class Tests extends Component
     // Método para actualizar los grupos al recibir el evento
     public function actualizarGrupos()
     {
-        $this->grupos = Grupo::all(); // Actualiza la lista de grupos
+        $this->grupos = Grupo::where('id_profesor', auth()->id())->get();  // Asegurar que solo se obtengan los grupos del profesor autenticado
+    }
+
+    // Método para ver detalles de una asignación
+    public function verDetalles($asignacionId)
+    {
+        $asignacion = AsignacionesTest::where('id', $asignacionId)
+                              ->where('profesor_id', auth()->id())  // Asegurar que la asignación pertenezca al profesor autenticado
+                              ->with('test', 'grupo')
+                              ->firstOrFail();
+    
+        // Guarda el test seleccionado en la propiedad
+        $this->testSeleccionado = $asignacion;
+
+        // Emite un evento para abrir el modal
+        $this->dispatch('mostrar-modal');
     }
 
     public function render()
     {
         return view('livewire.tests', [
             'tests' => Test::all(),
-            'grupos' => Grupo::all(),
-            'asignaciones' => AsignacionesTest::with(['test', 'grupo'])->get(), // Obtener las asignaciones junto con los tests y grupos
+            'grupos' => Grupo::where('id_profesor', auth()->id())->get(),  // Solo mostrar grupos del profesor autenticado
+            'asignaciones' => AsignacionesTest::where('profesor_id', auth()->id())  // Filtrar asignaciones del profesor autenticado
+                        ->with(['test', 'grupo'])
+                        ->get(), 
         ]);
     }
-    
-
-    public function verDetalles($asignacionId)
-{
-    $asignacion = AsignacionesTest::with('test', 'grupo')->find($asignacionId);
-    
-    // Guarda el test seleccionado en la propiedad
-    $this->testSeleccionado = $asignacion;
-
-    // Emite un evento para abrir el modal
-    $this->dispatch('mostrar-modal');
-}
 }

@@ -15,4 +15,12 @@ class Grupo extends Model
     {
         return $this->belongsToMany(Estudiante::class, 'estudiantes_grupos', 'id_grupo', 'id_estudiante');
     }
+    
+    public function profesor()
+    {
+        return $this->belongsTo(User::class, 'id_profesor');
+    }
+    
+
+
 }

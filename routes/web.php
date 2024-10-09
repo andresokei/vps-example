@@ -50,7 +50,10 @@ use App\Http\Controllers\TestController;
 
 Route::get('/test/ingresar', [TestController::class, 'mostrarTestForm'])->name('test.ingresar');
 Route::post('/test/verificar', [TestController::class, 'verificarClave'])->name('test.verificar');
-Route::get('/test/realizar/{id}', [TestController::class, 'mostrarTest'])->name('test.realizar');
-
-Route::get('/test/realizar/{id}', [TestController::class, 'mostrarTest'])->name('test.realizar');
+Route::get('/test/realizar/{id}/{asignacion_id}', [TestController::class, 'mostrarTest'])->name('test.realizar');
 Route::post('/test/submit/{id}', [TestController::class, 'submitTest'])->name('test.submit');
+
+Route::get('/test/success', function () {
+    return view('test.success'); // Asegúrate de que esta vista exista
+})->name('test.success');
+

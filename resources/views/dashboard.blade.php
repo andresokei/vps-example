@@ -13,7 +13,9 @@
 
     <!-- Custom fonts for this template-->
     <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
 
     <!-- Custom styles for this template-->
     <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
@@ -45,7 +47,8 @@
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-                        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+                        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
                     </div>
 
                     <!-- Content Row -->
@@ -61,41 +64,49 @@
                         
                     </div> --}}
 
-                    
+
 
                     <div class="row">
                         <!-- Componente de gestión de grupos -->
                         <div class="col-md-4 mb-4">
-                            
-                                
-                                    <livewire:group-manager />
-                              
+
+
+                            <livewire:group-manager />
+
                         </div>
-                    
+
                         <!-- Componente de asignación de tests -->
                         <div class="col-md-8 mb-4">
-                            
-                               
-                                    <livewire:tests />
-                                
-                            
+
+
+                            <livewire:tests />
+
+
+                        </div>
+
+                        <div class="col-md-8 mb-4">
+                            <!-- En lugar de obtener el ID dinámicamente, lo pasamos directamente -->
+                            <livewire:sociograma :asignacion-test-id="38" />
                         </div>
                         
+
+
+
                     </div>
-                    
-                    
-                   
-                        
-                        
-                        
-
-                        
 
 
 
-                
-                    
-                    
+
+
+
+
+
+
+
+
+
+
+
 
 
                 </div>
@@ -126,7 +137,8 @@
     </a>
 
     <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -145,11 +157,11 @@
     </div>
 
     <script>
-        document.addEventListener('mostrar-modal', function () {
+        document.addEventListener('mostrar-modal', function() {
             $('#detalleTestModal').modal('show');
         });
     </script>
-    
+
 
     <!-- Bootstrap core JavaScript-->
     <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>

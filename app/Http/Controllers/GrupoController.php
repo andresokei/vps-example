@@ -12,16 +12,17 @@ class GrupoController extends Controller
     // Listar los grupos del profesor
     public function index()
     {
-        // $grupos = Grupo::where('id_profesor', Auth::user()->id)->get();
-        return view('grupos.index');
+        $grupos = Grupo::where('id_profesor', Auth::user()->id)->get();  // Solo los grupos del profesor autenticado
+        return view('grupos.index', compact('grupos'));
     }
 
     // Mostrar el formulario para crear un grupo
     public function create()
     {
-        $estudiantes = User::where('rol', 'estudiante')->get();  // Lista de estudiantes disponibles
+        $estudiantes = Auth::user()->grupos->flatMap->estudiantes;  // Obtener estudiantes de los grupos del profesor autenticado
         return view('grupos.create', compact('estudiantes'));
     }
+    
 
     // Guardar un nuevo grupo
     public function store(Request $request)

@@ -44,4 +44,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function grupos()
+{
+    return $this->hasMany(Grupo::class, 'id_profesor');
+}
+
 }
