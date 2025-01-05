@@ -1,6 +1,7 @@
 @extends('layouts.custom')
 
 @section('content')
+
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
     <div class="col-lg-6 col-md-8">
         <div class="card shadow-sm" style="border-radius: 15px; border: none;">
@@ -24,48 +25,50 @@
                         </select>
                     </div>
 
-                    <!-- Preguntas del test con dropdowns para seleccionar estudiantes en cada pregunta -->
-                    @foreach ($test->preguntas as $pregunta)
-                    <div class="form-group mb-4">
-                        <label style="font-size: 1.2em; color: #555; display: block;">{{ $pregunta->texto_pregunta }}</label>
+                    <!-- Verificación de preguntas del test -->
+                    @if($test && $test->preguntas && $test->preguntas->count())
+                        <!-- Preguntas del test con dropdowns para seleccionar estudiantes en cada pregunta -->
+                        @foreach ($test->preguntas as $pregunta)
+                            <div class="form-group mb-4">
+                                <label style="font-size: 1.2em; color: #555; display: block;">{{ $pregunta->texto_pregunta }}</label>
+                                
+                                <!-- Campo oculto para el tipo de relación (preferencia o rechazo) -->
+                                <input type="hidden" name="tipo_relacion_{{ $pregunta->id }}" value="{{ $pregunta->tipo_pregunta }}">
                         
-                        <!-- Campo oculto para el tipo de relación (preferencia o rechazo) -->
-                        <input type="hidden" name="tipo_relacion_{{ $pregunta->id }}" value="{{ $pregunta->tipo_pregunta }}">
-                
-                        <!-- Dropdown para la primera preferencia -->
-                        <label>Primera Preferencia:</label>
-                        <select name="respuesta_{{ $pregunta->id }}_1" class="form-control" required>
-                            <option value="">-- Selecciona un estudiante --</option>
-                            @foreach($estudiantes as $estudiante)
-                                <option value="{{ $estudiante->id }}">{{ $estudiante->nombre }}</option>
-                            @endforeach
-                        </select>
-                
-                        <!-- Dropdown para la segunda preferencia -->
-                        <label>Segunda Preferencia:</label>
-                        <select name="respuesta_{{ $pregunta->id }}_2" class="form-control" required>
-                            <option value="">-- Selecciona un estudiante --</option>
-                            @foreach($estudiantes as $estudiante)
-                                <option value="{{ $estudiante->id }}">{{ $estudiante->nombre }}</option>
-                            @endforeach
-                        </select>
-                
-                        <!-- Dropdown para la tercera preferencia -->
-                        <label>Tercera Preferencia:</label>
-                        <select name="respuesta_{{ $pregunta->id }}_3" class="form-control" required>
-                            <option value="">-- Selecciona un estudiante --</option>
-                            @foreach($estudiantes as $estudiante)
-                                <option value="{{ $estudiante->id }}">{{ $estudiante->nombre }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                @endforeach
-                
-
+                                <!-- Dropdown para la primera preferencia -->
+                                <label>Primera Preferencia:</label>
+                                <select name="respuesta_{{ $pregunta->id }}_1" class="form-control" required>
+                                    <option value="">-- Selecciona un estudiante --</option>
+                                    @foreach($estudiantes as $estudiante)
+                                        <option value="{{ $estudiante->id }}">{{ $estudiante->nombre }}</option>
+                                    @endforeach
+                                </select>
+                        
+                                <!-- Dropdown para la segunda preferencia -->
+                                <label>Segunda Preferencia:</label>
+                                <select name="respuesta_{{ $pregunta->id }}_2" class="form-control" required>
+                                    <option value="">-- Selecciona un estudiante --</option>
+                                    @foreach($estudiantes as $estudiante)
+                                        <option value="{{ $estudiante->id }}">{{ $estudiante->nombre }}</option>
+                                    @endforeach
+                                </select>
+                        
+                                <!-- Dropdown para la tercera preferencia -->
+                                <label>Tercera Preferencia:</label>
+                                <select name="respuesta_{{ $pregunta->id }}_3" class="form-control" required>
+                                    <option value="">-- Selecciona un estudiante --</option>
+                                    @foreach($estudiantes as $estudiante)
+                                        <option value="{{ $estudiante->id }}">{{ $estudiante->nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endforeach
+                    @else
+                        <p class="text-muted">No hay preguntas disponibles para este test.</p>
+                    @endif
 
                     <button type="submit" class="btn btn-primary">Enviar Respuestas</button>
                 </form>
-
             </div>
         </div>
     </div>

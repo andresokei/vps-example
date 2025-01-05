@@ -166,9 +166,11 @@ class GroupManager extends Component
     
             if ($group) {
                 // Eliminar los estudiantes que pertenecen al grupo
-                $students = $group->students; // Asumiendo que hay una relación definida llamada "students" en el modelo Grupo
-                foreach ($students as $student) {
-                    $student->delete(); // Eliminar cada estudiante del grupo
+                $students = $group->estudiantes; // Usa 'estudiantes' en lugar de 'students'
+                if ($students && $students->isNotEmpty()) {
+                    foreach ($students as $student) {
+                        $student->delete(); // Eliminar cada estudiante del grupo
+                    }
                 }
     
                 // Eliminar el grupo de la base de datos
@@ -183,6 +185,7 @@ class GroupManager extends Component
             }
         });
     }
+    
     
 
     public function render()

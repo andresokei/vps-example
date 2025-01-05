@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\AsignacionesTest;
+use App\Models\AsignacionTest;
 use App\Models\Test;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +24,7 @@ class TestController extends Controller
         ]);
 
         // Buscar la asignación que coincida con la clave de acceso
-        $asignacion = AsignacionesTest::where('clave_acceso', $request->clave_acceso)
+        $asignacion = AsignacionTest::where('clave_acceso', $request->clave_acceso)
             ->where('estado', 'pendiente')
             ->first();
 
@@ -34,7 +34,7 @@ class TestController extends Controller
 
         // Obtener el grupo al que está asignado el test
         $grupo = $asignacion->grupo;
-        $estudiantes = $grupo->students; // Obtener los estudiantes del grupo
+        $estudiantes = $grupo->estudiantes; // Obtener los estudiantes del grupo
 
         // Almacenar los estudiantes en la sesión o pasarlos directamente
         session(['estudiantes' => $estudiantes]);
@@ -70,7 +70,7 @@ class TestController extends Controller
     $asignacion_id = $request->input('asignacion_id');
 
     // Buscar la asignación por su ID
-    $asignacion = AsignacionesTest::findOrFail($asignacion_id);
+    $asignacion = AsignacionTest::findOrFail($asignacion_id);
 
     // Validar el input
     $request->validate([

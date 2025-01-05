@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Estudiante;
+use App\Models\User;
 
 class Grupo extends Model
 {
@@ -11,7 +12,7 @@ class Grupo extends Model
     protected $fillable = ['nombre_grupo', 'id_profesor'];
 
     // Relación muchos a muchos con Estudiantes
-    public function students()
+    public function estudiantes()
     {
         return $this->belongsToMany(Estudiante::class, 'estudiantes_grupos', 'id_grupo', 'id_estudiante');
     }
@@ -20,7 +21,4 @@ class Grupo extends Model
     {
         return $this->belongsTo(User::class, 'id_profesor');
     }
-    
-
-
 }

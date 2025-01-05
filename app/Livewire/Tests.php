@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use Livewire\Component;
-use App\Models\AsignacionesTest;
+use App\Models\AsignacionTest;
 use App\Models\Test;
 use App\Models\Grupo;
 use Illuminate\Support\Str;
@@ -12,20 +12,30 @@ class Tests extends Component
 {
     public $test_id;
     public $grupo_id;
-    public $testSeleccionado;
-    
-    // Listeners para escuchar el evento de creación de grupos
-    protected $listeners = ['grupoCreado' => 'actualizarGrupos','grupoEliminado' => 'actualizarGrupos'];
+    public $grupos;
+    public $tests;
+    public $asignacionSeleccionada;
 
-    // Método para asignar el test
+    protected $listeners = [
+        'grupoCreado' => 'actualizarGrupos',
+        'grupoEliminado' => 'actualizarGrupos',
+        'modalClosed' => 'resetModal'
+    ];
+
+    public function mount()
+    {
+        $this->grupos = Grupo::all();
+        $this->tests = Test::all();
+    }
+
     public function asignar()
     {
         $this->validate([
             'test_id' => 'required|exists:tests,id',
-            'grupo_id' => 'required|exists:grupos,id,id_profesor,' . auth()->id(),  // Asegurar que el grupo pertenezca al profesor autenticado
+            'grupo_id' => 'required|exists:grupos,id',
         ]);
 
-        AsignacionesTest::create([
+        AsignacionTest::create([
             'test_id' => $this->test_id,
             'profesor_id' => auth()->id(),
             'grupo_id' => $this->grupo_id,
@@ -34,38 +44,45 @@ class Tests extends Component
         ]);
 
         session()->flash('success', 'Test asignado con éxito.');
-        $this->reset(); // Resetea los campos
+        $this->reset(['test_id', 'grupo_id']);
     }
 
-    // Método para actualizar los grupos al recibir el evento
     public function actualizarGrupos()
     {
-        $this->grupos = Grupo::where('id_profesor', auth()->id())->get();  // Asegurar que solo se obtengan los grupos del profesor autenticado
+        $this->grupos = Grupo::all();
     }
 
-    // Método para ver detalles de una asignación
-    public function verDetalles($asignacionId)
-    {
-        $asignacion = AsignacionesTest::where('id', $asignacionId)
-                              ->where('profesor_id', auth()->id())  // Asegurar que la asignación pertenezca al profesor autenticado
-                              ->with('test', 'grupo')
-                              ->firstOrFail();
+   public function verDetalles($asignacionId)
+{
+    $asignacion = AsignacionTest::with('test', 'grupo')->find($asignacionId);
     
-        // Guarda el test seleccionado en la propiedad
-        $this->testSeleccionado = $asignacion;
+    // Guarda la asignación seleccionada en la propiedad correcta
+    $this->asignacionSeleccionada = $asignacion;
 
+    // Verifica si la asignación fue encontrada
+    if ($this->asignacionSeleccionada) {
         // Emite un evento para abrir el modal
         $this->dispatch('mostrar-modal');
+    } else {
+        logger('No se encontró la asignación con ID: ' . $asignacionId);
+    }
+}
+
+
+    
+
+    
+
+    public function resetModal()
+    {
+        $this->asignacionSeleccionada = null;
+        logger('Modal cerrado y datos reiniciados');
     }
 
     public function render()
     {
         return view('livewire.tests', [
-            'tests' => Test::all(),
-            'grupos' => Grupo::where('id_profesor', auth()->id())->get(),  // Solo mostrar grupos del profesor autenticado
-            'asignaciones' => AsignacionesTest::where('profesor_id', auth()->id())  // Filtrar asignaciones del profesor autenticado
-                        ->with(['test', 'grupo'])
-                        ->get(), 
+            'asignaciones' => AsignacionTest::with(['test', 'grupo'])->get(),
         ]);
     }
 }
