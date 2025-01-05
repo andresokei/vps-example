@@ -10,7 +10,7 @@
         <div class="row gx-5 align-items-center">
             <div class="col-lg-6">
                 <div class="mb-5 mb-lg-0 text-center text-lg-start">
-                    <h1 class="display-1 lh-1 mb-3">Analiza las relaciones en tu aula fácilmente</h1>
+                    <h1 class="display-1 lh-1 mb-3">Analiza las relaciones en tu aula fácilmente :D</h1>
                     <p class="lead fw-normal text-muted mb-5">Con Sociogram.app puedes visualizar y comprender las dinámicas sociales de tu grupo de estudiantes en tiempo real. Todo desde tu navegador web.</p>
                     <div class="d-flex flex-column flex-lg-row align-items-center">
                         <a class="btn btn-primary rounded-pill" href="#signup">Regístrate Gratis</a>
