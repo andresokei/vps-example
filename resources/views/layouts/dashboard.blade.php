@@ -41,6 +41,8 @@
                 </div>
                 <!-- /.container-fluid -->
 
+                
+
             </div>
             <!-- End of Main Content -->
 
@@ -56,8 +58,14 @@
     <!-- Incluye aquí otros scripts necesarios -->
     <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
 
+    <!-- Chart.js - Añadir esta línea -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
     <!-- Livewire Scripts -->
     @livewireScripts
+
+    @stack('scripts')
 </body>
 
 </html>

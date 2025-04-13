@@ -27,5 +27,19 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+
+
+
+
+
+        // Agregar el seeder sociométrico
+    $this->call([
+        SociometricSeeder::class,
+        // ControlledSociometricSeeder::class, // Descomenta para usar este en su lugar
+    ]);
+
+
+    
     }
 }

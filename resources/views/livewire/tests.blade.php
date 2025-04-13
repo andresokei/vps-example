@@ -1,4 +1,3 @@
-<!-- resources/views/livewire/tests.blade.php -->
 <div>
     <div class="row">
         <!-- Card 1: Asignar Tests a Grupos -->
@@ -58,7 +57,11 @@
                             <span class="badge {{ $asignacion->estado == 'realizado' ? 'badge-success' : 'badge-warning' }}">
                                 {{ ucfirst($asignacion->estado) }}
                             </span>
-                            <a href="#" wire:click.prevent="verDetalles({{ $asignacion->id }})" class="btn btn-link btn-sm">Ver detalles</a>
+                            <a href="#" wire:click.prevent="seleccionarAsignacion({{ $asignacion->id }})"
+                            data-toggle="modal" data-target="#detalleTestModal" 
+                            class="btn btn-sm btn-outline-primary border-0 text-primary">
+                                <i class="fas fa-eye mr-1"></i> Ver detalles
+                            </a>
                         </li>
                     @empty
                         <li class="list-group-item text-muted">No hay tests asignados aún.</li>
@@ -70,20 +73,17 @@
     </div>
 
     <!-- Modal para Detalles del Test -->
-    <div class="modal fade" id="detalleTestModal" tabindex="-1" role="dialog" aria-labelledby="detalleTestAsignacionModalLabel" aria-hidden="true" wire:ignore.self>
+    <div class="modal fade" id="detalleTestModal" tabindex="-1" role="dialog" aria-labelledby="detalleTestModalLabel" aria-hidden="true" wire:ignore.self>
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <!-- <h5 class="modal-title" id="detalleTestAsignacionModalLabel">
+                    <h5 class="modal-title" id="detalleTestModalLabel">
                         @if($asignacionSeleccionada)
                             {{ $asignacionSeleccionada->test->nombre_test }}
                         @else
                             Detalles del Test
                         @endif
-                    </h5> -->
-                    <h5 class="modal-title" id="detalleTestModalLabel">{{ $asignacionSeleccionada ? $asignacionSeleccionada->test->nombre_test : 'Detalles del Test' }}</h5>
-
-                    
+                    </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -110,32 +110,18 @@
                     @endif
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" wire:click="resetModal">Cerrar</button>
                 </div>
             </div>
         </div>
     </div>
 
-    @push('scripts')
     <script>
-        document.addEventListener('livewire:load', function () {
-            console.log('Livewire cargado'); // Verificar si el script se carga
-
-            // Escuchar el evento 'testsOpenModal' despachado desde Livewire
-            window.addEventListener('testsOpenModal', () => {
-                console.log('Evento recibido: testsOpenModal');
-                $('#detalleTestAsignacionModal').modal('show');
+        // Cuando el modal se cierre, resetear la asignación seleccionada
+        document.addEventListener('DOMContentLoaded', function() {
+            $('#detalleTestModal').on('hidden.bs.modal', function (e) {
+                Livewire.dispatch('resetAsignacion');
             });
-
-            // Escuchar el cierre del modal y despachar evento a Livewire
-            $('#detalleTestAsignacionModal').on('hidden.bs.modal', function () {
-                Livewire.dispatch('modalClosed');
-                console.log('Modal cerrado');
-            });
-
-            // Verificar si jQuery está cargado
-            console.log('Tipo de $:', typeof $);
         });
     </script>
-    @endpush    
 </div>

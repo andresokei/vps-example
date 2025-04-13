@@ -19,12 +19,15 @@ class Tests extends Component
     protected $listeners = [
         'grupoCreado' => 'actualizarGrupos',
         'grupoEliminado' => 'actualizarGrupos',
-        'modalClosed' => 'resetModal'
+        'resetAsignacion' => 'resetModal'
     ];
 
     public function mount()
     {
-        $this->grupos = Grupo::all();
+        // Solo obtener grupos del profesor actual
+        $this->grupos = Grupo::where('id_profesor', auth()->id())->get();
+        
+        // Los tests son globales, pero si tienen un campo de propiedad, deberías filtrarlos
         $this->tests = Test::all();
     }
 
@@ -34,6 +37,16 @@ class Tests extends Component
             'test_id' => 'required|exists:tests,id',
             'grupo_id' => 'required|exists:grupos,id',
         ]);
+
+        // Verificar que el grupo pertenezca al profesor actual antes de asignar
+        $grupo = Grupo::where('id', $this->grupo_id)
+            ->where('id_profesor', auth()->id())
+            ->first();
+
+        if (!$grupo) {
+            session()->flash('error', 'No tienes permiso para asignar tests a este grupo.');
+            return;
+        }
 
         AsignacionTest::create([
             'test_id' => $this->test_id,
@@ -49,40 +62,43 @@ class Tests extends Component
 
     public function actualizarGrupos()
     {
-        $this->grupos = Grupo::all();
+        // Solo obtener grupos del profesor actual
+        $this->grupos = Grupo::where('id_profesor', auth()->id())->get();
     }
 
-   public function verDetalles($asignacionId)
-{
-    $asignacion = AsignacionTest::with('test', 'grupo')->find($asignacionId);
-    
-    // Guarda la asignación seleccionada en la propiedad correcta
-    $this->asignacionSeleccionada = $asignacion;
-
-    // Verifica si la asignación fue encontrada
-    if ($this->asignacionSeleccionada) {
-        // Emite un evento para abrir el modal
-        $this->dispatch('mostrar-modal');
-    } else {
-        logger('No se encontró la asignación con ID: ' . $asignacionId);
+    public function seleccionarAsignacion($asignacionId)
+    {
+        // Verificar que la asignación pertenezca al profesor actual
+        $this->asignacionSeleccionada = AsignacionTest::with(['test', 'grupo'])
+            ->where('id', $asignacionId)
+            ->where(function($query) {
+                $query->where('profesor_id', auth()->id())
+                    ->orWhereHas('grupo', function($groupQuery) {
+                        $groupQuery->where('id_profesor', auth()->id());
+                    });
+            })
+            ->first();
     }
-}
-
-
-    
-
-    
 
     public function resetModal()
     {
         $this->asignacionSeleccionada = null;
-        logger('Modal cerrado y datos reiniciados');
     }
 
     public function render()
     {
+        // Solo obtener asignaciones del profesor actual
+        $asignaciones = AsignacionTest::with(['test', 'grupo'])
+            ->where(function($query) {
+                $query->where('profesor_id', auth()->id())
+                    ->orWhereHas('grupo', function($groupQuery) {
+                        $groupQuery->where('id_profesor', auth()->id());
+                    });
+            })
+            ->get();
+
         return view('livewire.tests', [
-            'asignaciones' => AsignacionTest::with(['test', 'grupo'])->get(),
+            'asignaciones' => $asignaciones,
         ]);
     }
 }

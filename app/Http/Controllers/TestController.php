@@ -19,33 +19,45 @@ class TestController extends Controller
     // Método para verificar la clave de acceso
     public function verificarClave(Request $request)
     {
-        $request->validate([
-            'clave_acceso' => 'required|string',
-        ]);
-
-        // Buscar la asignación que coincida con la clave de acceso
+        $request->validate(['clave_acceso' => 'required|string']);
+        
+        \Log::info('Verificando clave: ' . $request->clave_acceso);
+        
+        // Buscar la asignación que coincida con la clave
         $asignacion = AsignacionTest::where('clave_acceso', $request->clave_acceso)
             ->where('estado', 'pendiente')
             ->first();
-
+        
         if (!$asignacion) {
+            \Log::error('Clave no encontrada o test no disponible');
             return back()->withErrors(['clave_acceso' => 'Clave de acceso inválida o test no disponible.']);
         }
-
-        // Obtener el grupo al que está asignado el test
-        $grupo = $asignacion->grupo;
-        $estudiantes = $grupo->estudiantes; // Obtener los estudiantes del grupo
-
-        // Almacenar los estudiantes en la sesión o pasarlos directamente
+        
+        \Log::info('Asignación encontrada. ID: ' . $asignacion->id . ', Grupo ID: ' . $asignacion->grupo_id);
+        
+        // Obtener estudiantes del grupo
+        $estudiantes = DB::table('estudiantes_grupos as eg')
+            ->join('estudiantes as e', 'eg.id_estudiante', '=', 'e.id')
+            ->where('eg.id_grupo', $asignacion->grupo_id)
+            ->select('e.*')
+            ->get();
+        
+        \Log::info('Estudiantes encontrados: ' . count($estudiantes));
+        
+        if ($estudiantes->isEmpty()) {
+            \Log::error('No hay estudiantes en el grupo ' . $asignacion->grupo_id);
+            return back()->withErrors(['error' => 'Este grupo no tiene estudiantes asignados.']);
+        }
+        
+        // Guardar en sesión
         session(['estudiantes' => $estudiantes]);
-
-        // Redirigir a la vista de realizar el test con el test y el asignacion_id
+        
+        // Redireccionar al test
         return redirect()->route('test.realizar', [
-            'id' => $asignacion->test_id, // Pasamos el test_id
-            'asignacion_id' => $asignacion->id, // También pasamos el asignacion_id
+            'id' => $asignacion->test_id,
+            'asignacion_id' => $asignacion->id,
         ])->with(['estudiantes' => $estudiantes]);
     }
-
 
     // Método para mostrar el test correspondiente
     // Método para mostrar el test correspondiente

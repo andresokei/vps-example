@@ -140,8 +140,8 @@ class GroupManager extends Component
     
             $group = Grupo::findOrFail($this->selectedGroup);
             
-            if (!$group->students()->where('id_estudiante', $student->id)->exists()) {
-                $group->students()->attach($student->id);
+            if (!$group->estudiantes()->where('id_estudiante', $student->id)->exists()) {
+                $group->estudiantes()->attach($student->id);
             }
         });
     }
