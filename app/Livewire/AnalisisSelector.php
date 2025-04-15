@@ -102,12 +102,65 @@ class AnalisisSelector extends Component
         $this->resultadoAnalisis = "Análisis procesado para el grupo seleccionado (Asignación ID: {$this->asignacionTestId})";
     
         // Procesar según el tipo de análisis seleccionado
-        if ($this->tipoAnalisis == 'sociograma') {
-            $this->generarSociograma();
-        } elseif ($this->tipoAnalisis == 'recuento_preferencias') {
-            $this->generarRecuentoPreferencias();
+                    // Procesar según el tipo de análisis seleccionado
+            if ($this->tipoAnalisis == 'sociograma') {
+                $this->generarSociograma();
+            } elseif ($this->tipoAnalisis == 'recuento_preferencias') {
+                $this->generarRecuentoPreferencias();
+            } elseif ($this->tipoAnalisis == 'recuento_rechazos') {
+                $this->generarRecuentoRechazos(); 
+            
+            } elseif ($this->tipoAnalisis == 'aislamiento') {
+            $this->analisisAislamiento();
+            }
+        
+
+                }
+
+
+    private function generarRecuentoRechazos()
+{
+    try {
+        $asignacionId = $this->asignacionTestId;
+
+        $sql = "SELECT estudiantes.nombre, COUNT(*) as total 
+                FROM relaciones 
+                JOIN estudiantes ON relaciones.alumno_b_id = estudiantes.id 
+                WHERE relaciones.asignacion_test_id = $asignacionId
+                AND relaciones.tipo_relacion = 'rechazado' 
+                GROUP BY estudiantes.nombre";
+
+        $resultados = DB::select($sql);
+
+        if (empty($resultados)) {
+            $this->resultadoAnalisis = 'No se encontraron datos de rechazos para esta asignación.';
+            return;
         }
+
+        $labels = [];
+        $data = [];
+
+        foreach ($resultados as $row) {
+            $labels[] = $row->nombre;
+            $data[] = (int)$row->total;
+        }
+
+        $this->labels = $labels;
+        $this->data = $data;
+
+        $this->dispatch('actualizarGrafico', [
+            'labels' => $labels,
+            'data' => $data
+        ]);
+
+        $this->resultadoAnalisis = 'Recuento de rechazos generado correctamente.';
+
+    } catch (\Exception $e) {
+        Log::error('Error en el análisis de rechazos: ' . $e->getMessage());
+        $this->resultadoAnalisis = 'Error en el análisis de rechazos: ' . $e->getMessage();
     }
+}
+
     
     private function generarRecuentoPreferencias()
     {
@@ -165,8 +218,144 @@ class AnalisisSelector extends Component
         }
     }
 
-    // Mantén tu método generarSociograma() sin cambios
+    private function analisisAislamiento()
+{
+    try {
+        $asignacionId = $this->asignacionTestId;
 
+        // Obtener IDs de los estudiantes del grupo
+        $estudiantesGrupo = Estudiante::whereIn('id', function ($query) {
+            $query->select('id_estudiante')
+                ->from('estudiantes_grupos')
+                ->where('id_grupo', $this->grupoSeleccionado);
+        })->get();
+        
+        // Obtener IDs de estudiantes que sí fueron elegidos al menos una vez como preferidos
+        $preferidos = Relacion::where('asignacion_test_id', $asignacionId)
+            ->where('tipo_relacion', 'preferido')
+            ->pluck('alumno_b_id')
+            ->unique()
+            ->toArray();
+
+        // Filtrar los estudiantes que NO están en la lista de preferidos
+        $aislados = $estudiantesGrupo->filter(function ($estudiante) use ($preferidos) {
+            return !in_array($estudiante->id, $preferidos);
+        });
+
+        if ($aislados->isEmpty()) {
+            $this->resultadoAnalisis = "Todos los estudiantes fueron elegidos al menos una vez.";
+        } else {
+            $nombres = $aislados->pluck('nombre')->toArray();
+            $this->resultadoAnalisis = "Estudiantes no elegidos por nadie: " . implode(', ', $nombres);
+        }
+
+    } catch (\Exception $e) {
+        Log::error('Error en análisis de aislamiento: ' . $e->getMessage());
+        $this->resultadoAnalisis = 'Error en el análisis de aislamiento: ' . $e->getMessage();
+    }
+}
+
+
+private function generarSociograma()
+{
+    try {
+        // Obtener el ID de la asignación seleccionada
+        $asignacionId = $this->asignacionTestId;
+        
+        if (!$asignacionId) {
+            $this->resultadoAnalisis = "No hay una asignación válida para generar el sociograma.";
+            return;
+        }
+        
+        // Verificar que existan relaciones para esta asignación
+        $tieneRelaciones = Relacion::where('asignacion_test_id', $asignacionId)->exists();
+        if (!$tieneRelaciones) {
+            $this->resultadoAnalisis = "No hay relaciones registradas para esta asignación.";
+            return;
+        }
+        
+        // Obtener los estudiantes del grupo
+        $estudiantes = Estudiante::whereIn('id', function ($query) {
+            $query->select('id_estudiante')
+                ->from('estudiantes_grupos')
+                ->where('id_grupo', $this->grupoSeleccionado);
+        })->get();
+        
+        if ($estudiantes->isEmpty()) {
+            $this->resultadoAnalisis = "No hay estudiantes registrados en este grupo.";
+            return;
+        }
+        
+        // Preparar los nodos (estudiantes)
+        $nodes = [];
+        foreach ($estudiantes as $estudiante) {
+            // Calcular métricas de popularidad para cada estudiante
+            $preferencias = Relacion::where('asignacion_test_id', $asignacionId)
+                            ->where('alumno_b_id', $estudiante->id)
+                            ->where('tipo_relacion', 'preferido')
+                            ->count();
+            
+            $rechazos = Relacion::where('asignacion_test_id', $asignacionId)
+                            ->where('alumno_b_id', $estudiante->id)
+                            ->where('tipo_relacion', 'rechazado')
+                            ->count();
+            
+            $totalRelaciones = $preferencias + $rechazos;
+            
+            // Calcular índice de popularidad (entre 0 y 1)
+            $popularidad = $totalRelaciones > 0 ? $preferencias / $totalRelaciones : 0;
+            
+            $nodes[] = [
+                'id' => $estudiante->id,
+                'label' => $estudiante->nombre,
+                'title' => $estudiante->apellidos ? $estudiante->nombre . ' ' . $estudiante->apellidos : $estudiante->nombre,
+                'metricas' => [
+                    'preferencias' => $preferencias,
+                    'rechazos' => $rechazos,
+                    'popularidad' => $popularidad
+                ]
+            ];
+        }
+        
+        // Obtener las relaciones
+        $relaciones = Relacion::where('asignacion_test_id', $asignacionId)
+            ->with(['alumnoA', 'alumnoB'])
+            ->get();
+        
+        // Preparar los enlaces (relaciones)
+        $links = [];
+        foreach ($relaciones as $relacion) {
+            $links[] = [
+                'source' => $relacion->alumno_a_id,
+                'target' => $relacion->alumno_b_id,
+                'tipo_relacion' => $relacion->tipo_relacion === 'rechazado' ? 'rechazo' : 'preferido',
+                'intensidad' => $relacion->intensidad ?? 1
+            ];
+        }
+        
+        // Guardar los datos del sociograma
+        $this->jsonData = [
+            'nodes' => $nodes,
+            'links' => $links
+        ];
+        
+        // Registrar información para depuración
+        Log::info('Datos del sociograma generados:', [
+            'nodes' => count($nodes),
+            'links' => count($links)
+        ]);
+        
+        // Emitir el evento para actualizar el sociograma en el frontend
+        $this->dispatch('actualizarSociograma', $this->jsonData);
+        
+        $this->resultadoAnalisis = "Sociograma generado con " . count($nodes) . " estudiantes y " . count($links) . " relaciones.";
+        
+    } catch (\Exception $e) {
+        Log::error('Error al generar sociograma: ' . $e->getMessage());
+        Log::error('Stack trace: ' . $e->getTraceAsString());
+        $this->resultadoAnalisis = 'Error al generar el sociograma: ' . $e->getMessage();
+    }
+}
     public function render()
     {
         return view('livewire.analisis-selector');
