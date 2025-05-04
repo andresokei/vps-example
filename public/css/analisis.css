@@ -1,0 +1,587 @@
+/* Fuentes (ejemplo con Google Fonts) */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa; /* Color de fondo suave */
+}
+
+/* Título principal */
+.modern-title {
+    font-size: 2rem; /* Tamaño de fuente más grande */
+    font-weight: 700; /* Negrita */
+    color: #343a40; /* Color de texto oscuro */
+    margin-bottom: 1.5rem; /* Espaciado inferior */
+    border-bottom: 2px solid #007bff; /* Línea decorativa */
+    padding-bottom: 0.5rem; /* Espaciado interno inferior */
+}
+
+.modern-title-icon {
+    color: #007bff; /* Color del icono */
+}
+
+/* Card para agrupar selectores */
+.modern-card {
+    background-color: #fff;
+    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Sombra suave */
+    padding: 1.5rem; /* Espaciado interno */
+    margin-bottom: 1.5rem; /* Espaciado inferior */
+}
+
+.modern-subtitle {
+     font-size: 1.5rem;
+     font-weight: 600;
+     color: #343a40;
+     margin-bottom: 1rem;
+}
+
+/* Estilo de las etiquetas de formulario */
+.form-label-modern {
+    font-weight: 500; /* Seminegrita */
+    color: #555; /* Color de texto */
+    margin-bottom: 0.5rem;
+    display: block; /* Asegura que ocupe su propia línea */
+}
+
+.form-label-icon {
+    color: #007bff; /* Color del icono */
+}
+
+/* Estilo de los selectores (basado en form-control) */
+.form-control-modern {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem; /* Espaciado interno */
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da; /* Borde suave */
+    border-radius: 0.25rem; /* Bordes ligeramente redondeados */
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* Transición suave */
+}
+
+.form-control-modern:focus {
+    border-color: #80bdff; /* Borde al enfocar */
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Sombra al enfocar */
+}
+
+.form-control-modern:disabled {
+    background-color: #e9ecef;
+    opacity: 1;
+}
+
+/* Estilo del botón */
+.btn-modern-primary {
+    display: inline-block;
+    font-weight: 600; /* Seminegrita */
+    color: #fff; /* Color de texto */
+    background-color: #007bff; /* Color de fondo */
+    border: 1px solid #007bff; /* Borde */
+    padding: 0.75rem 1.5rem; /* Espaciado interno */
+    font-size: 1.1rem; /* Tamaño de fuente */
+    border-radius: 0.5rem; /* Bordes más redondeados */
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* Transición suave */
+    cursor: pointer;
+}
+
+.btn-modern-primary:hover {
+    background-color: #0056b3; /* Color de fondo al pasar el ratón */
+    border-color: #004085; /* Color del borde al pasar el ratón */
+}
+
+.btn-modern-primary:focus {
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5); /* Sombra al enfocar */
+}
+
+.btn-modern-primary:active {
+    background-color: #004085;
+    border-color: #002752;
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+
+/* Estilo de las alertas */
+.modern-alert {
+    border-radius: 8px; /* Bordes redondeados */
+    padding: 1rem 1.5rem; /* Espaciado interno */
+    margin-bottom: 1.5rem;
+}
+
+/* Contenedor de resultados (si tienes secciones incluidas) */
+.modern-results {
+    margin-top: 1.5rem;
+}
+
+/* Contenedor del sociograma */
+.sociograma-container {
+    width: 100%;
+    height: 400px; /* Altura ajustada para ser más compacta como en la imagen de referencia */
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 8px; /* Bordes redondeados */
+    background-color: #fff; /* Fondo blanco para el área del sociograma */
+    position: relative; /* Para posicionamiento absoluto de elementos hijos */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+/* Estilo mejorado para el Tooltip Custom */
+.sociograma-tooltip {
+    background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro semi-transparente */
+    color: #fff; /* Texto blanco */
+    border: none; /* Sin borde */
+    border-radius: 4px; /* Bordes ligeramente redondeados */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Sombra más sutil */
+    padding: 8px 12px; /* Espaciado interno */
+    font-size: 0.9rem; /* Tamaño de fuente ligeramente más pequeño */
+    font-family: 'Poppins', sans-serif; /* Usar la fuente del cuerpo */
+    max-width: 200px; /* Ancho máximo */
+    white-space: normal;
+    word-wrap: break-word;
+    position: fixed; /* Keep fixed so it follows the cursor on the screen */
+    z-index: 10000;
+    pointer-events: none;
+    visibility: visible !important;
+    display: block !important;
+}
+
+.sociograma-tooltip strong {
+    font-weight: 600; /* Seminegrita para el nombre */
+}
+
+/* Mini leyenda en esquina para reemplazar la leyenda grande */
+.sociogram-mini-legend {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+    font-family: 'Poppins', sans-serif;
+    max-width: 180px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.mini-legend-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    color: #555;
+    font-weight: 500;
+}
+
+.mini-legend-item .legend-color {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+/* Estructura mejorada para tooltips */
+.tooltip-header {
+    margin-bottom: 6px;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 6px;
+}
+
+.tooltip-body {
+    padding: 0;
+}
+
+.tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+}
+
+.tooltip-label {
+    color: rgba(255, 255, 255, 0.7);
+    flex: 1;
+}
+
+.tooltip-value {
+    font-weight: 500;
+    text-align: right;
+    flex: 1;
+}
+
+/* ----------------RESUMEN (Tarjetas de métricas) ----------------- */
+
+/* Stats Cards Styling */
+.stats-cards-container {
+    margin-bottom: 2rem;
+}
+
+.stats-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    padding: 1.25rem;
+    height: 100%;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stats-card-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stats-info {
+    flex-grow: 1;
+}
+
+.stats-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.stats-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #212529;
+}
+
+.stats-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1rem;
+    position: relative;
+}
+
+/* Colores e Íconos */
+.stats-icon-primary {
+    background-color: rgba(66, 133, 244, 0.1);
+}
+
+.stats-icon-success {
+    background-color: rgba(76, 217, 152, 0.1);
+}
+
+.stats-icon-danger {
+    background-color: rgba(244, 106, 106, 0.1);
+}
+
+.stats-icon-info {
+    background-color: rgba(116, 120, 251, 0.1);
+}
+
+/* Pseudo-elementos para los íconos */
+.stats-icon::before {
+    content: '';
+    display: block;
+    position: absolute;
+}
+
+/* Ícono de Participación (barras) */
+.participation::before {
+    background-color: #4285f4;
+    width: 28px;
+    height: 28px;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='20' x2='18' y2='10'%3E%3C/line%3E%3Cline x1='12' y1='20' x2='12' y2='4'%3E%3C/line%3E%3Cline x1='6' y1='20' x2='6' y2='14'%3E%3C/line%3E%3C/svg%3E");
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='20' x2='18' y2='10'%3E%3C/line%3E%3Cline x1='12' y1='20' x2='12' y2='4'%3E%3C/line%3E%3Cline x1='6' y1='20' x2='6' y2='14'%3E%3C/line%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+
+/* Ícono de Densidad (red/conexiones) */
+.density::before {
+    background-color: #4cd998;
+    width: 28px;
+    height: 28px;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpath d='M12 6a9 9 0 0 0-9 9'%3E%3C/path%3E%3Cpath d='M12 18a9 9 0 0 0 9-9'%3E%3C/path%3E%3C/svg%3E");
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpath d='M12 6a9 9 0 0 0-9 9'%3E%3C/path%3E%3Cpath d='M12 18a9 9 0 0 0 9-9'%3E%3C/path%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+
+/* Ícono de Polarización (target/diana) */
+.polarization::before {
+    background-color: #f46a6a;
+    width: 28px;
+    height: 28px;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Ccircle cx='12' cy='12' r='6'%3E%3C/circle%3E%3Ccircle cx='12' cy='12' r='2'%3E%3C/circle%3E%3C/svg%3E");
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Ccircle cx='12' cy='12' r='6'%3E%3C/circle%3E%3Ccircle cx='12' cy='12' r='2'%3E%3C/circle%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+
+/* Ícono de Reciprocidad (flechas bidireccionales) */
+.reciprocity::before {
+    background-color: #7478fb;
+    width: 28px;
+    height: 28px;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='17 1 21 5 17 9'%3E%3C/polyline%3E%3Cpath d='M21 5H9a7 7 0 0 0-7 7c0 5 7 7 13 7'%3E%3C/path%3E%3Cpolyline points='7 23 3 19 7 15'%3E%3C/polyline%3E%3Cpath d='M3 19h12a7 7 0 0 0 7-7c0-5-7-7-13-7'%3E%3C/path%3E%3C/svg%3E");
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='17 1 21 5 17 9'%3E%3C/polyline%3E%3Cpath d='M21 5H9a7 7 0 0 0-7 7c0 5 7 7 13 7'%3E%3C/path%3E%3Cpolyline points='7 23 3 19 7 15'%3E%3C/polyline%3E%3Cpath d='M3 19h12a7 7 0 0 0 7-7c0-5-7-7-13-7'%3E%3C/path%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+
+/* ---------------- NUEVOS ESTILOS PARA TARJETAS DE COMPONENTES ----------------- */
+
+/* Estilo común para todas las tarjetas de componentes */
+.component-card {
+    background-color: #fff;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    height: 100%;
+    overflow: hidden;
+}
+
+.component-card-header {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #555;
+    padding: 1rem 1rem 0.5rem;
+    background-color: transparent;
+    border-bottom: none;
+}
+
+.component-card-body {
+    padding: 0.75rem 1rem 1rem;
+}
+
+/* Estilos para los gráficos de barras */
+.chart-container {
+    height: 250px;
+    position: relative;
+}
+
+.chart-legend {
+    font-size: 0.8rem;
+    color: #777;
+    margin-top: 0.5rem;
+}
+
+/* Colores para los gráficos */
+.chart-bar-primary {
+    background-color: rgba(66, 133, 244, 0.7);
+}
+
+.chart-bar-danger {
+    background-color: rgba(244, 106, 106, 0.7);
+}
+
+/* Estilos para la matriz de reciprocidad */
+.matrix-container {
+    overflow-x: auto;
+}
+
+.matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.matrix-table th, 
+.matrix-table td {
+    padding: 0.5rem;
+    text-align: center;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.matrix-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.matrix-cell-reciprocal {
+    background-color: rgba(116, 120, 251, 0.1);
+}
+
+.matrix-cell-one-way {
+    background-color: rgba(244, 106, 106, 0.1);
+}
+
+/* Estilos para la tabla de centralidades */
+.centrality-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.centrality-table th, 
+.centrality-table td {
+    padding: 0.6rem;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.centrality-table th {
+    text-align: left;
+    font-weight: 600;
+    color: #555;
+}
+
+.centrality-table td {
+    text-align: right;
+}
+
+/* Estilos para tarjetas de roles */
+.role-cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.role-card {
+    background-color: #fff;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    padding: 1rem;
+    flex: 1;
+    min-width: 200px;
+}
+
+.role-card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+
+.role-card-content {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Estilos para roles específicos */
+.role-lideres {
+    background-color: rgba(66, 133, 244, 0.05);
+    border-left: 3px solid rgba(66, 133, 244, 0.7);
+}
+
+.role-puentes {
+    background-color: rgba(76, 217, 152, 0.05);
+    border-left: 3px solid rgba(76, 217, 152, 0.7);
+}
+
+.role-aislados {
+    background-color: rgba(244, 106, 106, 0.05);
+    border-left: 3px solid rgba(244, 106, 106, 0.7);
+}
+
+.role-cohesivos {
+    background-color: rgba(116, 120, 251, 0.05);
+    border-left: 3px solid rgba(116, 120, 251, 0.7);
+}
+
+/* Estilo para historial temporal */
+.timeline-container {
+    background-color: #fff;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.timeline-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 1rem;
+}
+
+.timeline-track {
+    height: 4px;
+    background-color: rgba(0,0,0,0.05);
+    border-radius: 2px;
+    position: relative;
+    margin: 2rem 0;
+}
+
+.timeline-marker {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background-color: #4285f4;
+    border-radius: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+}
+
+.timeline-marker.active {
+    width: 20px;
+    height: 20px;
+    background-color: #0056b3;
+}
+
+.timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #777;
+}
+
+/* Ajustes responsive */
+@media (max-width: 767px) {
+    .stats-value {
+        font-size: 1.5rem;
+    }
+    
+    .stats-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .stats-icon::before {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .sociograma-container {
+        height: 350px;
+    }
+    
+    .role-card {
+        min-width: calc(50% - 1rem);
+    }
+}
+
+@media (max-width: 575px) {
+    .role-card {
+        min-width: 100%;
+    }
+}
+
