@@ -1,71 +1,52 @@
-<!-- resources/views/layouts/dashboard.blade.php -->
-
+{{-- resources/views/layouts/dashboard.blade.php --}}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <!-- Meta y títulos -->
+    <!-- Meta y título -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Sociogram - Dashboard</title>
 
-    <!-- Estilos y fuentes -->
+    <!-- Iconos y estilos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
-    <!-- Incluye aquí otros estilos necesarios -->
     <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/analisis.css') }}" rel="stylesheet">
 
     <!-- Livewire Styles -->
     @livewireStyles
 </head>
 
 <body id="page-top">
-
-    <!-- Page Wrapper -->
     <div id="wrapper">
-
-        <!-- Incluir Sidebar -->
         @include('partials.sidebar')
 
-        <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column">
-
-            <!-- Main Content -->
             <div id="content">
-
-                <!-- Incluir Topbar -->
                 @include('partials.topbar')
 
-                <!-- Contenido de la página -->
                 <div class="container-fluid">
-                    @yield('content') <!-- Aquí se renderizará el contenido de las vistas que extiendan este layout -->
+                    @yield('content')
                 </div>
-                <!-- /.container-fluid -->
-
-                
-
             </div>
-            <!-- End of Main Content -->
-
         </div>
-        <!-- End of Content Wrapper -->
-
     </div>
-    <!-- End of Page Wrapper -->
 
-    <!-- Scripts necesarios -->
+    <!-- Dependencias JS (jQuery, Bootstrap, SB Admin) -->
     <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <!-- Incluye aquí otros scripts necesarios -->
     <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
 
-    <!-- Chart.js - Añadir esta línea -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <!-- Chart.js y Matrix plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@^1.1.0/dist/chartjs-chart-matrix.min.js"></script>
 
     <!-- Livewire Scripts -->
     @livewireScripts
 
+    <!-- Tu script de análisis (debe cargarse tras Livewire y Chart.js) -->
+    <script src="{{ asset('js/analisis.js') }}"></script>
+
     @stack('scripts')
 </body>
-
 </html>

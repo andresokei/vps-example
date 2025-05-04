@@ -36,88 +36,62 @@ class Relacion extends Model
 
 
 
-    public static function generarDesdeRespuestas($asignacionTestId)
-    {
-        \Log::info("🔄 Procesando asignación con ID: {$asignacionTestId}");
-        \Log::info('💡 Se está ejecutando el método generarDesdeRespuestas');
-    
-        // Eliminar relaciones anteriores para esa asignación
-        self::where('asignacion_test_id', $asignacionTestId)->delete();
-    
-        $respuestas = \App\Models\Respuesta::where('asignacion_test_id', $asignacionTestId)->get();
-        
-        \Log::info("🔍 Total de respuestas encontradas: " . count($respuestas));
-        $contadorAutoSeleccion = 0;
-        $contadorTipoInvalido = 0;
-        $contadorIdInvalido = 0;
-        $contador = 0;
-    
-        // Obtener todos los IDs de estudiantes válidos
-        $estudiantesValidos = \App\Models\Estudiante::pluck('id')->toArray();
-        \Log::info("📊 IDs de estudiantes válidos: " . implode(', ', $estudiantesValidos));
-    
-        foreach ($respuestas as $respuesta) {
-            \Log::info("📝 Procesando respuesta ID={$respuesta->id}: alumno_id={$respuesta->alumno_id}, respuesta={$respuesta->respuesta}, tipo={$respuesta->tipo_relacion}");
-            
-            // Verificar que ambos IDs de estudiantes existen
-            if (!in_array((int) $respuesta->alumno_id, $estudiantesValidos)) {
-                \Log::warning("⚠️ ID de alumno_a inválido: {$respuesta->alumno_id}");
-                $contadorIdInvalido++;
-                continue;
-            }
-            
-            if (!in_array((int) $respuesta->respuesta, $estudiantesValidos)) {
-                \Log::warning("⚠️ ID de alumno_b (respuesta) inválido: {$respuesta->respuesta}");
-                $contadorIdInvalido++;
-                continue;
-            }
-            
-            // Saltar si el alumno se eligió a sí mismo
-            if ((int) $respuesta->alumno_id === (int) $respuesta->respuesta) {
-                \Log::info("⚠️ Se detectó auto-selección: alumno_id={$respuesta->alumno_id}, respuesta={$respuesta->respuesta}");
-                $contadorAutoSeleccion++;
-                continue;
-            }
-    
-            // Normalizar tipo de relación
-            $tipoOriginal = strtolower(trim($respuesta->tipo_relacion));
-    
-            $tipoRelacion = match ($tipoOriginal) {
-                'preferencia' => 'preferido',
-                'rechazo' => 'rechazado',
-                default => null,
-            };
-    
-            \Log::info("🔎 Tipo relación bruta: '{$respuesta->tipo_relacion}' → '{$tipoRelacion}'");
-    
-            if (!$tipoRelacion) {
-                \Log::info("⚠️ Tipo de relación no válido: '{$respuesta->tipo_relacion}'");
-                $contadorTipoInvalido++;
-                continue;
-            }
-    
-            try {
-                self::create([
-                    'asignacion_test_id' => $asignacionTestId,
-                    'alumno_a_id' => $respuesta->alumno_id,
-                    'alumno_b_id' => $respuesta->respuesta,
-                    'tipo_relacion' => $tipoRelacion,
-                    'intensidad' => $respuesta->orden_preferencia ?? 1,
-                    'estado_relacion' => 'activa',
-                ]);
-    
-                \Log::info("🧩 Creando relación: {$respuesta->alumno_id} → {$respuesta->respuesta} como {$tipoRelacion}");
-                $contador++;
-            } catch (\Exception $e) {
-                \Log::error("❌ Error al crear relación: " . $e->getMessage());
-            }
+public static function generarDesdeRespuestas(int $asignacionId): void
+{
+    // 1. Vacía las relaciones previas de este test
+    static::where('asignacion_test_id', $asignacionId)->delete();
+
+    // 2. Trae TODAS las respuestas de preferencia / rechazo,
+    //    ignorando self-loops y vacíos
+    $resps = Respuesta::where('asignacion_test_id', $asignacionId)
+        ->whereIn('tipo_relacion', ['preferencia', 'rechazo'])
+        ->whereNotNull('respuesta')
+        ->whereColumn('alumno_id', '<>', 'respuesta')
+        ->get();
+
+    // 3. Colección condensada: clave "A-B"  → mejor registro
+    $best = [];
+
+    foreach ($resps as $r) {
+        $emisor    = $r->alumno_id;        // A
+        $receptor  = (int) $r->respuesta;  // B (id del compañero)
+        $tipo      = $r->tipo_relacion === 'preferencia' ? 'preferido' : 'rechazado';
+        $prio      = $tipo === 'preferido' ? 1 : 2;               // pref gana a rech
+        $intensidad= $r->orden_preferencia ?? 3;                  // 1,2,3
+
+        $key = $emisor.'-'.$receptor;
+
+        if (
+            !isset($best[$key]) ||                                 // primera vez
+            $prio <  $best[$key]['prio'] ||                       // preferido > rechazado
+            ($prio === $best[$key]['prio'] &&
+             $intensidad < $best[$key]['intensidad'])             // mejor posición
+        ) {
+            // guardamos / sustituimos si tiene más prioridad
+            $best[$key] = [
+                'alumno_a_id'  => $emisor,
+                'alumno_b_id'  => $receptor,
+                'tipo_relacion'=> $tipo,        // preferido | rechazado
+                'intensidad'   => $intensidad,  // 1–3
+                'prio'         => $prio,
+            ];
         }
-    
-        \Log::info("ℹ️ Auto-selecciones detectadas: {$contadorAutoSeleccion}");
-        \Log::info("ℹ️ Tipos de relación no válidos: {$contadorTipoInvalido}");
-        \Log::info("ℹ️ IDs de estudiantes inválidos: {$contadorIdInvalido}");
-        \Log::info("✅ Total de relaciones generadas: {$contador}");
     }
+
+    // 4. Inserta los registros condensados
+    static::insert(
+        collect($best)->map(fn ($row) => [
+            'asignacion_test_id' => $asignacionId,
+            'alumno_a_id'        => $row['alumno_a_id'],
+            'alumno_b_id'        => $row['alumno_b_id'],
+            'tipo_relacion'      => $row['tipo_relacion'],
+            'intensidad'         => $row['intensidad'],
+            'created_at'         => now(),
+            'updated_at'         => now(),
+        ])->all()
+    );
+}
+
    
 
 

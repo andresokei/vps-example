@@ -12,9 +12,6 @@ use App\Models\Respuesta;
 
 class AnalisisSelector extends Component
 {
-    /* ------------------------------------------------------------
-     |  Propiedades públicas (se serializan en el front)          |
-     * -----------------------------------------------------------*/
     public $grupos;
     public $grupoSeleccionado = '';
 
@@ -24,12 +21,8 @@ class AnalisisSelector extends Component
     public array $analisis = [];
     public string $resultadoAnalisis = '';
 
-    /* datos extra para sociograma */
     public $jsonData = null;
 
-    /* ------------------------------------------------------------
-     |  Ciclo de vida                                              |
-     * -----------------------------------------------------------*/
     public function mount(): void
     {
         $this->grupos = Grupo::where('id_profesor', Auth::id())->get();
@@ -37,9 +30,6 @@ class AnalisisSelector extends Component
         $this->analisis = [];
     }
 
-    /**
-     * Cuando se selecciona un grupo cargamos sus asignaciones.
-     */
     public function updatedGrupoSeleccionado(): void
     {
         $this->reset(['asignacionTestId', 'asignaciones', 'resultadoAnalisis', 'analisis', 'jsonData']);
@@ -68,9 +58,6 @@ class AnalisisSelector extends Component
         }
     }
 
-    /* ------------------------------------------------------------
-     |  Procesar análisis                                          |
-     * -----------------------------------------------------------*/
     public function procesarAnalisis(): void
     {
         if (! $this->grupoSeleccionado || ! $this->asignacionTestId) {
@@ -89,7 +76,6 @@ class AnalisisSelector extends Component
         // Genera un único análisis completo
         $full = $this->datosSociograma();
 
-        // Asigna todas las secciones en orden: sociograma primero
         $this->analisis = [
             'sociograma'   => $full['sociograma'],
             'preferencias' => $full['preferencias'],
@@ -97,35 +83,33 @@ class AnalisisSelector extends Component
             'aislamiento'  => $full['aislamiento'],
         ];
 
-        // Dispara eventos JS
+        // Dispatch a los gráficos existentes
         $this->dispatch('actualizarGraficoPreferencias', $full['preferencias']);
         $this->dispatch('actualizarGraficoRechazos',     $full['rechazos']);
         $this->dispatch('actualizarSociograma',          $full['sociograma']);
 
+        // Matriz de reciprocidad
+        $matrizRec = $this->matrizReciprocidad();  // ['labels' => [...], 'data' => [...]]
+        $this->analisis['reciprocidad'] = $matrizRec;
+        $this->dispatch('actualizarMatrizReciprocidad', $matrizRec); // Evento para la matriz
+
         $this->resultadoAnalisis = 'Análisis generado correctamente.';
     }
 
-    /* ------------------------------------------------------------
-     |  Genera TODO el análisis en un solo método                |
-     * -----------------------------------------------------------*/
     private function datosSociograma(): array
     {
-        // 1️⃣ Estudiantes del grupo
         $estudiantes = Estudiante::whereIn('id', function ($q) {
             $q->select('id_estudiante')
               ->from('estudiantes_grupos')
               ->where('id_grupo', $this->grupoSeleccionado);
         })->get();
 
-        // 2️⃣ Todas las relaciones de la asignación
         $allRelations = Relacion::where('asignacion_test_id', $this->asignacionTestId)
-                                ->get();
+                               ->get();
 
-        // 3️⃣ Contadores para todo
         $prefAll = [];
         $rechAll = [];
 
-        // 4️⃣ Construir nodos y acumular conteos
         $nodes = $estudiantes->map(function ($e) use ($allRelations, &$prefAll, &$rechAll) {
             $pref = $allRelations->where('alumno_b_id', $e->id)
                                  ->where('tipo_relacion', 'preferido')->count();
@@ -136,19 +120,18 @@ class AnalisisSelector extends Component
             $rechAll[$e->nombre] = $rech;
 
             return [
-                'id'      => $e->id,
-                'label'   => $e->nombre,
-                'metricas'=> [
+                'id'       => $e->id,
+                'label'    => $e->nombre,
+                'metricas' => [
                     'preferencias_recibidas' => $pref,
                     'rechazos_recibidos'     => $rech,
                     'popularidad'            => ($pref + $rech)
-                                                ? $pref / ($pref + $rech)
-                                                : 0,
+                                                 ? $pref / ($pref + $rech)
+                                                 : 0,
                 ],
             ];
         })->values();
 
-        // 5️⃣ Construir enlaces
         $links = $allRelations->map(fn ($r) => [
             'source'        => $r->alumno_a_id,
             'target'        => $r->alumno_b_id,
@@ -156,13 +139,11 @@ class AnalisisSelector extends Component
             'intensidad'    => $r->intensidad ?? 1,
         ])->values();
 
-        // 6️⃣ Sociograma JSON
         $this->jsonData = [
             'nodes' => $nodes->toArray(),
             'links' => $links->toArray(),
         ];
 
-        // 7️⃣ Ordenar por nombre y filtrar para gráficas
         ksort($prefAll);
         ksort($rechAll);
         $prefGraf = array_filter($prefAll, fn ($v) => $v > 0);
@@ -184,14 +165,80 @@ class AnalisisSelector extends Component
         ];
     }
 
-    /* ------------------------------------------------------------ */
+    private function matrizReciprocidad(): array
+{
+    /* 1. Lista ordenada de alumnos (sin duplicar nombre, pero SIN perder ningún id) */
+    $alumnos = Estudiante::whereIn('id', function ($q) {
+            $q->select('id_estudiante')->from('estudiantes_grupos')
+              ->where('id_grupo', $this->grupoSeleccionado);
+        })
+        ->orderBy('nombre')
+        ->get();
+
+    // Etiquetas para los ejes
+    $labels = $alumnos->pluck('nombre')->toArray();
+
+    // Map id → índice (para no volvernos locos con los i,j)
+    $indexOf = $alumnos->pluck('id')->flip();   // ej. [12=>0, 17=>1, …]
+
+    /* 2. Inicializamos matriz N×N a cero */
+    $n = count($labels);
+    $M = array_fill(0, $n, array_fill(0, $n, 0));
+
+    /* 3. Cargamos todas las relaciones de la asignación (sin self-loop) */
+    $rel = Relacion::where('asignacion_test_id', $this->asignacionTestId)
+                   ->whereColumn('alumno_a_id', '<>', 'alumno_b_id')
+                   ->get();
+
+    /* 4. Recorremos cada relación y volcamos en una estructura bidireccional */
+    $dir = [];   // $dir['i-j'] = 'preferido' | 'rechazado'
+    foreach ($rel as $r) {
+        $i = $indexOf[$r->alumno_a_id];
+        $j = $indexOf[$r->alumno_b_id];
+        $dir["$i-$j"] = $r->tipo_relacion;   // guardamos tal cual
+    }
+
+    /* 5. Para cada pareja (i,j) decidimos el código v */
+    for ($i = 0; $i < $n; $i++) {
+        for ($j = 0; $j < $n; $j++) {
+            if ($i === $j) {
+                $M[$i][$j] = 0;   // diagonal gris
+                continue;
+            }
+
+            $AB = $dir["$i-$j"] ?? null;
+            $BA = $dir["$j-$i"] ?? null;
+
+            if ($AB === 'preferido' && $BA === 'preferido')        $v = 4; // pref. mutua
+            elseif ($AB === 'rechazado' && $BA === 'rechazado')    $v = 3; // rech. mutuo
+            elseif ($AB === 'preferido' && $BA === 'rechazado'
+                 || $AB === 'rechazado' && $BA === 'preferido')    $v = 5; // conflicto
+            elseif ($AB === 'preferido' || $BA === 'preferido')    $v = 2; // pref. uni
+            elseif ($AB === 'rechazado' || $BA === 'rechazado')    $v = 1; // rech. uni
+            else                                                   $v = 0; // sin relación
+
+            $M[$i][$j] = $v;
+        }
+    }
+
+    /* 6. Convertimos la matriz a la lista de puntos que necesita ChartMatrix */
+    $data = [];
+    for ($i = 0; $i < $n; $i++) {
+        for ($j = 0; $j < $n; $j++) {
+            $data[] = [ 'x'=>$j, 'y'=>$i, 'v'=>$M[$i][$j] ];
+        }
+    }
+
+    return compact('labels','data');
+}
+
     public function render()
     {
         return view('livewire.analisis-selector', [
-            'grupos'            => $this->grupos,
-            'asignaciones'      => $this->asignaciones,
+            'grupos'              => $this->grupos,
+            'asignaciones'        => $this->asignaciones,
             'resultadoAnalisis' => $this->resultadoAnalisis,
-            'analisis'          => $this->analisis,
+            'analisis'            => $this->analisis,
         ]);
     }
 }
