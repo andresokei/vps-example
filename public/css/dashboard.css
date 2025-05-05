@@ -1,0 +1,101 @@
+/* public/css/dashboard.css */
+.dashboard-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 1.5rem;
+}
+
+.card-custom {
+  background-color: #ffffff;
+  border: none;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.card-custom .card-header {
+  background-color: transparent;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.card-custom .card-header h5 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #1a202c;
+}
+
+.dropdown-select {
+  position: relative;
+}
+
+.dropdown-select select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2rem;
+}
+
+.dropdown-select .select-arrow {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 0.9rem;
+  color: #a0aec0;
+}
+
+/* componente tests asignados */
+
+/* Mejoras para la tabla de Tests Asignados */
+.table thead th {
+  font-weight: 500;
+  color: #6c757d;
+  border-top: none;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Mejoras para las badges de estado */
+.badge-pill {
+  padding: 0.5em 0.8em;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-success {
+  background-color: #e6f7ee;
+  color: #0d6832;
+}
+
+.badge-warning {
+  background-color: #fff8e6;
+  color: #7c5c00;
+}
+
+.badge-info {
+  background-color: #e6f3ff;
+  color: #0049a3;
+}
+
+/* Mejoras para botones y card */
+.btn-link {
+  transition: color 0.15s ease-in-out;
+}
+
+.btn-link:hover {
+  color: #0056b3;
+}
+
+.card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  background-color: #fff;
+  border-bottom: 1px solid #f0f0f0;
+}

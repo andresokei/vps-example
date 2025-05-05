@@ -13,6 +13,9 @@
     <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/analisis.css') }}" rel="stylesheet">
 
+      <!-- Nuevo CSS para Dashboard -->
+      <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+      
     <!-- Livewire Styles -->
     @livewireStyles
 </head>
