@@ -1,63 +1,46 @@
-<!-- resources/views/dashboard.blade.php -->
 @extends('layouts.dashboard')
 
 @section('content')
-<!-- Begin Page Content -->
 <div class="container-fluid">
-    <!-- Page Heading -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+  <h1 class="dashboard-title">Dashboard</h1>
+
+  {{-- Fila 1: dos cards side-by-side --}}
+  <div class="row">
+    <div class="col-lg-4 mb-4">
+      <div class="card-custom p-4 h-100">
+        <div class="card-header">
+          <h5>Gestión de Grupos</h5>
+        </div>
+        <div class="card-body p-0 mt-3">
+          <livewire:group-manager />
+        </div>
+      </div>
     </div>
 
-    <!-- Content Row -->
-    <div class="row">
-        <!-- Componente de gestión de grupos -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Gestión de Grupos</h6>
-                </div>
-                <div class="card-body">
-                    <livewire:group-manager />
-                </div>
-            </div>
+    <div class="col-lg-8 mb-4">
+      <div class="card-custom p-4 h-100">
+        <div class="card-header">
+          <h5>Asignar Tests a Grupos</h5>
         </div>
-
-        <!-- Componente de asignación de tests -->
-        <div class="col-md-8 mb-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Tests</h6>
-                </div>
-                <div class="card-body">
-                    <livewire:tests />
-                </div>
-            </div>
+        <div class="card-body mt-3">
+          <livewire:assign-tests />
         </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Resumen rápido o estadísticas clave si lo deseas -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Actividad Reciente</h6>
-                </div>
-                <div class="card-body">
-                    <!-- Aquí podrías añadir una lista simple de actividades recientes -->
-                    <p class="text-center">No hay actividades recientes para mostrar.</p>
-                </div>
-            </div>
+  {{-- Fila 2: card ancho completo --}}
+  <div class="row">
+    <div class="col-12 mb-4">
+      <div class="card-custom p-4">
+        <div class="card-header">
+          <h5>Tests Asignados</h5>
         </div>
+        <div class="card-body mt-3">
+          <livewire:assigned-tests />
+        </div>
+      </div>
     </div>
+  </div>
 </div>
-<!-- /.container-fluid -->
 @endsection
-
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Dashboard cargado correctamente');
-    });
-</script>
-@endpush

@@ -9,22 +9,24 @@ class AsignacionTest extends Model
 {
     use HasFactory;
 
-    protected $table = 'asignaciones_test'; // Asegúrate de que el nombre de la tabla sea correcto
+    protected $table = 'asignaciones_test';
 
+    // Sólo los campos que RELLENAS tú manualmente
     protected $fillable = [
         'test_id',
-        'profesor_id',
         'grupo_id',
+        'profesor_id',    // si vas a guardar aquí Auth::id()
         'clave_acceso',
         'estado',
-        'created_at',
-        'updated_at',
     ];
 
-    // Definir relaciones si es necesario
+    // timestamps quedan gestionados automáticamente
+    public $timestamps = true;
+
+    // Relaciones
     public function test()
     {
-        return $this->belongsTo(Test::class, 'test_id');
+        return $this->belongsTo(Test::class);
     }
 
     public function profesor()
@@ -34,6 +36,6 @@ class AsignacionTest extends Model
 
     public function grupo()
     {
-        return $this->belongsTo(Grupo::class, 'grupo_id');
+        return $this->belongsTo(Grupo::class);
     }
 }
