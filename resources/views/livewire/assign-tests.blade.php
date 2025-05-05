@@ -1,7 +1,7 @@
 <div>
 <form wire:submit.prevent="assign">
   <div class="form-group mb-4">
-    <label class="font-weight-bold">Selecciona un Grupo</label>
+    <!-- <label class="font-weight-bold">Selecciona un Grupo</label> -->
     <div class="dropdown-select">
       <select wire:model="grupo_id" class="form-control rounded">
         <option value="" disabled selected>Selecciona un grupo</option>
@@ -14,7 +14,7 @@
   </div>
 
   <div class="form-group mb-4">
-    <label class="font-weight-bold">Selecciona un Test</label>
+    <!-- <label class="font-weight-bold">Selecciona un Test</label> -->
     <div class="dropdown-select">
       <select wire:model="test_id" class="form-control rounded">
         <option value="" disabled selected>Selecciona un test</option>

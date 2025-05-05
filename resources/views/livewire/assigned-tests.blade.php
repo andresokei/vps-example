@@ -1,6 +1,6 @@
 <div>
     <div class="card shadow-sm rounded-lg overflow-hidden">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 px-4 border-bottom border-light">
+        <!-- <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 px-4 border-bottom border-light">
             <h5 class="font-weight-bold m-0">Tests Asignados</h5>
 
             <div>
@@ -11,7 +11,7 @@
                     <i class="fas fa-cog"></i>
                 </button>
             </div>
-        </div>
+        </div> -->
 
         <div class="table-responsive">
             <table class="table mb-0">

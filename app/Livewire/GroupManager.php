@@ -188,7 +188,7 @@ class GroupManager extends Component
         // Guardar el ID del grupo a eliminar y mostrar el modal de confirmación
         $this->groupToDelete = $groupId;
         logger('Mostrando modal de confirmación para grupo: ' . $groupId);
-        $this->dispatch('openDeleteModal')->toBrowser();    }
+        $this->dispatch('openDeleteModal');    }
 
     // Nuevo método para confirmar la eliminación del grupo
     public function confirmDeleteGroup()
