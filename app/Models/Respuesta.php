@@ -32,4 +32,10 @@ class Respuesta extends Model
     {
         return $this->belongsTo(Pregunta::class, 'pregunta_id');
     }
+
+    public function asignacion()
+{
+    //               Modelo             clave foránea en la tabla `respuestas`
+    return $this->belongsTo(AsignacionTest::class, 'asignacion_test_id');
+}
 }

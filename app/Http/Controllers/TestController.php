@@ -77,56 +77,55 @@ class TestController extends Controller
     }
 
     public function submitTest(Request $request, $id)
-{
-    // Usar el asignacion_id enviado desde el formulario
-    $asignacion_id = $request->input('asignacion_id');
-
-    // Buscar la asignación por su ID
-    $asignacion = AsignacionTest::findOrFail($asignacion_id);
-
-    // Validar el input
-    $request->validate([
-        'estudiante_id' => 'required',
-        'respuesta_*' => 'required'
-    ]);
-
-    // Iterar sobre las preguntas del test y guardar las respuestas
-    foreach ($asignacion->test->preguntas as $pregunta) {
-        for ($i = 1; $i <= 3; $i++) {
-            $respuesta = $request->input('respuesta_' . $pregunta->id . '_' . $i);
-            $tipoRelacion = $request->input('tipo_relacion_' . $pregunta->id);  // Obtener tipo de relación
-
-            // Guardar la respuesta en la base de datos
-            DB::table('respuestas')->insert([
-                'alumno_id' => $request->estudiante_id,
-                'asignacion_test_id' => $asignacion->id,
-                'pregunta_id' => $pregunta->id,
-                'respuesta' => $respuesta, // ID del alumno relacionado
-                'orden_preferencia' => $i,
-                'tipo_relacion' => $tipoRelacion,  // Guardar preferencia o rechazo
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-
-            // Aquí también se guardan las relaciones
-            $tipoRelacionGuardada = $tipoRelacion == 'preferencia' ? 'preferido' : 'rechazado';
-
-            // Guardar la relación en la tabla 'relaciones'
-            DB::table('relaciones')->insert([
-                'asignacion_test_id' => $asignacion->id,
-                'alumno_a_id' => $request->estudiante_id, // Estudiante que responde
-                'alumno_b_id' => $respuesta, // Estudiante al que se refiere en la respuesta
-                'tipo_relacion' => $tipoRelacionGuardada, // preferido o rechazado
-                'intensidad' => $i, // Orden de preferencia
-                'estado_relacion' => 'activa',
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
+    {
+        // 1) Datos básicos
+        $asignacion_id = $request->input('asignacion_id');
+        $asignacion    = AsignacionTest::findOrFail($asignacion_id);
+    
+        // 2) Validación
+        $request->validate([
+            'estudiante_id' => 'required',
+            'respuesta_*'   => 'required',
+        ]);
+    
+        // 3) Guardar cada respuesta
+        foreach ($asignacion->test->preguntas as $pregunta) {
+            for ($i = 1; $i <= 3; $i++) {
+                $respuesta     = $request->input('respuesta_'.$pregunta->id.'_'.$i);
+                $tipoRelacion  = $request->input('tipo_relacion_'.$pregunta->id);
+    
+                DB::table('respuestas')->insert([
+                    'alumno_id'           => $request->estudiante_id,
+                    'asignacion_test_id'  => $asignacion->id,
+                    'pregunta_id'         => $pregunta->id,
+                    'respuesta'           => $respuesta,
+                    'orden_preferencia'   => $i,
+                    'tipo_relacion'       => $tipoRelacion,
+                    'created_at'          => now(),
+                    'updated_at'          => now(),
+                ]);
+    
+                DB::table('relaciones')->insert([
+                    'asignacion_test_id'  => $asignacion->id,
+                    'alumno_a_id'         => $request->estudiante_id,
+                    'alumno_b_id'         => $respuesta,
+                    'tipo_relacion'       => $tipoRelacion === 'preferencia' ? 'preferido' : 'rechazado',
+                    'intensidad'          => $i,
+                    'estado_relacion'     => 'activa',
+                    'created_at'          => now(),
+                    'updated_at'          => now(),
+                ]);
+            }
         }
+    
+        /* ─────── LÍNEA CLAVE ─────── */
+        $asignacion->recalcularEstado();   // ← actualiza la columna `estado`
+        /* ──────────────────────────── */
+    
+        return redirect()
+               ->route('test.success')
+               ->with('status', 'Respuestas y relaciones guardadas exitosamente');
     }
-
-    // Redirigir a la página de éxito
-    return redirect()->route('test.success')->with('status', 'Respuestas y relaciones guardadas exitosamente');
-}
+    
 
 }

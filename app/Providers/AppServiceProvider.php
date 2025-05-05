@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Models\Respuesta;                // ← importa tu modelo
+use App\Observers\RespuestaObserver;     // ← importa el observer
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // cada vez que se cree o borre una Respuesta,
+        // Laravel llamará a los métodos del observer
+        Respuesta::observe(RespuestaObserver::class);
     }
 }
