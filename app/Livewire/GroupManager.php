@@ -207,7 +207,7 @@ class GroupManager extends Component
         if (!$group) {
             logger('Grupo no encontrado o sin permiso');
             session()->flash('error', 'Grupo no encontrado o sin permiso.');
-            $this->dispatch('closeDeleteModal')->toBrowser();
+            $this->dispatch('closeDeleteModal');   // sin ->toBrowser()
             return;
         }
 
@@ -221,7 +221,7 @@ class GroupManager extends Component
         session()->flash('message', 'Grupo eliminado correctamente.');
         $this->loadGroups();
         $this->groupToDelete = null;
-        $this->dispatch('closeDeleteModal')->toBrowser();
+        $this->dispatch('closeDeleteModal');   // sin ->toBrowser()
     }
 
     public function render()

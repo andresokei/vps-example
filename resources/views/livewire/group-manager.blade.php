@@ -162,49 +162,30 @@
 </div>
 </div>
 
+@push('scripts')
 <script>
-    window.addEventListener('openModal', () => {
-        $('#addStudentsModal').modal('show');
-    });
+    document.addEventListener('livewire:init', () => {
 
-    window.addEventListener('closeModal', () => {
-        $('#addStudentsModal').modal('hide');
-    });
-</script>
-<script>
-    document.addEventListener('livewire:load', function () {
-        // Eventos para el modal existente de alumnos
-        window.addEventListener('openModal', event => {
-            $('#addStudentsModal').modal('show');
-        });
+        /* —— Modal alumnos —— */
+        Livewire.on('openModal',  () => $('#addStudentsModal').modal('show'));
+        Livewire.on('closeModal', () => $('#addStudentsModal').modal('hide'));
 
-        window.addEventListener('closeModal', event => {
-            $('#addStudentsModal').modal('hide');
-        });
-        
-        // Nuevos eventos para el modal de confirmación de eliminación
-        window.addEventListener('openDeleteModal', event => {
-            $('#deleteGroupModal').modal('show');
-        });
+        /* —— Modal eliminar grupo —— */
+        Livewire.on('openDeleteModal',  () => $('#deleteGroupModal').modal('show'));
+        Livewire.on('closeDeleteModal', () => $('#deleteGroupModal').modal('hide'));
 
-        window.addEventListener('closeDeleteModal', event => {
-            $('#deleteGroupModal').modal('hide');
-        });
-        
-        // Para mostrar el nombre del archivo seleccionado
+        /* Extra: nombre del CSV y pestaña activa (opcional) */
         $(document).on('change', '.custom-file-input', function () {
-            let fileName = $(this).val().split('\\').pop();
-            $(this).next('.custom-file-label').html(fileName || 'Seleccionar archivo');
+            const fileName = $(this).val().split('\\').pop();
+            $(this).next('.custom-file-label').text(fileName || 'Seleccionar archivo');
         });
-        
-        // Mantener la pestaña activa después de una actualización
-        let activeTab = sessionStorage.getItem('activeTab');
-        if (activeTab) {
-            $('#' + activeTab).tab('show');
-        }
-        
-        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-            sessionStorage.setItem('activeTab', $(e.target).attr('id'));
-        });
+
+        const activeTab = sessionStorage.getItem('activeTab');
+        if (activeTab) $('#' + activeTab).tab('show');
+
+        $('a[data-toggle="tab"]').on('shown.bs.tab', e =>
+            sessionStorage.setItem('activeTab', $(e.target).attr('id'))
+        );
     });
 </script>
+@endpush
