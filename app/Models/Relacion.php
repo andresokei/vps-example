@@ -4,16 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Respuesta;
+use App\Models\Estudiante;
 
 class Relacion extends Model
 {
     use HasFactory;
 
-    protected $table = 'relaciones'; // Asegúrate de que el nombre de la tabla sea correcto
+    protected $table = 'relaciones';
 
-    // Atributos que se pueden asignar masivamente
     protected $fillable = [
-        'asignacion_test_id',  // Agrega este campo para permitir la asignación masiva
+        'asignacion_test_id',
         'alumno_a_id',
         'alumno_b_id',
         'tipo_relacion',
@@ -21,7 +22,9 @@ class Relacion extends Model
         'estado_relacion',
     ];
 
-    // Si tienes relaciones con otras tablas (como `alumnoA` y `alumnoB`):
+    /* ───────────────────────────────
+     |  Relaciones Eloquent auxiliares
+     ─────────────────────────────── */
     public function alumnoA()
     {
         return $this->belongsTo(Estudiante::class, 'alumno_a_id');
@@ -32,73 +35,78 @@ class Relacion extends Model
         return $this->belongsTo(Estudiante::class, 'alumno_b_id');
     }
 
+    /* ───────────────────────────────
+     |  Generar relaciones desde respuestas
+     ─────────────────────────────── */
+    public static function generarDesdeRespuestas(int $asignacionId): void
+    {
+        /* 1 ▸ Borrar cualquier análisis previo de esta asignación */
+        static::where('asignacion_test_id', $asignacionId)->delete();
 
+        /* 2 ▸ Cargar TODAS las respuestas con su pregunta para
+               saber si era de preferencia o de rechazo            */
+        $resps = Respuesta::with('pregunta')                     // ← imprescindible
+            ->where('asignacion_test_id', $asignacionId)
+            ->whereNotNull('respuesta')                          // id del compañero
+            ->whereColumn('alumno_id', '<>', 'respuesta')        // sin auto‑selección
+            ->get();
 
+        /* 3 ▸ Mantendremos solo la mejor relación A‑B             */
+        $best = [];
 
+        foreach ($resps as $r) {
+            // Si por algún motivo la relación con pregunta falla, la saltamos
+            if (!$r->relationLoaded('pregunta') || !$r->pregunta) {
+                continue;
+            }
 
-public static function generarDesdeRespuestas(int $asignacionId): void
-{
-    // 1. Vacía las relaciones previas de este test
-    static::where('asignacion_test_id', $asignacionId)->delete();
+            /* ─ Tipos de pregunta y relación ─ */
+            $tipoPregunta = $r->pregunta->tipo_pregunta;         // 'preferencia' | 'rechazo'
+            $tipoRelacion = $tipoPregunta === 'rechazo'
+                ? 'rechazado'
+                : 'preferido';
 
-    // 2. Trae TODAS las respuestas de preferencia / rechazo,
-    //    ignorando self-loops y vacíos
-    $resps = Respuesta::where('asignacion_test_id', $asignacionId)
-        ->whereIn('tipo_relacion', ['preferencia', 'rechazo'])
-        ->whereNotNull('respuesta')
-        ->whereColumn('alumno_id', '<>', 'respuesta')
-        ->get();
+            /* ─ Datos base ─ */
+            $emisor     = (int) $r->alumno_id;
+            $receptor   = (int) $r->respuesta;
+            $intensidad = $r->orden_preferencia ?? 3;            // 1‒3 o default
 
-    // 3. Colección condensada: clave "A-B"  → mejor registro
-    $best = [];
+            /* ─ Priorización ─
+               Preferidos antes que rechazados (prio 1 < 2)
+               y dentro del mismo tipo la menor intensidad gana */
+            $prio = $tipoRelacion === 'preferido' ? 1 : 2;
 
-    foreach ($resps as $r) {
-        $emisor    = $r->alumno_id;        // A
-        $receptor  = (int) $r->respuesta;  // B (id del compañero)
-        $tipo      = $r->tipo_relacion === 'preferencia' ? 'preferido' : 'rechazado';
-        $prio      = $tipo === 'preferido' ? 1 : 2;               // pref gana a rech
-        $intensidad= $r->orden_preferencia ?? 3;                  // 1,2,3
+            $key = $emisor . '-' . $receptor;
 
-        $key = $emisor.'-'.$receptor;
+            if (
+                !isset($best[$key]) ||
+                $prio <  $best[$key]['prio'] ||
+                ($prio === $best[$key]['prio'] && $intensidad < $best[$key]['intensidad'])
+            ) {
+                $best[$key] = [
+                    'alumno_a_id'   => $emisor,
+                    'alumno_b_id'   => $receptor,
+                    'tipo_relacion' => $tipoRelacion,
+                    'intensidad'    => $intensidad,
+                    'prio'          => $prio,
+                ];
+            }
+        }
 
-        if (
-            !isset($best[$key]) ||                                 // primera vez
-            $prio <  $best[$key]['prio'] ||                       // preferido > rechazado
-            ($prio === $best[$key]['prio'] &&
-             $intensidad < $best[$key]['intensidad'])             // mejor posición
-        ) {
-            // guardamos / sustituimos si tiene más prioridad
-            $best[$key] = [
-                'alumno_a_id'  => $emisor,
-                'alumno_b_id'  => $receptor,
-                'tipo_relacion'=> $tipo,        // preferido | rechazado
-                'intensidad'   => $intensidad,  // 1–3
-                'prio'         => $prio,
-            ];
+        /* 4 ▸ Inserción bulk de las relaciones consolidadas       */
+        if (!empty($best)) {
+            static::insert(
+                collect($best)->map(fn ($row) => [
+                    'asignacion_test_id' => $asignacionId,
+                    'alumno_a_id'        => $row['alumno_a_id'],
+                    'alumno_b_id'        => $row['alumno_b_id'],
+                    'tipo_relacion'      => $row['tipo_relacion'],
+                    'intensidad'         => $row['intensidad'],
+                    'estado_relacion'    => 'activa',
+                    'created_at'         => now(),
+                    'updated_at'         => now(),
+                ])->values()->all()
+            );
         }
     }
-
-    // 4. Inserta los registros condensados
-    static::insert(
-        collect($best)->map(fn ($row) => [
-            'asignacion_test_id' => $asignacionId,
-            'alumno_a_id'        => $row['alumno_a_id'],
-            'alumno_b_id'        => $row['alumno_b_id'],
-            'tipo_relacion'      => $row['tipo_relacion'],
-            'intensidad'         => $row['intensidad'],
-            'created_at'         => now(),
-            'updated_at'         => now(),
-        ])->all()
-    );
-}
-
-   
-
-
-
-
-
-
-
-
 }

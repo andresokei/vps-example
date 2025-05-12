@@ -166,71 +166,77 @@ class AnalisisSelector extends Component
     }
 
     private function matrizReciprocidad(): array
-{
-    /* 1. Lista ordenada de alumnos (sin duplicar nombre, pero SIN perder ningún id) */
-    $alumnos = Estudiante::whereIn('id', function ($q) {
-            $q->select('id_estudiante')->from('estudiantes_grupos')
+    {
+        // 1. Lista de estudiantes del grupo
+        $alumnos = Estudiante::whereIn('id', function ($q) {
+            $q->select('id_estudiante')
+              ->from('estudiantes_grupos')
               ->where('id_grupo', $this->grupoSeleccionado);
         })
         ->orderBy('nombre')
         ->get();
-
-    // Etiquetas para los ejes
-    $labels = $alumnos->pluck('nombre')->toArray();
-
-    // Map id → índice (para no volvernos locos con los i,j)
-    $indexOf = $alumnos->pluck('id')->flip();   // ej. [12=>0, 17=>1, …]
-
-    /* 2. Inicializamos matriz N×N a cero */
-    $n = count($labels);
-    $M = array_fill(0, $n, array_fill(0, $n, 0));
-
-    /* 3. Cargamos todas las relaciones de la asignación (sin self-loop) */
-    $rel = Relacion::where('asignacion_test_id', $this->asignacionTestId)
-                   ->whereColumn('alumno_a_id', '<>', 'alumno_b_id')
-                   ->get();
-
-    /* 4. Recorremos cada relación y volcamos en una estructura bidireccional */
-    $dir = [];   // $dir['i-j'] = 'preferido' | 'rechazado'
-    foreach ($rel as $r) {
-        $i = $indexOf[$r->alumno_a_id];
-        $j = $indexOf[$r->alumno_b_id];
-        $dir["$i-$j"] = $r->tipo_relacion;   // guardamos tal cual
-    }
-
-    /* 5. Para cada pareja (i,j) decidimos el código v */
-    for ($i = 0; $i < $n; $i++) {
-        for ($j = 0; $j < $n; $j++) {
-            if ($i === $j) {
-                $M[$i][$j] = 0;   // diagonal gris
+    
+        // Mapa para índices y etiquetas
+        $labels = $alumnos->pluck('nombre')->toArray();
+        $indexOf = $alumnos->pluck('id')->flip();  // ej. [12=>0, 17=>1, …]
+        $idsGrupo = $alumnos->pluck('id');
+    
+        // 2. Matriz inicializada en 0
+        $n = count($labels);
+        $M = array_fill(0, $n, array_fill(0, $n, 0));
+    
+        // 3. Relación solo entre alumnos del grupo (sin self-loops)
+        $rel = Relacion::where('asignacion_test_id', $this->asignacionTestId)
+            ->whereColumn('alumno_a_id', '<>', 'alumno_b_id')
+            ->whereIn('alumno_a_id', $idsGrupo)
+            ->whereIn('alumno_b_id', $idsGrupo)
+            ->get();
+    
+        // 4. Recorremos y guardamos relaciones dirigidas
+        $dir = [];   // $dir["i-j"] = tipo_relacion
+        foreach ($rel as $r) {
+            if (!isset($indexOf[$r->alumno_a_id]) || !isset($indexOf[$r->alumno_b_id])) {
                 continue;
             }
-
-            $AB = $dir["$i-$j"] ?? null;
-            $BA = $dir["$j-$i"] ?? null;
-
-            if ($AB === 'preferido' && $BA === 'preferido')        $v = 4; // pref. mutua
-            elseif ($AB === 'rechazado' && $BA === 'rechazado')    $v = 3; // rech. mutuo
-            elseif ($AB === 'preferido' && $BA === 'rechazado'
-                 || $AB === 'rechazado' && $BA === 'preferido')    $v = 5; // conflicto
-            elseif ($AB === 'preferido' || $BA === 'preferido')    $v = 2; // pref. uni
-            elseif ($AB === 'rechazado' || $BA === 'rechazado')    $v = 1; // rech. uni
-            else                                                   $v = 0; // sin relación
-
-            $M[$i][$j] = $v;
+            $i = $indexOf[$r->alumno_a_id];
+            $j = $indexOf[$r->alumno_b_id];
+            $dir["$i-$j"] = $r->tipo_relacion;
         }
-    }
-
-    /* 6. Convertimos la matriz a la lista de puntos que necesita ChartMatrix */
-    $data = [];
-    for ($i = 0; $i < $n; $i++) {
-        for ($j = 0; $j < $n; $j++) {
-            $data[] = [ 'x'=>$j, 'y'=>$i, 'v'=>$M[$i][$j] ];
+    
+        // 5. Calculamos códigos de reciprocidad
+        for ($i = 0; $i < $n; $i++) {
+            for ($j = 0; $j < $n; $j++) {
+                if ($i === $j) {
+                    $M[$i][$j] = 0;
+                    continue;
+                }
+    
+                $AB = $dir["$i-$j"] ?? null;
+                $BA = $dir["$j-$i"] ?? null;
+    
+                if ($AB === 'preferido' && $BA === 'preferido')        $v = 4;
+                elseif ($AB === 'rechazado' && $BA === 'rechazado')    $v = 3;
+                elseif ($AB === 'preferido' && $BA === 'rechazado'
+                     || $AB === 'rechazado' && $BA === 'preferido')    $v = 5;
+                elseif ($AB === 'preferido' || $BA === 'preferido')    $v = 2;
+                elseif ($AB === 'rechazado' || $BA === 'rechazado')    $v = 1;
+                else                                                   $v = 0;
+    
+                $M[$i][$j] = $v;
+            }
         }
+    
+        // 6. Convertimos a estructura compatible con el gráfico
+        $data = [];
+        for ($i = 0; $i < $n; $i++) {
+            for ($j = 0; $j < $n; $j++) {
+                $data[] = ['x' => $j, 'y' => $i, 'v' => $M[$i][$j]];
+            }
+        }
+    
+        return compact('labels', 'data');
     }
-
-    return compact('labels','data');
-}
+    
 
     public function render()
     {
