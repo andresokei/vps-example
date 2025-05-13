@@ -1,42 +1,45 @@
 <?php
+/**
+ *  app/Livewire/AnalisisSelector.php
+ *  ─────────────────────────────────
+ *  Genera sociograma + métricas y las envía al front.
+ */
 
 namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Grupo;
-use App\Models\AsignacionTest;
-use App\Models\Relacion;
-use App\Models\Estudiante;
-use App\Models\Respuesta;
+use App\Models\{
+    Grupo,
+    AsignacionTest,
+    Relacion,
+    Estudiante,
+    Respuesta
+};
 
 class AnalisisSelector extends Component
 {
+    /*════════════  PROPIEDADES  ════════════*/
     public $grupos;
     public $grupoSeleccionado = '';
 
     public $asignaciones = [];
     public $asignacionTestId = null;
 
-    public array $analisis = [];
+    public array  $analisis          = [];
     public string $resultadoAnalisis = '';
 
-    public $jsonData = null;
-
+    /*════════════  CICLO DE VIDA  ════════════*/
     public function mount(): void
     {
         $this->grupos = Grupo::where('id_profesor', Auth::id())->get();
-        $this->asignaciones = [];
-        $this->analisis = [];
     }
 
     public function updatedGrupoSeleccionado(): void
     {
-        $this->reset(['asignacionTestId', 'asignaciones', 'resultadoAnalisis', 'analisis', 'jsonData']);
+        $this->reset(['asignacionTestId','asignaciones','resultadoAnalisis','analisis']);
 
-        if (! $this->grupoSeleccionado) {
-            return;
-        }
+        if (! $this->grupoSeleccionado) return;
 
         $this->asignaciones = AsignacionTest::where('grupo_id', $this->grupoSeleccionado)
             ->where('profesor_id', Auth::id())
@@ -44,207 +47,176 @@ class AnalisisSelector extends Component
             ->get();
 
         if ($this->asignaciones->isEmpty()) {
-            $this->resultadoAnalisis = 'No se encontraron asignaciones de test para este grupo.';
-            return;
+            $this->resultadoAnalisis = 'No se encontraron asignaciones de test para este grupo.'; return;
         }
 
-        // Selecciona la primera con respuestas (o la más reciente)
-        $this->asignacionTestId = $this->asignaciones->first()->id;
-        foreach ($this->asignaciones as $a) {
-            if (Respuesta::where('asignacion_test_id', $a->id)->exists()) {
-                $this->asignacionTestId = $a->id;
-                break;
-            }
-        }
+        $this->asignacionTestId = $this->asignaciones
+            ->firstWhere(fn ($a) => Respuesta::where('asignacion_test_id', $a->id)->exists())
+            ?->id ?? $this->asignaciones->first()->id;
     }
 
+    /*════════════  BOTÓN “ANALIZAR”  ════════════*/
     public function procesarAnalisis(): void
     {
         if (! $this->grupoSeleccionado || ! $this->asignacionTestId) {
-            $this->resultadoAnalisis = 'Seleccione grupo y asignación.';
-            return;
+            $this->resultadoAnalisis = 'Seleccione grupo y asignación.'; return;
         }
-
         if (! Respuesta::where('asignacion_test_id', $this->asignacionTestId)->exists()) {
-            $this->resultadoAnalisis = 'La asignación seleccionada no tiene respuestas.';
-            return;
+            $this->resultadoAnalisis = 'La asignación seleccionada no tiene respuestas.'; return;
         }
 
-        // Regenera relaciones
+        /* Regenera tabla relaciones */
         Relacion::generarDesdeRespuestas($this->asignacionTestId);
 
-        // Genera un único análisis completo
-        $full = $this->datosSociograma();
+        /* Cálculos */
+        $full                 = $this->datosSociograma();
+        $full['reciprocidad'] = $this->matrizReciprocidad();
+        $this->analisis       = $full;
 
-        $this->analisis = [
-            'sociograma'   => $full['sociograma'],
-            'preferencias' => $full['preferencias'],
-            'rechazos'     => $full['rechazos'],
-            'aislamiento'  => $full['aislamiento'],
-        ];
-
-        // Dispatch a los gráficos existentes
+        /* Eventos Livewire → front */
+        $this->dispatch('actualizarSociograma',          $full['sociograma']);
         $this->dispatch('actualizarGraficoPreferencias', $full['preferencias']);
         $this->dispatch('actualizarGraficoRechazos',     $full['rechazos']);
-        $this->dispatch('actualizarSociograma',          $full['sociograma']);
-
-        // Matriz de reciprocidad
-        $matrizRec = $this->matrizReciprocidad();  // ['labels' => [...], 'data' => [...]]
-        $this->analisis['reciprocidad'] = $matrizRec;
-        $this->dispatch('actualizarMatrizReciprocidad', $matrizRec); // Evento para la matriz
+        $this->dispatch('actualizarMatrizReciprocidad',  $full['reciprocidad']);
 
         $this->resultadoAnalisis = 'Análisis generado correctamente.';
     }
 
+    /*════════════  GRAFO + BARRAS  ════════════*/
     private function datosSociograma(): array
     {
-        $estudiantes = Estudiante::whereIn('id', function ($q) {
-            $q->select('id_estudiante')
-              ->from('estudiantes_grupos')
+        /* 1. Alumnos del grupo */
+        $alumnos = Estudiante::whereIn('id', function ($q) {
+            $q->select('id_estudiante')->from('estudiantes_grupos')
               ->where('id_grupo', $this->grupoSeleccionado);
-        })->get();
+        })->orderBy('nombre')->get();
 
-        $allRelations = Relacion::where('asignacion_test_id', $this->asignacionTestId)
-                               ->get();
+        $idsGrupo = $alumnos->pluck('id');
 
-        $prefAll = [];
-        $rechAll = [];
+        /* 2. Relaciones (todas) */
+        $rel = Relacion::where('asignacion_test_id', $this->asignacionTestId)->get();
 
-        $nodes = $estudiantes->map(function ($e) use ($allRelations, &$prefAll, &$rechAll) {
-            $pref = $allRelations->where('alumno_b_id', $e->id)
-                                 ->where('tipo_relacion', 'preferido')->count();
-            $rech = $allRelations->where('alumno_b_id', $e->id)
-                                 ->where('tipo_relacion', 'rechazado')->count();
+        /* 3. Mapa dirigido para matches */
+        $dir = $rel->mapWithKeys(fn ($r) =>
+            [$r->alumno_a_id.'-'.$r->alumno_b_id => $r->tipo_relacion]);
 
-            $prefAll[$e->nombre] = $pref;
-            $rechAll[$e->nombre] = $rech;
-
+        /* 4. Aristas */
+        $links = $rel->map(function ($r) use ($dir) {
+            $recip   = $dir[$r->alumno_b_id.'-'.$r->alumno_a_id] ?? null;
             return [
-                'id'       => $e->id,
-                'label'    => $e->nombre,
-                'metricas' => [
-                    'preferencias_recibidas' => $pref,
-                    'rechazos_recibidos'     => $rech,
-                    'popularidad'            => ($pref + $rech)
-                                                 ? $pref / ($pref + $rech)
-                                                 : 0,
-                ],
+                'source'  => $r->alumno_a_id,
+                'target'  => $r->alumno_b_id,
+                'tipo'    => $r->tipo_relacion,
+                'isMatch' => $recip === 'preferido' && $r->tipo_relacion === 'preferido',
             ];
-        })->values();
+        });
 
-        $links = $allRelations->map(fn ($r) => [
-            'source'        => $r->alumno_a_id,
-            'target'        => $r->alumno_b_id,
-            'tipo_relacion' => $r->tipo_relacion === 'rechazado' ? 'rechazo' : 'preferido',
-            'intensidad'    => $r->intensidad ?? 1,
-        ])->values();
+        /* 5. Conteos recibidos (solo dentro del grupo) */
+        $prefRec = $rel->where('tipo_relacion','preferido')
+                       ->whereIn('alumno_b_id', $idsGrupo)
+                       ->countBy('alumno_b_id');
 
-        $this->jsonData = [
-            'nodes' => $nodes->toArray(),
-            'links' => $links->toArray(),
-        ];
+        $rechRec = $rel->where('tipo_relacion','rechazado')
+                       ->whereIn('alumno_b_id', $idsGrupo)
+                       ->countBy('alumno_b_id');
 
-        ksort($prefAll);
-        ksort($rechAll);
-        $prefGraf = array_filter($prefAll, fn ($v) => $v > 0);
-        $rechGraf = array_filter($rechAll, fn ($v) => $v > 0);
+        /* 6. Nodos */
+        $nodes = $alumnos->map(fn ($a) => [
+            'id'        => $a->id,
+            'label'     => $a->nombre,
+            'isIsolate' => ! ($prefRec[$a->id] ?? 0),
+            'metricas'  => [
+                'preferencias_recibidas' => $prefRec[$a->id] ?? 0,
+                'rechazos_recibidos'     => $rechRec[$a->id] ?? 0,
+            ],
+        ]);
+
+        /* 7. Datos para Chart.js  (ignora ids sin nombre) */
+        $prefGraf = $prefRec->filter()->sortKeys()->mapWithKeys(function ($v,$id) use ($alumnos) { // FIX
+            $nombre = optional($alumnos->firstWhere('id',$id))->nombre;
+            return $nombre ? [$nombre => $v] : [];
+        });
+        $rechGraf = $rechRec->filter()->sortKeys()->mapWithKeys(function ($v,$id) use ($alumnos) { // FIX
+            $nombre = optional($alumnos->firstWhere('id',$id))->nombre;
+            return $nombre ? [$nombre => $v] : [];
+        });
 
         return [
-            'sociograma'   => $this->jsonData,
+            'sociograma'   => [
+                'nodes' => $nodes->values()->toArray(),
+                'links' => $links->values()->toArray()
+            ],
             'preferencias' => [
-                'labels' => array_keys($prefGraf),
-                'data'   => array_values($prefGraf),
+                'labels' => $prefGraf->keys()->values(),
+                'data'   => $prefGraf->values()
             ],
             'rechazos'     => [
-                'labels' => array_keys($rechGraf),
-                'data'   => array_values($rechGraf),
+                'labels' => $rechGraf->keys()->values(),
+                'data'   => $rechGraf->values()
             ],
-            'aislamiento'  => array_keys(
-                array_filter($prefAll, fn ($v) => $v === 0)
-            ),
         ];
     }
 
+    /*════════════  MATRIZ DE RECIPROCIDAD  ════════════*/
     private function matrizReciprocidad(): array
     {
-        // 1. Lista de estudiantes del grupo
         $alumnos = Estudiante::whereIn('id', function ($q) {
-            $q->select('id_estudiante')
-              ->from('estudiantes_grupos')
+            $q->select('id_estudiante')->from('estudiantes_grupos')
               ->where('id_grupo', $this->grupoSeleccionado);
-        })
-        ->orderBy('nombre')
-        ->get();
-    
-        // Mapa para índices y etiquetas
-        $labels = $alumnos->pluck('nombre')->toArray();
-        $indexOf = $alumnos->pluck('id')->flip();  // ej. [12=>0, 17=>1, …]
-        $idsGrupo = $alumnos->pluck('id');
-    
-        // 2. Matriz inicializada en 0
-        $n = count($labels);
-        $M = array_fill(0, $n, array_fill(0, $n, 0));
-    
-        // 3. Relación solo entre alumnos del grupo (sin self-loops)
+        })->orderBy('nombre')->get();
+
+        $labels  = $alumnos->pluck('nombre')->values()->toArray();
+        $indexOf = $alumnos->pluck('id')->flip();
+        $ids     = $alumnos->pluck('id');
+        $n       = count($labels);
+
+        $M = array_fill(0,$n,array_fill(0,$n,0));
+
         $rel = Relacion::where('asignacion_test_id', $this->asignacionTestId)
             ->whereColumn('alumno_a_id', '<>', 'alumno_b_id')
-            ->whereIn('alumno_a_id', $idsGrupo)
-            ->whereIn('alumno_b_id', $idsGrupo)
+            ->whereIn('alumno_a_id', $ids)
+            ->whereIn('alumno_b_id', $ids)
             ->get();
-    
-        // 4. Recorremos y guardamos relaciones dirigidas
-        $dir = [];   // $dir["i-j"] = tipo_relacion
-        foreach ($rel as $r) {
-            if (!isset($indexOf[$r->alumno_a_id]) || !isset($indexOf[$r->alumno_b_id])) {
-                continue;
-            }
-            $i = $indexOf[$r->alumno_a_id];
-            $j = $indexOf[$r->alumno_b_id];
-            $dir["$i-$j"] = $r->tipo_relacion;
-        }
-    
-        // 5. Calculamos códigos de reciprocidad
-        for ($i = 0; $i < $n; $i++) {
-            for ($j = 0; $j < $n; $j++) {
-                if ($i === $j) {
-                    $M[$i][$j] = 0;
-                    continue;
-                }
-    
-                $AB = $dir["$i-$j"] ?? null;
-                $BA = $dir["$j-$i"] ?? null;
-    
-                if ($AB === 'preferido' && $BA === 'preferido')        $v = 4;
-                elseif ($AB === 'rechazado' && $BA === 'rechazado')    $v = 3;
-                elseif ($AB === 'preferido' && $BA === 'rechazado'
-                     || $AB === 'rechazado' && $BA === 'preferido')    $v = 5;
-                elseif ($AB === 'preferido' || $BA === 'preferido')    $v = 2;
-                elseif ($AB === 'rechazado' || $BA === 'rechazado')    $v = 1;
-                else                                                   $v = 0;
-    
-                $M[$i][$j] = $v;
-            }
-        }
-    
-        // 6. Convertimos a estructura compatible con el gráfico
-        $data = [];
-        for ($i = 0; $i < $n; $i++) {
-            for ($j = 0; $j < $n; $j++) {
-                $data[] = ['x' => $j, 'y' => $i, 'v' => $M[$i][$j]];
-            }
-        }
-    
-        return compact('labels', 'data');
-    }
-    
 
+        $dir=[];
+        foreach ($rel as $r) {
+            $i=$indexOf[$r->alumno_a_id]; $j=$indexOf[$r->alumno_b_id];
+            $dir["$i-$j"]=$r->tipo_relacion;
+        }
+
+        for($i=0;$i<$n;$i++){
+            for($j=0;$j<$n;$j++){
+                if($i===$j){$M[$i][$j]=0;continue;}
+                $AB=$dir["$i-$j"]??null; $BA=$dir["$j-$i"]??null;
+                $M[$i][$j] = match(true){
+                    $AB==='preferido' && $BA==='preferido'                 => 4,
+                    $AB==='rechazado' && $BA==='rechazado'                 => 3,
+                    $AB==='preferido' && $BA==='rechazado',
+                    $AB==='rechazado' && $BA==='preferido'                 => 5,
+                    $AB==='preferido'||$BA==='preferido'                   => 2,
+                    $AB==='rechazado'||$BA==='rechazado'                   => 1,
+                    default                                                 => 0
+                };
+            }
+        }
+
+        $data=[];
+        for($i=0;$i<$n;$i++){
+            for($j=0;$j<$n;$j++){
+                $data[]=['x'=>$j,'y'=>$i,'v'=>$M[$i][$j]];
+            }
+        }
+        return compact('labels','data');
+    }
+
+    /*════════════  RENDER  ════════════*/
     public function render()
     {
         return view('livewire.analisis-selector', [
-            'grupos'              => $this->grupos,
-            'asignaciones'        => $this->asignaciones,
-            'resultadoAnalisis' => $this->resultadoAnalisis,
-            'analisis'            => $this->analisis,
+            'grupos'           => $this->grupos,
+            'asignaciones'     => $this->asignaciones,
+            'resultadoAnalisis'=> $this->resultadoAnalisis,
+            'analisis'         => $this->analisis,
         ]);
     }
 }
