@@ -11,15 +11,15 @@
         <!-- Nav Item - Notifications -->
         <li class="nav-item dropdown no-arrow mx-1">
             <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <i class="fas fa-bell fa-fw"></i>
-                <span class="badge badge-danger badge-counter">3+</span>
+                <!-- <i class="fas fa-bell fa-fw"></i> -->
+                <!-- <span class="badge badge-danger badge-counter">3+</span> -->
             </a>
             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown">
                 <h6 class="dropdown-header">
                     Notifications Center
                 </h6>
                 <!-- Example notifications -->
-                <a class="dropdown-item d-flex align-items-center" href="#">
+                <!-- <a class="dropdown-item d-flex align-items-center" href="#">
                     <div class="mr-3">
                         <div class="icon-circle bg-primary">
                             <i class="fas fa-file-alt text-white"></i>
@@ -29,7 +29,7 @@
                         <div class="small text-gray-500">December 12, 2024</div>
                         <span class="font-weight-bold">A new monthly report is ready to download!</span>
                     </div>
-                </a>
+                </a> -->
             </div>
         </li>
 
@@ -40,7 +40,7 @@
                 <img class="img-profile rounded-circle" src="{{ asset('assets/img/undraw_profile.svg') }}" alt="Profile Image">
             </a>
             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                <a class="dropdown-item" href="#">
+                <!-- <a class="dropdown-item" href="#">
                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                     Profile
                 </a>
@@ -51,7 +51,7 @@
                 <a class="dropdown-item" href="#">
                     <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
                     Activity Log
-                </a>
+                </a> -->
                 <div class="dropdown-divider"></div>
                 <!-- Formulario de logout -->
                 <form action="{{ route('logout') }}" method="POST" class="d-inline">
