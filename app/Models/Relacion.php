@@ -13,6 +13,9 @@ class Relacion extends Model
 
     protected $table = 'relaciones';
 
+    /** -----------------------------------------------------------------
+     *  Campos que se rellenan en masa
+     *  ----------------------------------------------------------------*/
     protected $fillable = [
         'asignacion_test_id',
         'alumno_a_id',
@@ -20,11 +23,12 @@ class Relacion extends Model
         'tipo_relacion',
         'intensidad',
         'estado_relacion',
+        'pregunta_id',          // ← nuevo
     ];
 
-    /* ───────────────────────────────
-     |  Relaciones Eloquent auxiliares
-     ─────────────────────────────── */
+    /* ================================================================
+     *  Relaciones Eloquent auxiliares
+     *  ==============================================================*/
     public function alumnoA()
     {
         return $this->belongsTo(Estudiante::class, 'alumno_a_id');
@@ -35,48 +39,46 @@ class Relacion extends Model
         return $this->belongsTo(Estudiante::class, 'alumno_b_id');
     }
 
-    /* ───────────────────────────────
-     |  Generar relaciones desde respuestas
-     ─────────────────────────────── */
+    /* ================================================================
+     *  Generar relaciones desde respuestas
+     *  ==============================================================*/
     public static function generarDesdeRespuestas(int $asignacionId): void
     {
-        /* 1 ▸ Borrar cualquier análisis previo de esta asignación */
+        // 1 ▸ limpia análisis previo de esa asignación
         static::where('asignacion_test_id', $asignacionId)->delete();
 
-        /* 2 ▸ Cargar TODAS las respuestas con su pregunta para
-               saber si era de preferencia o de rechazo            */
-        $resps = Respuesta::with('pregunta')                     // ← imprescindible
+        // 2 ▸ carga TODAS las respuestas con su pregunta
+        $resps = Respuesta::with('pregunta')
             ->where('asignacion_test_id', $asignacionId)
-            ->whereNotNull('respuesta')                          // id del compañero
-            ->whereColumn('alumno_id', '<>', 'respuesta')        // sin auto‑selección
+            ->whereNotNull('respuesta')                   // id del compañero
+            ->whereColumn('alumno_id', '<>', 'respuesta') // sin auto‑selección
             ->get();
 
-        /* 3 ▸ Mantendremos solo la mejor relación A‑B             */
+        // 3 ▸ mantendremos sólo la “mejor” relación A‑B
         $best = [];
 
         foreach ($resps as $r) {
-            // Si por algún motivo la relación con pregunta falla, la saltamos
             if (!$r->relationLoaded('pregunta') || !$r->pregunta) {
-                continue;
+                continue; // la pregunta es imprescindible
             }
 
-            /* ─ Tipos de pregunta y relación ─ */
-            $tipoPregunta = $r->pregunta->tipo_pregunta;         // 'preferencia' | 'rechazo'
+            /* Tipo de pregunta y su relación */
+            $tipoPregunta = $r->pregunta->tipo_pregunta;          // preferencia | rechazo
             $tipoRelacion = $tipoPregunta === 'rechazo'
                 ? 'rechazado'
                 : 'preferido';
 
-            /* ─ Datos base ─ */
-            $emisor     = (int) $r->alumno_id;
-            $receptor   = (int) $r->respuesta;
-            $intensidad = $r->orden_preferencia ?? 3;            // 1‒3 o default
+            /* Datos base */
+            $emisor       = (int) $r->alumno_id;
+            $receptor     = (int) $r->respuesta;
+            $intensidad   = $r->orden_preferencia ?? 3;           // 1–3 o default
+            $preguntaId   = (int) $r->pregunta_id;
 
-            /* ─ Priorización ─
-               Preferidos antes que rechazados (prio 1 < 2)
-               y dentro del mismo tipo la menor intensidad gana */
+            /* Priorización:
+               preferido (prio 1) > rechazado (prio 2);
+               menor intensidad gana dentro del mismo tipo */
             $prio = $tipoRelacion === 'preferido' ? 1 : 2;
-
-            $key = $emisor . '-' . $receptor;
+            $key  = $emisor.'-'.$receptor;
 
             if (
                 !isset($best[$key]) ||
@@ -88,12 +90,13 @@ class Relacion extends Model
                     'alumno_b_id'   => $receptor,
                     'tipo_relacion' => $tipoRelacion,
                     'intensidad'    => $intensidad,
+                    'pregunta_id'   => $preguntaId,   // ← aquí se guarda
                     'prio'          => $prio,
                 ];
             }
         }
 
-        /* 4 ▸ Inserción bulk de las relaciones consolidadas       */
+        // 4 ▸ inserción en bloque
         if (!empty($best)) {
             static::insert(
                 collect($best)->map(fn ($row) => [
@@ -103,6 +106,7 @@ class Relacion extends Model
                     'tipo_relacion'      => $row['tipo_relacion'],
                     'intensidad'         => $row['intensidad'],
                     'estado_relacion'    => 'activa',
+                    'pregunta_id'        => $row['pregunta_id'],  // ← clave + valor
                     'created_at'         => now(),
                     'updated_at'         => now(),
                 ])->values()->all()
