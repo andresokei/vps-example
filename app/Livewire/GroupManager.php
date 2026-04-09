@@ -63,7 +63,9 @@ class GroupManager extends Component
     public function loadGroupStudents()
     {
         if ($this->selectedGroup) {
-            $group = Grupo::find($this->selectedGroup);
+            $group = Grupo::where('id', $this->selectedGroup)
+                ->where('id_profesor', Auth::id())
+                ->first();
             $this->groupStudents = $group ? $group->estudiantes : [];
         } else {
             $this->groupStudents = [];
@@ -140,11 +142,22 @@ class GroupManager extends Component
     private function addStudentToGroup($studentName)
     {
         DB::transaction(function () use ($studentName) {
-            $student = Estudiante::firstOrCreate(['nombre' => $studentName]);
-
             $group = Grupo::where('id', $this->selectedGroup)
                           ->where('id_profesor', Auth::id())
                           ->firstOrFail();
+
+            $studentName = trim($studentName);
+            if ($studentName === '') {
+                return;
+            }
+
+            $student = $group->estudiantes()
+                ->where('nombre', $studentName)
+                ->first();
+
+            if (! $student) {
+                $student = Estudiante::create(['nombre' => $studentName]);
+            }
 
             if (! $group->estudiantes()->where('id_estudiante', $student->id)->exists()) {
                 $group->estudiantes()->attach($student->id);

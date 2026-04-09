@@ -13,10 +13,8 @@
 
                 {{-- Puedes añadir mensajes de éxito/error aquí si tu controlador los maneja --}}
 
-                <form id="testForm" action="{{ route('test.submit', ['id' => $test->id]) }}" method="POST">
+                <form id="testForm" action="{{ route('test.submit', $asignacion) }}" method="POST">
                     @csrf
-
-                    <input type="hidden" name="asignacion_id" value="{{ $asignacion_id }}">
 
                     <div class="form-group mb-5">
                         <label for="estudiante_quien_responde" class="font-weight-bold mb-2" style="color: #333;">Selecciona el Estudiante que responde:</label>

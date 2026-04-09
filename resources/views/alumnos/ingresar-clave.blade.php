@@ -105,7 +105,11 @@
                  <h4>Ingresar Clave de Acceso</h4>
              </div>
              <div class="card-body"> {{-- Clases de cuerpo ya definidas en CSS --}}
-                @if (session('error'))
+                @if ($errors->has('clave_acceso'))
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> {{ $errors->first('clave_acceso') }}
+                    </div>
+                @elseif (session('error'))
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-triangle"></i> {{ session('error') }}
                     </div>

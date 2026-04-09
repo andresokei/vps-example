@@ -2,130 +2,213 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\AsignacionTest;
-use App\Models\Test;
+use App\Models\Respuesta;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class TestController extends Controller
 {
-    // Método para mostrar el formulario de ingreso de clave
+    private const ACCESS_SESSION_KEY = 'test_access.assignment_id';
+
     public function mostrarTestForm()
     {
-        // Retorna la vista con el formulario para ingresar la clave
         return view('alumnos.ingresar-clave');
     }
 
-    // Método para verificar la clave de acceso
     public function verificarClave(Request $request)
     {
-        $request->validate(['clave_acceso' => 'required|string']);
-        
-        \Log::info('Verificando clave: ' . $request->clave_acceso);
-        
-        // Buscar la asignación que coincida con la clave
-        $asignacion = AsignacionTest::where('clave_acceso', $request->clave_acceso)
+        $validated = $request->validate([
+            'clave_acceso' => ['required', 'string', 'max:50'],
+        ]);
+
+        $asignacion = AsignacionTest::with(['grupo.estudiantes', 'test.preguntas'])
+            ->where('clave_acceso', $validated['clave_acceso'])
             ->where('estado', 'pendiente')
             ->first();
-        
-        if (!$asignacion) {
-            \Log::error('Clave no encontrada o test no disponible');
-            return back()->withErrors(['clave_acceso' => 'Clave de acceso inválida o test no disponible.']);
+
+        if (
+            ! $asignacion ||
+            ! $asignacion->test ||
+            $asignacion->grupo?->estudiantes->isEmpty()
+        ) {
+            return back()->withErrors([
+                'clave_acceso' => 'Clave de acceso invalida o test no disponible.',
+            ]);
         }
-        
-        \Log::info('Asignación encontrada. ID: ' . $asignacion->id . ', Grupo ID: ' . $asignacion->grupo_id);
-        
-        // Obtener estudiantes del grupo
-        $estudiantes = DB::table('estudiantes_grupos as eg')
-            ->join('estudiantes as e', 'eg.id_estudiante', '=', 'e.id')
-            ->where('eg.id_grupo', $asignacion->grupo_id)
-            ->select('e.*')
-            ->get();
-        
-        \Log::info('Estudiantes encontrados: ' . count($estudiantes));
-        
+
+        $request->session()->put(self::ACCESS_SESSION_KEY, $asignacion->id);
+
+        return redirect()->route('test.realizar', $asignacion);
+    }
+
+    public function mostrarTest(Request $request, AsignacionTest $asignacion)
+    {
+        $this->ensureAssignmentAccess($request, $asignacion);
+
+        if ($asignacion->estado !== 'pendiente') {
+            $this->forgetAssignmentAccess($request);
+
+            return redirect()->route('test.ingresar')->withErrors([
+                'clave_acceso' => 'Clave de acceso invalida o test no disponible.',
+            ]);
+        }
+
+        $asignacion->loadMissing(['test.preguntas', 'grupo.estudiantes']);
+
+        if (! $asignacion->test || $asignacion->test->preguntas->isEmpty()) {
+            $this->forgetAssignmentAccess($request);
+
+            return redirect()->route('test.ingresar')->withErrors([
+                'clave_acceso' => 'Este test no tiene preguntas disponibles.',
+            ]);
+        }
+
+        $estudiantes = $asignacion->grupo->estudiantes()
+            ->orderBy('nombre')
+            ->get(['estudiantes.id', 'nombre']);
+
         if ($estudiantes->isEmpty()) {
-            \Log::error('No hay estudiantes en el grupo ' . $asignacion->grupo_id);
-            return back()->withErrors(['error' => 'Este grupo no tiene estudiantes asignados.']);
-        }
-        
-        // Guardar en sesión
-        session(['estudiantes' => $estudiantes]);
-        
-        // Redireccionar al test
-        return redirect()->route('test.realizar', [
-            'id' => $asignacion->test_id,
-            'asignacion_id' => $asignacion->id,
-        ])->with(['estudiantes' => $estudiantes]);
-    }
+            $this->forgetAssignmentAccess($request);
 
-    // Método para mostrar el test correspondiente
-    // Método para mostrar el test correspondiente
-    public function mostrarTest($id, $asignacion_id)
-    {
-        $test = Test::with('preguntas')->findOrFail($id);
-
-        if ($test->preguntas->isEmpty()) {
-            return back()->with('warning', 'Este test no tiene preguntas asociadas.');
+            return redirect()->route('test.ingresar')->withErrors([
+                'clave_acceso' => 'Este grupo no tiene estudiantes asignados.',
+            ]);
         }
 
-        // Recuperar los estudiantes de la sesión
-        $estudiantes = session('estudiantes', []);
-
-        // Pasar también el asignacion_id a la vista
-        return view('alumnos.realizar-test', compact('test', 'estudiantes', 'asignacion_id'));
-    }
-
-    public function submitTest(Request $request, $id)
-    {
-        // 1) Datos básicos
-        $asignacion_id = $request->input('asignacion_id');
-        $asignacion    = AsignacionTest::findOrFail($asignacion_id);
-    
-        // 2) Validación
-        $request->validate([
-            'estudiante_id' => 'required',
-            'respuesta_*'   => 'required',
+        return view('alumnos.realizar-test', [
+            'test' => $asignacion->test,
+            'estudiantes' => $estudiantes,
+            'asignacion' => $asignacion,
         ]);
-    
-        // 3) Guardar cada respuesta
+    }
+
+    public function submitTest(Request $request, AsignacionTest $asignacion)
+    {
+        $this->ensureAssignmentAccess($request, $asignacion);
+
+        $asignacion->loadMissing(['test.preguntas', 'grupo.estudiantes']);
+
+        if ($asignacion->estado !== 'pendiente') {
+            throw ValidationException::withMessages([
+                'clave_acceso' => 'Clave de acceso invalida o test no disponible.',
+            ]);
+        }
+
+        $studentIds = $asignacion->grupo->estudiantes
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+
+        if (empty($studentIds)) {
+            throw ValidationException::withMessages([
+                'estudiante_id' => 'No hay estudiantes disponibles para este test.',
+            ]);
+        }
+
+        $rules = [
+            'estudiante_id' => ['required', 'integer', Rule::in($studentIds)],
+        ];
+
         foreach ($asignacion->test->preguntas as $pregunta) {
             for ($i = 1; $i <= 3; $i++) {
-                $respuesta     = $request->input('respuesta_'.$pregunta->id.'_'.$i);
-                $tipoRelacion  = $request->input('tipo_relacion_'.$pregunta->id);
-    
-                DB::table('respuestas')->insert([
-                    'alumno_id'           => $request->estudiante_id,
-                    'asignacion_test_id'  => $asignacion->id,
-                    'pregunta_id'         => $pregunta->id,
-                    'respuesta'           => $respuesta,
-                    'orden_preferencia'   => $i,
-                    'tipo_relacion'       => $tipoRelacion,
-                    'created_at'          => now(),
-                    'updated_at'          => now(),
-                ]);
-    
-                DB::table('relaciones')->insert([
-                    'asignacion_test_id'  => $asignacion->id,
-                    'alumno_a_id'         => $request->estudiante_id,
-                    'alumno_b_id'         => $respuesta,
-                    'tipo_relacion'       => $tipoRelacion === 'preferencia' ? 'preferido' : 'rechazado',
-                    'intensidad'          => $i,
-                    'estado_relacion'     => 'activa',
-                    'created_at'          => now(),
-                    'updated_at'          => now(),
-                ]);
+                $rules['respuesta_'.$pregunta->id.'_'.$i] = [
+                    'required',
+                    'integer',
+                    Rule::in($studentIds),
+                ];
             }
         }
-    
-        /* ─────── LÍNEA CLAVE ─────── */
-        $asignacion->recalcularEstado();   // ← actualiza la columna `estado`
-        /* ──────────────────────────── */
-    
-        return redirect()
-               ->route('test.success')
-               ->with('status', 'Respuestas y relaciones guardadas exitosamente');
-    }
-    
 
+        $validated = $request->validate($rules);
+        $studentId = (int) $validated['estudiante_id'];
+
+        if (
+            Respuesta::where('asignacion_test_id', $asignacion->id)
+                ->where('alumno_id', $studentId)
+                ->exists()
+        ) {
+            throw ValidationException::withMessages([
+                'estudiante_id' => 'Este estudiante ya ha respondido este test.',
+            ]);
+        }
+
+        $errors = [];
+        foreach ($asignacion->test->preguntas as $pregunta) {
+            $choices = [];
+
+            for ($i = 1; $i <= 3; $i++) {
+                $choices[] = (int) $validated['respuesta_'.$pregunta->id.'_'.$i];
+            }
+
+            if (in_array($studentId, $choices, true)) {
+                $errors['respuesta_'.$pregunta->id.'_1'] = 'No puedes seleccionarte a ti mismo.';
+            }
+
+            if (count(array_unique($choices)) !== count($choices)) {
+                $errors['respuesta_'.$pregunta->id.'_1'] = 'Cada respuesta debe apuntar a un estudiante distinto.';
+            }
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+
+        DB::transaction(function () use ($asignacion, $studentId, $validated) {
+            foreach ($asignacion->test->preguntas as $pregunta) {
+                $tipoPregunta = $pregunta->tipo_pregunta;
+                $tipoRelacion = $tipoPregunta === 'rechazo' ? 'rechazado' : 'preferido';
+
+                for ($i = 1; $i <= 3; $i++) {
+                    $respuesta = (int) $validated['respuesta_'.$pregunta->id.'_'.$i];
+
+                    DB::table('respuestas')->insert([
+                        'alumno_id' => $studentId,
+                        'asignacion_test_id' => $asignacion->id,
+                        'pregunta_id' => $pregunta->id,
+                        'respuesta' => (string) $respuesta,
+                        'orden_preferencia' => $i,
+                        'tipo_relacion' => $tipoPregunta,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    DB::table('relaciones')->insert([
+                        'asignacion_test_id' => $asignacion->id,
+                        'pregunta_id' => $pregunta->id,
+                        'alumno_a_id' => $studentId,
+                        'alumno_b_id' => $respuesta,
+                        'tipo_relacion' => $tipoRelacion,
+                        'intensidad' => $i,
+                        'estado_relacion' => 'activa',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        });
+
+        $asignacion->refresh();
+        $asignacion->recalcularEstado();
+        $this->forgetAssignmentAccess($request);
+
+        return redirect()
+            ->route('test.success')
+            ->with('status', 'Respuestas y relaciones guardadas exitosamente');
+    }
+
+    private function ensureAssignmentAccess(Request $request, AsignacionTest $asignacion): void
+    {
+        if ((int) $request->session()->get(self::ACCESS_SESSION_KEY) !== (int) $asignacion->id) {
+            abort(403);
+        }
+    }
+
+    private function forgetAssignmentAccess(Request $request): void
+    {
+        $request->session()->forget(self::ACCESS_SESSION_KEY);
+    }
 }

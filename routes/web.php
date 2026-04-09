@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\GrupoController;
-use App\Models\Grupo;
 use App\Http\Controllers\AsignacionController;
 use App\Http\Controllers\TestController; // Mueve esta línea aquí para mantener el orden
 use App\Http\Controllers\AnalisisController;
@@ -45,23 +44,18 @@ Route::middleware(['auth'])->group(function () {
 
 // --------------------FIN RUTAS GRUPO-------------------------------------------------------
 
-// Ruta de prueba para ver los grupos (esto es opcional)
-Route::get('/test-grupos', function() {
-    $groups = Grupo::all();
-    return view('test-grupos', ['groups' => $groups]);
-});
-
 // --------------------RUTAS DE AUTENTICACIÓN--------------------------------------------------
 // Incluye las rutas de autenticación generadas por Breeze (login, register, etc.)
 require __DIR__.'/auth.php';
 
 // --------------------RUTAS PARA TESTS-------------------------------------------------------
 Route::get('/test/ingresar', [TestController::class, 'mostrarTestForm'])->name('test.ingresar');
-Route::post('/test/verificar', [TestController::class, 'verificarClave'])->name('test.verificar');
-Route::get('/test/realizar/{id}/{asignacion_id}', [TestController::class, 'mostrarTest'])->name('test.realizar');
-Route::post('/test/submit/{id}', [TestController::class, 'submitTest'])->name('test.submit');
+Route::post('/test/verificar', [TestController::class, 'verificarClave'])
+    ->middleware('throttle:10,1')
+    ->name('test.verificar');
+Route::get('/test/realizar/{asignacion}', [TestController::class, 'mostrarTest'])->name('test.realizar');
+Route::post('/test/submit/{asignacion}', [TestController::class, 'submitTest'])->name('test.submit');
 
 Route::get('/test/success', function () {
     return view('test.success'); // Asegúrate de que esta vista exista
 })->name('test.success');
-
