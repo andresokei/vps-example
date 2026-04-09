@@ -37,7 +37,7 @@ function renderBar (canvasId, labels, data, esRechazos, intento = 0) {
     if (!canvas) {
         if (intento < 10)
             return setTimeout(() => renderBar(canvasId, labels, data, esRechazos, intento + 1), 100);
-        return console.warn(`⚠️ No se encontró ${canvasId}`);
+        return console.warn(`⚠️ No se encontro ${canvasId}`);
     }
 
     Chart.getChart(canvas)?.destroy();
@@ -139,13 +139,13 @@ function buildToolbar () {
     const toggleMatch = wrapper.querySelector('#soc-onlyMatch');
     const toggleIsol  = wrapper.querySelector('#soc-markIsol');
     const resetButton = wrapper.querySelector('#soc-reset');
-    const selectAllPreguntasCheckbox = wrapper.querySelector('#select-all-preguntas'); // Checkbox Seleccionar todas
+    const selectAllPreguntasButton = wrapper.querySelector('#select-all-preguntas'); // Boton "Seleccionar todas"
 
 
     // Verificamos que todos los elementos necesarios existan
     // (Adaptamos la verificación para la nueva estructura)
     if (!selAlumnos || !preguntasOptionsContainer || !toggleMatch || !toggleIsol || !resetButton) {
-        console.error('Error: No se encontraron todos los elementos de filtro en el archivo Blade livewire.partials.sociograma.blade.php. Asegúrate de que los IDs sean correctos.');
+        console.error('Error: No se encontraron todos los elementos de filtro en el archivo Blade livewire.partials.sociograma.blade.php. Asegurate de que los IDs sean correctos.');
         return;
     }
 
@@ -168,25 +168,23 @@ function buildToolbar () {
 
         selAlumnos.addEventListener('change', applyFilters); // Listener selector alumnos
 
-        // Añadir listeners a CADA checkbox de pregunta
+                // Anadir listeners a cada checkbox de pregunta
         preguntasOptionsContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-             // Evitamos añadir el listener al checkbox "Seleccionar todas" en este bucle
-             if (checkbox.id !== 'select-all-preguntas') {
-                checkbox.addEventListener('change', applyFilters);
-             }
+            checkbox.addEventListener('change', applyFilters);
         });
 
-        // Listener para el checkbox "Seleccionar todas"
-        if (selectAllPreguntasCheckbox) {
-            selectAllPreguntasCheckbox.addEventListener('change', function() {
-                // Cuando se marca "Seleccionar todas", marcamos/desmarcamos todos los demás
-                const isChecked = this.checked;
-                 preguntasOptionsContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                     if (checkbox.id !== 'select-all-preguntas') {
-                        checkbox.checked = isChecked;
-                     }
-                 });
-                 applyFilters(); // Aplicar filtros después de (des)seleccionar todo
+	        // Listener para el boton "Seleccionar todas"
+        if (selectAllPreguntasButton) {
+            selectAllPreguntasButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                const questionCheckboxes = [...preguntasOptionsContainer.querySelectorAll('input[type="checkbox"]')];
+                const allChecked = questionCheckboxes.length > 0 && questionCheckboxes.every(cb => cb.checked);
+
+                questionCheckboxes.forEach((checkbox) => {
+                    checkbox.checked = !allChecked;
+                });
+
+                applyFilters(); // Aplicar filtros despues de alternar
             });
         }
 
@@ -194,7 +192,7 @@ function buildToolbar () {
         toggleMatch.addEventListener('change', applyFilters);
         toggleIsol .addEventListener('change', applyFilters);
 
-        // Listener para el botón de Limpiar
+        // Listener para el boton de limpiar
         resetButton.addEventListener('click', () => {
             // Deseleccionar todas las opciones del selector de alumnos
             [...selAlumnos.options].forEach(option => option.selected = false);
@@ -327,23 +325,23 @@ function drawSociograma (nodesData, linksData) {
 
 
     // Creamos los nodos para vis-network a partir de los nodos filtrados (nodesData)
-    // Aquí definimos cómo se verá cada nodo en la visualización
+    // Aquí definimos cómo se verá cada nodo en la visualizacion
     const nodes = new vis.DataSet(nodesData.map(n => ({
         id   : n.id,
-        label: '', // Mantenemos la etiqueta vacía en el nodo; el nombre completo va en el tooltip (title)
+        label: n.label,
         // Determinamos el GRUPO del nodo (que controla el color en la configuración de vis.js)
         // Si la opción "Marcar no-elegidos" está activada (markIsolados es true)
         // Y el nodo ORIGINALMENTE no recibió ninguna conexión (sus métricas recibidas son 0)
         // Entonces el nodo pertenece al grupo 'isolated' (rojo).
         // De lo contrario, pertenece al grupo 'default' (azul).
         group: (markIsolados && (n.metricas?.preferencias_recibidas ?? 0) + (n.metricas?.rechazos_recibidos ?? 0) === 0) ? 'isolated' : 'default',
-        value: 1 + (n.metricas?.preferencias_recibidas ?? 0) + (n.metricas?.rechazos_recibidos ?? 0), // El tamaño del nodo puede basarse en las métricas
+        value: 10 + (n.metricas?.preferencias_recibidas ?? 0) + (n.metricas?.rechazos_recibidos ?? 0),
         title: n.label, // El nombre completo del alumno para mostrar en el tooltip al pasar el ratón
         metricas: n.metricas // Pasamos las métricas originales para mostrarlas en el tooltip
     })));
 
     // Creamos los enlaces (edges) para vis-network a partir de los enlaces filtrados (linksData)
-    // Aquí definimos cómo se verá cada enlace en la visualización
+    // Aquí definimos cómo se verá cada enlace en la visualizacion
     const edges = new vis.DataSet(linksData.map(l => ({
         from : l.source, // El nodo de origen del enlace
         to   : l.target, // El nodo de destino del enlace
@@ -352,40 +350,55 @@ function drawSociograma (nodesData, linksData) {
                                : l.tipo === 'preferido' ? '#28a745' : '#dc3545', // Si es solo preferencia, verde; si es rechazo, rojo
             opacity: l.isMatch ? 1 : .6 // Los matches son completamente opacos, otros enlaces un poco transparentes
         },
-        width : l.isMatch ? 3 : 1.5, // Los matches tienen líneas más gruesas
-        dashes: l.isMatch ? false : [6,4], // Los no-matches tienen líneas discontinuas
-        arrows: { to:{ enabled:true, scaleFactor:.4 } } // Mostramos una flecha en el nodo destino
+        width : l.isMatch ? 4 : 2,
+        dashes: l.isMatch ? false : [6,4],
+        arrows: { to:{ enabled:true, scaleFactor:.55 } },
+        tipo: l.tipo,
+        isMatch: !!l.isMatch
     })));
 
     // Opciones de configuración de la red de vis.js
     const options = {
         nodes : {
-            shape:'circle', // Forma de los nodos
-            size:20, // Tamaño base de los nodos (puede escalarse por 'value')
-            borderWidth:0, // Ancho del borde del nodo
-            font:{ size:0 }, // Tamaño de la fuente dentro del nodo (0 para ocultar texto)
-            shadow:{ enabled:true, color:'rgba(0,0,0,.1)', size:3 } // Sombra para los nodos
+            shape:'dot',
+            size:20,
+            borderWidth:2,
+            borderWidthSelected:3,
+            font:{
+                size: 13,
+                color: '#1f2937',
+                face: 'Poppins',
+                strokeWidth: 4,
+                strokeColor: '#ffffff'
+            },
+            scaling: {
+                min: 14,
+                max: 34,
+                label: { enabled: true, min: 10, max: 16 }
+            },
+            shadow:{ enabled:true, color:'rgba(0,0,0,.12)', size:7 }
         },
         edges : {
-            smooth:{ enabled:true, type:'continuous', roundness:.45 }, // Suavizado de las líneas
-            shadow:{ enabled:true, color:'rgba(0,0,0,.1)', size:2 } // Sombra para las líneas
+            smooth:{ enabled:true, type:'dynamic', roundness:.3 },
+            selectionWidth: 3,
+            shadow:{ enabled:true, color:'rgba(0,0,0,.08)', size:2 }
         },
         groups:{
-            default :{ color:{ background:'#2196F3' }}, // Color de fondo para el grupo normal (azul)
-            isolated:{ color:{ background:'#F44336' }} // Color de fondo para el grupo aislado (rojo)
+            default :{ color:{ background:'#2196F3', border:'#1565c0', highlight:{ background:'#1976d2', border:'#0d47a1' } }},
+            isolated:{ color:{ background:'#F44336', border:'#c62828', highlight:{ background:'#e53935', border:'#b71c1c' } }}
         },
         physics:{
             enabled:true, // Física activada inicialmente para posicionar los nodos
-            barnesHut:{ // Algoritmo de física BarnesHut (bueno para redes de tamaño medio)
-                gravitationalConstant:-2800, // Atracción/repulsión entre nodos
-                centralGravity:.3, // Gravedad hacia el centro
-                springLength:140, // Longitud ideal de los muelles (enlaces)
-                springConstant:.03, // Rigidez de los muelles
-                damping:.09 // Amortiguación del movimiento
+            barnesHut:{
+                gravitationalConstant:-2500,
+                centralGravity:.26,
+                springLength:170,
+                springConstant:.028,
+                damping:.1
             },
-            stabilization:{ iterations:1000, updateInterval:50 } // Número de iteraciones para estabilizar la red al inicio
+            stabilization:{ iterations:1200, updateInterval:50, fit: true }
         },
-        interaction:{ hover:true, dragNodes:true, zoomView:true, tooltipDelay:80 }, // Habilitar interacciones
+        interaction:{ hover:true, dragNodes:true, zoomView:true, tooltipDelay:80, hoverConnectedEdges: true, multiselect: true },
         layout:{ improvedLayout:true } // Usar un layout mejorado
     };
 
@@ -434,14 +447,70 @@ function drawSociograma (nodesData, linksData) {
             const e = edges.get(edge), // Obtiene los datos del enlace de vis.js DataSet
                   a = nodes.get(e.from).title, // Obtiene el título del nodo de origen
                   b = nodes.get(e.to).title, // Obtiene el título del nodo de destino
-                  txt = e.color.color === '#28a745' ? 'prefiere a' : 'rechaza a'; // Determina el texto según el color del enlace
-            show(event.clientX,event.clientY, `${a} ${txt} ${b}`); // Muestra el tooltip con la relación
+                  txt = e.isMatch ? 'tiene match mutuo con' : (e.tipo === 'preferido' ? 'prefiere a' : 'rechaza a');
+            show(event.clientX,event.clientY, `${a} ${txt} ${b}`);
         }, 80); // Retardo de 80ms
     });
     // Evento al dejar de pasar el ratón sobre un enlace
     sociogramaNetwork.on('blurEdge', hide);
     // Evento antes de destruir la red (para ocultar el tooltip si está visible)
     sociogramaNetwork.on('beforeDestroy', hide);
+
+    sociogramaNetwork.on('selectNode', ({ nodes: selected }) => {
+        const selectedId = selected?.[0];
+        if (!selectedId) return;
+
+        const connectedNodeIds = sociogramaNetwork.getConnectedNodes(selectedId);
+        const related = new Set([selectedId, ...connectedNodeIds]);
+
+        nodes.forEach((n) => {
+            const isRelated = related.has(n.id);
+            nodes.update({
+                id: n.id,
+                opacity: isRelated ? 1 : 0.28,
+                font: {
+                    ...n.font,
+                    color: isRelated ? '#111827' : '#9ca3af'
+                }
+            });
+        });
+
+        edges.forEach((e) => {
+            const isRelated = related.has(e.from) && related.has(e.to);
+            edges.update({
+                id: e.id,
+                hidden: false,
+                color: {
+                    ...e.color,
+                    opacity: isRelated ? 1 : 0.08
+                }
+            });
+        });
+    });
+
+    sociogramaNetwork.on('deselectNode', () => {
+        nodes.forEach((n) => {
+            nodes.update({
+                id: n.id,
+                opacity: 1,
+                font: {
+                    ...n.font,
+                    color: '#1f2937'
+                }
+            });
+        });
+
+        edges.forEach((e) => {
+            edges.update({
+                id: e.id,
+                color: {
+                    ...e.color,
+                    opacity: e.isMatch ? 1 : 0.6
+                }
+            });
+        });
+    });
+
 }
 
 /* ======================================================================
@@ -489,7 +558,7 @@ function renderizarSociograma (payload) {
         // Mostramos un mensaje de error en el contenedor del sociograma
         const sociogramaContainer = document.getElementById('sociograma');
         if(sociogramaContainer){
-            sociogramaContainer.innerHTML = '<div class="alert alert-danger">Error al cargar la visualización.</div>';
+            sociogramaContainer.innerHTML = '<div class="alert alert-danger">Error al cargar la visualizacion.</div>';
         }
     });
 }

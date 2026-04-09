@@ -82,19 +82,14 @@
 
     {{-- GRAFO --}}
     <div class="sociograma-visualization">
+      <div class="sociograma-legend" aria-label="Leyenda del sociograma">
+        <span class="legend-item"><i class="legend-dot legend-dot--default"></i> Alumno</span>
+        <span class="legend-item"><i class="legend-dot legend-dot--isolated"></i> No elegido</span>
+        <span class="legend-item"><i class="legend-line legend-line--pref"></i> Preferencia</span>
+        <span class="legend-item"><i class="legend-line legend-line--rech"></i> Rechazo</span>
+        <span class="legend-item"><i class="legend-line legend-line--match"></i> Match mutuo</span>
+      </div>
       <div id="sociograma"></div>
-    </div>
-  </div>
-</div>
-
-{{-- Matriz de Reciprocidad --}}
-<div class="card sociograma-card shadow-sm mb-4 border-0">
-  <div class="card-header py-3 d-flex align-items-center">
-    <h5 class="mb-0 fw-semibold">Matriz de Reciprocidad</h5>
-  </div>
-  <div class="card-body p-3">
-    <div class="matriz-container">
-      <canvas id="heatmapReciprocidad"></canvas>
     </div>
   </div>
 </div>
@@ -445,6 +440,7 @@ body {
 
 /* Contenedor principal del sociograma - Pantalla completa */
 .sociograma-visualization {
+  position: relative;
   width: 100%;
   height: 100%;
   background-color: white;
@@ -460,6 +456,53 @@ body {
   align-items: center;
   justify-content: center;
 }
+
+.sociograma-legend {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  z-index: 9;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 0.5rem 0.75rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.35rem;
+  min-width: 190px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--gray-700);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot--default { background: #2196F3; }
+.legend-dot--isolated { background: #F44336; }
+
+.legend-line {
+  width: 16px;
+  height: 2px;
+  display: inline-block;
+  border-radius: 2px;
+}
+
+.legend-line--pref { background: #28a745; }
+.legend-line--rech { background: #dc3545; }
+.legend-line--match { background: #00b050; height: 3px; }
 
 /* Matriz */
 .matriz-container {
@@ -546,6 +589,13 @@ body {
   .socio-wrapper {
     height: 50vh;
     min-height: 400px;
+  }
+
+  .sociograma-legend {
+    right: 0.5rem;
+    top: 0.5rem;
+    min-width: 160px;
+    padding: 0.45rem 0.6rem;
   }
 }
 </style>

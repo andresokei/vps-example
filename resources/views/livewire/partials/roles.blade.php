@@ -1,6 +1,5 @@
-{{-- resources/views/livewire/partials/roles.blade.php --}}
 <div class="row g-3 mb-4">
-  @foreach(['leaders'=>'Líderes','puentes'=>'Puentes','aislados'=>'Aislados','cohesivos'=>'Cohesivos'] as $key=>$label)
+  @foreach(['leaders' => 'Lideres', 'puentes' => 'Puentes', 'aislados' => 'Aislados', 'cohesivos' => 'Cohesivos'] as $key => $label)
     <div class="col-md-3">
       <div class="card shadow-sm h-100">
         <div class="card-header text-center">{{ $label }}</div>
@@ -9,7 +8,7 @@
             @forelse($datos['roles'][$key] ?? [] as $name)
               <li>{{ $name }}</li>
             @empty
-              <li class="text-muted">—</li>
+              <li class="text-muted">-</li>
             @endforelse
           </ul>
         </div>
