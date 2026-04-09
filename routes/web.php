@@ -27,7 +27,8 @@ Route::middleware(['auth'])->group(function () {
     // Ruta para el dashboard, protegida por autenticación y verificación de email
     Route::view('dashboard', 'dashboard')->middleware(['verified'])->name('dashboard');
 
-    Route::get('/analisis', [AnalisisController::class, 'index'])->name('analisis')->middleware(['verified']);
+    Route::get('/analisis', [AnalisisController::class, 'index'])->name('analisis')->middleware(['verified', 'role:profesor|admin']);
+    Route::get('/analisis/{asignacion}/pdf', [AnalisisController::class, 'exportarPdf'])->name('analisis.pdf')->middleware(['verified', 'role:profesor|admin']);
 
 
     // Rutas para el perfil del usuario (edit, update y delete)

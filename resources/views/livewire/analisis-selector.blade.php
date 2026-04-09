@@ -12,6 +12,14 @@
   @endif
 
   @if (!empty($analisis))
+    <div class="d-flex justify-content-end mb-3">
+      <a href="{{ route('analisis.pdf', $asignacionTestId) }}"
+         target="_blank"
+         class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-file-pdf me-1"></i> Exportar PDF
+      </a>
+    </div>
+
     @include('livewire.partials.resumen',       ['datos' => $analisis])
     @include('livewire.partials.barras',        ['datos' => $analisis])
     @include('livewire.partials.sociograma',    ['datos' => $analisis])

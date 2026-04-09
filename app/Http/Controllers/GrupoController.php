@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Grupo;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class GrupoController extends Controller
 {
@@ -27,13 +28,15 @@ class GrupoController extends Controller
     // Guardar un nuevo grupo
     public function store(Request $request)
     {
-        $grupo = Grupo::create([
-            'nombre_grupo' => $request->nombre_grupo,
-            'id_profesor' => Auth::user()->id,
-        ]);
+        DB::transaction(function () use ($request) {
+            $grupo = Grupo::create([
+                'nombre_grupo' => $request->nombre_grupo,
+                'id_profesor' => Auth::user()->id,
+            ]);
 
-        // Asignar estudiantes al grupo
-        $grupo->estudiantes()->attach($request->estudiantes);
+            // Asignar estudiantes al grupo
+            $grupo->estudiantes()->attach($request->estudiantes);
+        });
 
         return redirect()->route('grupos.index');
     }

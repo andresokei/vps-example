@@ -99,6 +99,11 @@ class AnalisisSelector extends Component
             $forzarRefresco
         );
 
+        $this->cargarResultado($full);
+    }
+
+    private function cargarResultado(array $full): void
+    {
         $this->analisis = $full;
         $this->updateTrigger = now()->timestamp;
 

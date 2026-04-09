@@ -44,10 +44,21 @@ class AssignedTests extends Component
 
     public function loadAsignaciones()
     {
-        // Solo cargamos las asignaciones del profesor autenticado
-        $this->asignaciones = AsignacionTest::with(['grupo', 'test'])
+        $this->asignaciones = AsignacionTest::with(['grupo.estudiantes', 'test'])
+            ->withCount('respuestas')
             ->where('profesor_id', Auth::id())
-            ->get();
+            ->latest()
+            ->get()
+            ->map(function ($a) {
+                $total = $a->grupo?->estudiantes->count() ?? 0;
+                $respondieron = $a->respuestas()
+                    ->distinct('alumno_id')
+                    ->count('alumno_id');
+                $a->progreso_respondieron = $respondieron;
+                $a->progreso_total = $total;
+                $a->progreso_pct = $total > 0 ? round($respondieron / $total * 100) : 0;
+                return $a;
+            });
     }
 
     /**

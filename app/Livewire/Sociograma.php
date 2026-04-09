@@ -29,10 +29,6 @@ class Sociograma extends Component
 
     private function emitSociogramData()
 {
-    // Agrega esto al principio del método
-    logger('emitSociogramData se ha llamado');
-    dd('emitSociogramData se ha llamado'); // Comenta esto después de la prueba
-
     $filteredLinks = collect($this->links);
 
     if ($this->selectedNode) {
@@ -41,10 +37,10 @@ class Sociograma extends Component
         });
     }
 
-    $this->dispatchBrowserEvent('rerenderSociogram', [
-        'nodes' => $this->nodes,
-        'links' => $filteredLinks->values()->toArray()
-    ]);
+    $this->dispatch('rerenderSociogram',
+        nodes: $this->nodes,
+        links: $filteredLinks->values()->toArray()
+    );
 }
 
     

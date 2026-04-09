@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -12,34 +11,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Llamar a los seeders que hayas creado
         $this->call([
-            TestsTableSeeder::class,
-            PreguntasTableSeeder::class,
-            $this->call(GenerarRespuestasSeeder::class)
+            RolesSeeder::class,
+            DevelopmentDataSeeder::class,
         ]);
-
-        // Crear 10 usuarios de prueba
-        User::factory(10)->create();
-
-        // Crear un usuario específico
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-
-
-
-
-
-
-        // Agregar el seeder sociométrico
-    $this->call([
-        SociometricSeeder::class,
-        // ControlledSociometricSeeder::class, // Descomenta para usar este en su lugar
-    ]);
-
-
-    
     }
 }

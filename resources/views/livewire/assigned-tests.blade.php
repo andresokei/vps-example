@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.30000ms="loadAsignaciones">
     <div class="card shadow-sm rounded-lg overflow-hidden">
         <!-- <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 px-4 border-bottom border-light">
             <h5 class="font-weight-bold m-0">Tests Asignados</h5>
@@ -20,6 +20,7 @@
                         <th class="py-3 font-weight-medium text-muted">Nombre del Test</th>
                         <th class="py-3 font-weight-medium text-muted">Grupo</th>
                         <th class="py-3 font-weight-medium text-muted">Estado</th>
+                        <th class="py-3 font-weight-medium text-muted">Progreso</th>
                         <th class="py-3 font-weight-medium text-muted">Fecha</th>
                         <th class="py-3 font-weight-medium text-muted">Acción</th>
                     </tr>
@@ -51,6 +52,28 @@
                                 </span>
                             </td>
                             {{-- =========================== --}}
+
+                            {{-- ===== Barra de progreso ===== --}}
+                            <td class="py-3" style="min-width:120px">
+                                <div class="d-flex align-items-center gap-1">
+                                    <div class="progress flex-grow-1" style="height:6px">
+                                        <div class="progress-bar
+                                            @if($item->progreso_pct >= 100) bg-success
+                                            @elseif($item->progreso_pct > 0) bg-info
+                                            @else bg-secondary @endif"
+                                            role="progressbar"
+                                            style="width: {{ $item->progreso_pct }}%"
+                                            aria-valuenow="{{ $item->progreso_pct }}"
+                                            aria-valuemin="0"
+                                            aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted text-nowrap">
+                                        {{ $item->progreso_respondieron }}/{{ $item->progreso_total }}
+                                    </small>
+                                </div>
+                            </td>
+                            {{-- ============================= --}}
 
                             <td class="py-3">{{ $item->created_at->format('d/m/Y') }}</td>
 
@@ -98,6 +121,10 @@
                         <div class="bg-light p-4 rounded">
                             <p><strong>Grupo:</strong> {{ $asignacionSeleccionada->grupo->nombre_grupo }}</p>
                             <p><strong>Estado:</strong> {{ ucfirst($asignacionSeleccionada->estado) }}</p>
+                            <p><strong>Progreso:</strong>
+                                {{ $asignacionSeleccionada->progreso_respondieron ?? 0 }}/{{ $asignacionSeleccionada->progreso_total ?? 0 }} alumnos completaron
+                                ({{ $asignacionSeleccionada->progreso_pct ?? 0 }}%)
+                            </p>
                             <p><strong>Clave de acceso:</strong> {{ $asignacionSeleccionada->clave_acceso }}</p>
                             <p><strong>Fecha de asignación:</strong> {{ $asignacionSeleccionada->created_at->format('d/m/Y H:i') }}</p>
                             <p><strong>Enlace:</strong>

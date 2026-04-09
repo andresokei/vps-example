@@ -48,7 +48,7 @@ class TestController extends Controller
     {
         $this->ensureAssignmentAccess($request, $asignacion);
 
-        if ($asignacion->estado !== 'pendiente') {
+        if ($asignacion->estado === 'aplicado') {
             $this->forgetAssignmentAccess($request);
 
             return redirect()->route('test.ingresar')->withErrors([
@@ -91,7 +91,7 @@ class TestController extends Controller
 
         $asignacion->loadMissing(['test.preguntas', 'grupo.estudiantes']);
 
-        if ($asignacion->estado !== 'pendiente') {
+        if ($asignacion->estado === 'aplicado') {
             throw ValidationException::withMessages([
                 'clave_acceso' => 'Clave de acceso invalida o test no disponible.',
             ]);

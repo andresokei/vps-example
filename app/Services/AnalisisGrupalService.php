@@ -7,6 +7,7 @@ use App\Models\Pregunta;
 use App\Models\Relacion;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class AnalisisGrupalService
 {
@@ -16,15 +17,36 @@ class AnalisisGrupalService
 
         if ($forceRefresh) {
             Cache::forget($cacheKey);
+            Log::info('AnalisisGrupal: cache invalidado', [
+                'grupo_id' => $grupoId,
+                'asignacion_test_id' => $asignacionTestId,
+            ]);
         }
 
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($grupoId, $asignacionTestId) {
+        $hit = Cache::has($cacheKey);
+
+        $result = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($grupoId, $asignacionTestId) {
             return $this->generarSinCache($grupoId, $asignacionTestId);
         });
+
+        if ($hit) {
+            Log::debug('AnalisisGrupal: resultado servido desde cache', [
+                'grupo_id' => $grupoId,
+                'asignacion_test_id' => $asignacionTestId,
+            ]);
+        }
+
+        return $result;
     }
 
     private function generarSinCache(int $grupoId, int $asignacionTestId): array
     {
+        $start = microtime(true);
+        Log::info('AnalisisGrupal: iniciando calculo', [
+            'grupo_id' => $grupoId,
+            'asignacion_test_id' => $asignacionTestId,
+        ]);
+
         $alumnos = $this->obtenerAlumnosGrupo($grupoId);
         $idsGrupo = $alumnos->pluck('id');
         $idsGrupoArray = $idsGrupo->all();
@@ -90,7 +112,7 @@ class AnalisisGrupalService
         $roles = $this->calcularRoles($centralidades, $comunidades);
         $reciprocidad = $this->matrizReciprocidadDesdeRelaciones($alumnos, $rel);
 
-        return array_merge($metricas, [
+        $result = array_merge($metricas, [
             'sociograma' => $grafo,
             'preferencias' => [
                 'labels' => $prefGraf['labels'],
@@ -105,9 +127,19 @@ class AnalisisGrupalService
             'roles' => $roles,
             'reciprocidad' => $reciprocidad,
         ]);
+
+        Log::info('AnalisisGrupal: calculo completado', [
+            'grupo_id' => $grupoId,
+            'asignacion_test_id' => $asignacionTestId,
+            'alumnos' => $alumnos->count(),
+            'relaciones' => $result['totales']['relaciones'] ?? 0,
+            'duracion_ms' => round((microtime(true) - $start) * 1000),
+        ]);
+
+        return $result;
     }
 
-    private function cacheKey(int $grupoId, int $asignacionTestId): string
+    public function cacheKey(int $grupoId, int $asignacionTestId): string
     {
         return "analisis-grupal:grupo:{$grupoId}:asignacion:{$asignacionTestId}";
     }
