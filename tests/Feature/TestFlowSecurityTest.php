@@ -52,7 +52,7 @@ it('forbids opening a test without a validated assignment in session', function 
     [, , $test, , $assignment] = createAssignedTestWithStudents();
 
     $this->get(route('test.realizar', $assignment))
-        ->assertForbidden();
+        ->assertRedirect(route('test.ingresar'));
 });
 
 it('binds public test access to the assignment validated by key', function () {
@@ -67,7 +67,7 @@ it('binds public test access to the assignment validated by key', function () {
         ->assertSee($testA->nombre_test);
 
     $this->get(route('test.realizar', $assignmentB))
-        ->assertForbidden();
+        ->assertRedirect(route('test.ingresar'));
 });
 
 it('rejects manipulated answers that target students outside the assignment group', function () {

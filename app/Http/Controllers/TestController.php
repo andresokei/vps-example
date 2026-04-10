@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AsignacionTest;
 use App\Models\Respuesta;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -46,7 +47,9 @@ class TestController extends Controller
 
     public function mostrarTest(Request $request, AsignacionTest $asignacion)
     {
-        $this->ensureAssignmentAccess($request, $asignacion);
+        if ($redirect = $this->redirectIfAssignmentAccessMissing($request, $asignacion)) {
+            return $redirect;
+        }
 
         if ($asignacion->estado === 'aplicado') {
             $this->forgetAssignmentAccess($request);
@@ -98,7 +101,9 @@ class TestController extends Controller
 
     public function submitTest(Request $request, AsignacionTest $asignacion)
     {
-        $this->ensureAssignmentAccess($request, $asignacion);
+        if ($redirect = $this->redirectIfAssignmentAccessMissing($request, $asignacion)) {
+            return $redirect;
+        }
 
         $asignacion->loadMissing(['test.preguntas', 'grupo.estudiantes']);
 
@@ -221,11 +226,17 @@ class TestController extends Controller
             ->with('status', 'Respuestas y relaciones guardadas exitosamente');
     }
 
-    private function ensureAssignmentAccess(Request $request, AsignacionTest $asignacion): void
+    private function redirectIfAssignmentAccessMissing(Request $request, AsignacionTest $asignacion): ?RedirectResponse
     {
         if ((int) $request->session()->get(self::ACCESS_SESSION_KEY) !== (int) $asignacion->id) {
-            abort(403);
+            return redirect()
+                ->route('test.ingresar')
+                ->withErrors([
+                    'clave_acceso' => 'La sesion del test ha expirado. Vuelve a introducir la clave de acceso.',
+                ]);
         }
+
+        return null;
     }
 
     private function forgetAssignmentAccess(Request $request): void
