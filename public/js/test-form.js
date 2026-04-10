@@ -13,6 +13,27 @@
         return Array.from(form.querySelectorAll('[data-question-id]'));
     }
 
+    function getUniqueSelections(values, maxSelections) {
+        return values
+            .filter(Boolean)
+            .filter((studentId, index, array) => array.indexOf(studentId) === index)
+            .slice(0, maxSelections);
+    }
+
+    function getInputSelections(block, maxSelections) {
+        return getUniqueSelections(
+            Array.from(block.querySelectorAll('.response-input')).map((input) => input.value),
+            maxSelections
+        );
+    }
+
+    function getSelectedButtonSelections(block, maxSelections) {
+        return getUniqueSelections(
+            Array.from(block.querySelectorAll('[data-student-choice].is-selected')).map((button) => button.dataset.studentId),
+            maxSelections
+        );
+    }
+
     function showMessage(container, message, type) {
         if (!container) {
             return;
@@ -47,7 +68,7 @@
         const count = block.querySelector('.selected-count');
         const questionType = block.dataset.questionType;
         const choiceButtons = Array.from(block.querySelectorAll('[data-student-choice]'));
-        const uniqueSelections = selections.filter((studentId, index, array) => array.indexOf(studentId) === index).slice(0, maxSelections);
+        const uniqueSelections = getUniqueSelections(selections, maxSelections);
 
         store.set(questionId, uniqueSelections);
 
@@ -91,13 +112,31 @@
         });
     }
 
+    function syncQuestionState(block, store, maxSelections) {
+        const questionId = block.dataset.questionId;
+        const inputSelections = getInputSelections(block, maxSelections);
+        const buttonSelections = getSelectedButtonSelections(block, maxSelections);
+        const currentSelections = getQuestionState(store, questionId);
+        const mergedSelections = inputSelections.length > 0
+            ? inputSelections
+            : buttonSelections.length > 0
+                ? buttonSelections
+                : currentSelections;
+
+        store.set(questionId, getUniqueSelections(mergedSelections, maxSelections));
+        renderQuestion(block, store, maxSelections);
+    }
+
+    function syncFormState(form, store, maxSelections) {
+        getQuestionBlocks(form).forEach((block) => {
+            syncQuestionState(block, store, maxSelections);
+        });
+    }
+
     function restoreInitialSelections(form, store, maxSelections) {
         getQuestionBlocks(form).forEach((block) => {
             const questionId = block.dataset.questionId;
-            const initialSelections = Array.from(block.querySelectorAll('.response-input'))
-                .map((input) => input.value)
-                .filter(Boolean)
-                .slice(0, maxSelections);
+            const initialSelections = getInputSelections(block, maxSelections);
 
             store.set(questionId, initialSelections);
             renderQuestion(block, store, maxSelections);
@@ -119,6 +158,8 @@
         const respondent = form.querySelector('[data-respondent-select]');
         const respondentId = respondent?.value ?? '';
         let isValid = Boolean(respondentId);
+        let firstInvalidBlock = null;
+        const incompleteQuestions = [];
 
         if (!respondentId) {
             respondent?.focus();
@@ -127,14 +168,30 @@
         getQuestionBlocks(form).forEach((block) => {
             const questionId = block.dataset.questionId;
             const requiredSelections = block.querySelectorAll('.response-input').length;
-            const selections = getQuestionState(store, questionId);
+            const syncedSelections = getInputSelections(block, maxSelections);
+            const selections = syncedSelections.length > 0
+                ? syncedSelections
+                : getSelectedButtonSelections(block, maxSelections);
             const questionValid = selections.length === Math.min(requiredSelections, maxSelections);
+            const title = block.querySelector('.test-form__question-title')?.textContent?.trim() ?? `Pregunta ${questionId}`;
 
+            store.set(questionId, selections);
+            renderQuestion(block, store, maxSelections);
             block.classList.toggle('is-invalid', !questionValid);
+
+            if (!questionValid) {
+                incompleteQuestions.push(`${title} (${selections.length}/${Math.min(requiredSelections, maxSelections)})`);
+                firstInvalidBlock = firstInvalidBlock ?? block;
+            }
+
             isValid = isValid && questionValid;
         });
 
-        return isValid;
+        return {
+            isValid,
+            firstInvalidBlock,
+            incompleteQuestions,
+        };
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -222,11 +279,18 @@
 
         form.addEventListener('submit', (event) => {
             hideMessage(validationMessage);
+            syncFormState(form, selectionStore, maxSelections);
 
-            if (!validateForm(form, selectionStore, maxSelections)) {
+            const validation = validateForm(form, selectionStore, maxSelections);
+
+            if (!validation.isValid) {
                 event.preventDefault();
-                showMessage(validationMessage, 'Completa todas las selecciones requeridas antes de enviar el test.', 'danger');
-                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const detail = validation.incompleteQuestions.length > 0
+                    ? `Revisa: ${validation.incompleteQuestions.join(' | ')}.`
+                    : 'Completa todas las selecciones requeridas antes de enviar el test.';
+
+                showMessage(validationMessage, detail, 'danger');
+                (validation.firstInvalidBlock ?? form).scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
 
