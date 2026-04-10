@@ -22,7 +22,7 @@
                     action="{{ route('test.submit', $asignacion) }}"
                     method="POST"
                     data-test-form
-                    data-max-selections="3"
+                    data-max-selections="{{ $selectionCount }}"
                 >
                     @csrf
 
@@ -51,7 +51,10 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p class="public-help">Cada pregunta requiere 3 selecciones distintas.</p>
+                        <p class="public-help">
+                            Cada pregunta requiere {{ $selectionCount }}
+                            {{ $selectionCount === 1 ? 'seleccion distinta.' : 'selecciones distintas.' }}
+                        </p>
                     </div>
 
                     @if($test && $test->preguntas && $test->preguntas->count())
@@ -73,7 +76,7 @@
                                 <div class="test-form__selection-box">
                                     <div class="test-form__selection-meta">
                                         <span>Seleccionados</span>
-                                        <span><span class="selected-count">0</span>/3</span>
+                                        <span><span class="selected-count">0</span>/{{ $selectionCount }}</span>
                                     </div>
                                     <div class="test-form__selection-list selected-students-list"></div>
                                 </div>
@@ -94,9 +97,9 @@
                                     @endforeach
                                 </div>
 
-                                <input type="hidden" name="respuesta_{{ $pregunta->id }}_1" class="response-input" value="{{ old('respuesta_'.$pregunta->id.'_1') }}">
-                                <input type="hidden" name="respuesta_{{ $pregunta->id }}_2" class="response-input" value="{{ old('respuesta_'.$pregunta->id.'_2') }}">
-                                <input type="hidden" name="respuesta_{{ $pregunta->id }}_3" class="response-input" value="{{ old('respuesta_'.$pregunta->id.'_3') }}">
+                                @for ($i = 1; $i <= $selectionCount; $i++)
+                                    <input type="hidden" name="respuesta_{{ $pregunta->id }}_{{ $i }}" class="response-input" value="{{ old('respuesta_'.$pregunta->id.'_'.$i) }}">
+                                @endfor
 
                                 @error('respuesta_'.$pregunta->id.'_1')
                                     <div class="test-form__question-error">{{ $message }}</div>

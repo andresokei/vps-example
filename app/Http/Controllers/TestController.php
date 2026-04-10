@@ -78,10 +78,21 @@ class TestController extends Controller
             ]);
         }
 
+        $selectionCount = min(3, max($estudiantes->count() - 1, 0));
+
+        if ($selectionCount < 1) {
+            $this->forgetAssignmentAccess($request);
+
+            return redirect()->route('test.ingresar')->withErrors([
+                'clave_acceso' => 'Este grupo necesita al menos 2 estudiantes para responder el test.',
+            ]);
+        }
+
         return view('alumnos.realizar-test', [
             'test' => $asignacion->test,
             'estudiantes' => $estudiantes,
             'asignacion' => $asignacion,
+            'selectionCount' => $selectionCount,
         ]);
     }
 
@@ -109,12 +120,20 @@ class TestController extends Controller
             ]);
         }
 
+        $selectionCount = min(3, max(count($studentIds) - 1, 0));
+
+        if ($selectionCount < 1) {
+            throw ValidationException::withMessages([
+                'estudiante_id' => 'Este grupo necesita al menos 2 estudiantes para responder el test.',
+            ]);
+        }
+
         $rules = [
             'estudiante_id' => ['required', 'integer', Rule::in($studentIds)],
         ];
 
         foreach ($asignacion->test->preguntas as $pregunta) {
-            for ($i = 1; $i <= 3; $i++) {
+            for ($i = 1; $i <= $selectionCount; $i++) {
                 $rules['respuesta_'.$pregunta->id.'_'.$i] = [
                     'required',
                     'integer',
@@ -140,7 +159,7 @@ class TestController extends Controller
         foreach ($asignacion->test->preguntas as $pregunta) {
             $choices = [];
 
-            for ($i = 1; $i <= 3; $i++) {
+            for ($i = 1; $i <= $selectionCount; $i++) {
                 $choices[] = (int) $validated['respuesta_'.$pregunta->id.'_'.$i];
             }
 
@@ -158,11 +177,13 @@ class TestController extends Controller
         }
 
         DB::transaction(function () use ($asignacion, $studentId, $validated) {
+            $selectionCount = min(3, max($asignacion->grupo->estudiantes->count() - 1, 0));
+
             foreach ($asignacion->test->preguntas as $pregunta) {
                 $tipoPregunta = $pregunta->tipo_pregunta;
                 $tipoRelacion = $tipoPregunta === 'rechazo' ? 'rechazado' : 'preferido';
 
-                for ($i = 1; $i <= 3; $i++) {
+                for ($i = 1; $i <= $selectionCount; $i++) {
                     $respuesta = (int) $validated['respuesta_'.$pregunta->id.'_'.$i];
 
                     DB::table('respuestas')->insert([

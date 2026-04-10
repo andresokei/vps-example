@@ -143,6 +143,32 @@ it('guarda respuestas y relaciones al enviar el test correctamente', function ()
     ]);
 });
 
+it('ajusta el numero de selecciones requeridas cuando el grupo tiene menos de cuatro alumnos', function () {
+    ['asignacion' => $asignacion, 'pregPref' => $pregPref, 'pregRec' => $pregRec, 'alumnos' => $alumnos] = crearAsignacionConAlumnos(numAlumnos: 3);
+
+    $respondiente = $alumnos[0];
+    $otros = $alumnos->filter(fn ($a) => $a->id !== $respondiente->id)->values();
+
+    $this->withSession(['test_access.assignment_id' => $asignacion->id])
+        ->get(route('test.realizar', $asignacion))
+        ->assertOk()
+        ->assertSeeText('Cada pregunta requiere 2')
+        ->assertSeeText('selecciones distintas.');
+
+    $this->withSession(['test_access.assignment_id' => $asignacion->id])
+        ->post(route('test.submit', $asignacion), [
+            'estudiante_id' => $respondiente->id,
+            'respuesta_' . $pregPref->id . '_1' => $otros[0]->id,
+            'respuesta_' . $pregPref->id . '_2' => $otros[1]->id,
+            'respuesta_' . $pregRec->id . '_1' => $otros[1]->id,
+            'respuesta_' . $pregRec->id . '_2' => $otros[0]->id,
+        ])
+        ->assertRedirect(route('test.success'));
+
+    $this->assertDatabaseCount('respuestas', 4);
+    $this->assertDatabaseCount('relaciones', 4);
+});
+
 it('impide que el mismo alumno responda dos veces', function () {
     ['asignacion' => $asignacion, 'pregPref' => $pregPref, 'pregRec' => $pregRec, 'alumnos' => $alumnos] = crearAsignacionConAlumnos();
 
