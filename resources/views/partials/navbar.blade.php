@@ -9,8 +9,10 @@
             <ul class="navbar-nav ms-auto me-4 my-3 my-lg-0">
                 @guest
                     <!-- Mostrar login y registro cuando el usuario NO está autenticado -->
-                    <li class="nav-item"><a class="nav-link me-lg-3" href="{{ route('login') }}">Login</a></li>
-                    <li class="nav-item"><a class="nav-link me-lg-3" href="{{ route('register') }}">Registrar</a></li>
+                    <li class="nav-item"><a class="nav-link me-lg-3" href="#features">Características</a></li>
+                    <li class="nav-item"><a class="nav-link me-lg-3" href="#como-funciona">Cómo funciona</a></li>
+                    <li class="nav-item"><a class="nav-link me-lg-3" href="{{ route('login') }}">Iniciar sesión</a></li>
+                    <li class="nav-item"><a class="nav-link me-lg-3" href="{{ route('register') }}">Registrarse</a></li>
                 @endguest
 
                 @auth

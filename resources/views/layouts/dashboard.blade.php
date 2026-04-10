@@ -1,55 +1,66 @@
 {{-- resources/views/layouts/dashboard.blade.php --}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <!-- Meta y título -->
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Sociogram - Dashboard</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Sociogram - @yield('title', 'Dashboard')</title>
 
-    <!-- Iconos y estilos -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/analisis.css') }}" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
+  <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+  <link href="{{ asset('css/analisis.css') }}" rel="stylesheet">
 
-      <!-- Nuevo CSS para Dashboard -->
-      <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
-      
-    <!-- Livewire Styles -->
-    @livewireStyles
+  @livewireStyles
 </head>
 
-<body id="page-top">
-    <div id="wrapper">
-        @include('partials.sidebar')
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
-        <div id="content-wrapper" class="d-flex flex-column">
-            <div id="content">
-                @include('partials.topbar')
+  @include('partials.sidebar')
+  @include('partials.topbar')
 
-                <div class="container-fluid">
-                    @yield('content')
-                </div>
-            </div>
-        </div>
+  <div class="main-wrapper">
+    <div class="page-content">
+      @yield('content')
     </div>
+  </div>
 
-    <!-- Dependencias JS (jQuery, Bootstrap, SB Admin) -->
-    <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
-    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@^1.1.0/dist/chartjs-chart-matrix.min.js"></script>
 
-    <!-- Chart.js y Matrix plugin -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@^1.1.0/dist/chartjs-chart-matrix.min.js"></script>
+  @livewireScripts
 
-    <!-- Livewire Scripts -->
-    @livewireScripts
+  <script src="{{ asset('js/analisis/shared.js') }}"></script>
+  <script src="{{ asset('js/analisis/sociograma.js') }}"></script>
+  <script src="{{ asset('js/analisis.js') }}"></script>
 
-    <!-- Tu script de análisis (debe cargarse tras Livewire y Chart.js) -->
-    <script src="{{ asset('js/analisis.js') }}"></script>
+  <script>
+    (function () {
+      const toggle = document.getElementById('sidebarToggle');
+      const sidebar = document.getElementById('appSidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
 
-    @stack('scripts')
+      function openSidebar() {
+        sidebar?.classList.add('show');
+        backdrop?.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeSidebar() {
+        sidebar?.classList.remove('show');
+        backdrop?.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+
+      toggle?.addEventListener('click', openSidebar);
+      backdrop?.addEventListener('click', closeSidebar);
+    })();
+  </script>
+
+  @stack('scripts')
 </body>
 </html>

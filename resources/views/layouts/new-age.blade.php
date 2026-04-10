@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -18,6 +18,94 @@
 
         <!-- Core theme CSS (includes Bootstrap) -->
         <link href="{{ asset('css/styles.css') }}" rel="stylesheet" />
+
+        <style>
+            /* Badge pill hero */
+            .badge-pill-landing {
+                display: inline-block;
+                background: linear-gradient(45deg, rgba(41,55,240,0.1), rgba(159,26,226,0.1));
+                color: #2937f0;
+                border: 1px solid rgba(41,55,240,0.25);
+                border-radius: 50rem;
+                padding: 0.35rem 1rem;
+                font-size: 0.8rem;
+                font-weight: 700;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                margin-bottom: 1.25rem;
+            }
+
+            /* Stats strip */
+            .stats-strip {
+                background: #fff;
+                border-top: 1px solid #e9ecef;
+                border-bottom: 1px solid #e9ecef;
+                padding: 3rem 0;
+            }
+            .stats-strip .stat-number {
+                font-family: "Kanit", sans-serif;
+                font-size: 2.5rem;
+                font-weight: 700;
+                background: linear-gradient(45deg, #2937f0, #9f1ae2);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                line-height: 1.1;
+            }
+            .stats-strip .stat-label {
+                color: #6c757d;
+                font-size: 0.9rem;
+                margin-top: 0.25rem;
+            }
+
+            /* Feature cards */
+            .feature-card {
+                background: #fff;
+                border: 1px solid #e9ecef;
+                border-radius: 1rem;
+                padding: 2rem 1.5rem;
+                height: 100%;
+                transition: box-shadow 0.2s ease, transform 0.2s ease;
+            }
+            .feature-card:hover {
+                box-shadow: 0 0.75rem 2rem rgba(41,55,240,0.12);
+                transform: translateY(-4px);
+            }
+            .feature-card .icon-wrap {
+                width: 3.5rem;
+                height: 3.5rem;
+                border-radius: 0.75rem;
+                background: linear-gradient(45deg, rgba(41,55,240,0.08), rgba(159,26,226,0.08));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 1.25rem;
+            }
+            .feature-card .icon-feature { font-size: 1.75rem; }
+
+            /* Cómo funciona */
+            .how-it-works { background-color: #f8f9fa; }
+            .step-number {
+                width: 3rem;
+                height: 3rem;
+                border-radius: 50%;
+                background: linear-gradient(45deg, #2937f0, #9f1ae2);
+                color: #fff;
+                font-family: "Kanit", sans-serif;
+                font-size: 1.25rem;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 1rem;
+            }
+
+            /* CTA gradient */
+            .cta-gradient {
+                background: linear-gradient(135deg, #1a21c8 0%, #2937f0 40%, #9f1ae2 100%);
+                padding: 6rem 0 !important;
+            }
+        </style>
     </head>
     <body id="page-top">
 
@@ -31,12 +119,11 @@
         <footer class="bg-black text-center py-5">
             <div class="container px-5">
                 <div class="text-white-50 small">
-                    <div class="mb-2">&copy; Your Website 2023. All Rights Reserved.</div>
-                    <a href="#!">Privacy</a>
+                    <div class="mb-1 fw-bold text-white" style="font-family:'Kanit',sans-serif;font-size:1.1rem;">Sociogram</div>
+                    <div class="mb-2">&copy; Sociogram {{ date('Y') }}. Todos los derechos reservados.</div>
+                    <a href="{{ route('login') }}">Acceder</a>
                     <span class="mx-1">&middot;</span>
-                    <a href="#!">Terms</a>
-                    <span class="mx-1">&middot;</span>
-                    <a href="#!">FAQ</a>
+                    <a href="{{ route('register') }}">Registrarse</a>
                 </div>
             </div>
         </footer>

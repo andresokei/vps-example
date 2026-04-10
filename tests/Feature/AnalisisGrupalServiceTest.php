@@ -2,7 +2,10 @@
 
 use App\Models\User;
 use App\Services\AnalisisGrupalService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+
+uses(Tests\TestCase::class, RefreshDatabase::class);
 
 function seedAnalisisFixture(): array
 {

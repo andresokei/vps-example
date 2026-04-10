@@ -8,42 +8,53 @@ use App\Models\Relacion;
 use App\Models\Respuesta;
 use App\Services\AnalisisGrupalService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
 use Livewire\Component;
 
 class AnalisisSelector extends Component
 {
-    public $grupos;
-    public $grupoSeleccionado = '';
+    public Collection $grupos;
 
-    public $asignaciones = [];
+    public string $grupoSeleccionado = '';
+
+    public Collection $asignaciones;
+
     public $asignacionTestId = null;
 
     public array $analisis = [];
+
     public string $resultadoAnalisis = '';
+
     public string $resultadoTipo = 'info';
+
     public $updateTrigger = null;
 
-    public function mount(): void
+    protected $queryString = [
+        'grupoSeleccionado' => ['as' => 'grupo', 'except' => ''],
+        'asignacionTestId' => ['as' => 'asignacion', 'except' => null],
+    ];
+
+    public function mount($grupoInicial = null, $asignacionInicial = null): void
     {
-        $this->grupos = Grupo::where('id_profesor', Auth::id())
+        $this->grupos = Grupo::query()
+            ->where('id_profesor', Auth::id())
             ->orderBy('nombre_grupo')
             ->get();
+
+        $this->asignaciones = collect();
+
+        $this->hydrateInitialSelection($grupoInicial, $asignacionInicial);
     }
 
     public function updatedGrupoSeleccionado(): void
     {
         $this->resetEstadoAnalisis();
 
-        if (!$this->grupoSeleccionado) {
+        if (! $this->grupoSeleccionado) {
             return;
         }
 
-        $this->asignaciones = AsignacionTest::with('test:id,nombre_test')
-            ->withCount('respuestas')
-            ->where('grupo_id', $this->grupoSeleccionado)
-            ->where('profesor_id', Auth::id())
-            ->orderByDesc('created_at')
-            ->get();
+        $this->loadAssignmentsForSelectedGroup();
 
         if ($this->asignaciones->isEmpty()) {
             $this->resultadoTipo = 'info';
@@ -51,9 +62,7 @@ class AnalisisSelector extends Component
             return;
         }
 
-        $this->asignacionTestId = $this->asignaciones
-            ->firstWhere(fn ($a) => (int) ($a->respuestas_count ?? 0) > 0)
-            ?->id ?? $this->asignaciones->first()->id;
+        $this->asignacionTestId = $this->defaultAssignmentId();
     }
 
     public function updatedAsignacionTestId(): void
@@ -65,24 +74,25 @@ class AnalisisSelector extends Component
 
     public function procesarAnalisis(AnalisisGrupalService $analisisGrupalService): void
     {
-        if (!$this->grupoSeleccionado || !$this->asignacionTestId) {
+        if (! $this->grupoSeleccionado || ! $this->asignacionTestId) {
             $this->resultadoTipo = 'warning';
             $this->resultadoAnalisis = 'Seleccione un grupo y una asignacion.';
             return;
         }
 
-        $asignacionValida = AsignacionTest::whereKey($this->asignacionTestId)
+        $asignacionValida = AsignacionTest::query()
+            ->whereKey($this->asignacionTestId)
             ->where('grupo_id', $this->grupoSeleccionado)
             ->where('profesor_id', Auth::id())
             ->exists();
 
-        if (!$asignacionValida) {
+        if (! $asignacionValida) {
             $this->resultadoTipo = 'danger';
             $this->resultadoAnalisis = 'La asignacion seleccionada no es valida para este grupo.';
             return;
         }
 
-        if (!Respuesta::where('asignacion_test_id', $this->asignacionTestId)->exists()) {
+        if (! Respuesta::query()->where('asignacion_test_id', $this->asignacionTestId)->exists()) {
             $this->resultadoTipo = 'warning';
             $this->resultadoAnalisis = 'La asignacion seleccionada no tiene respuestas.';
             return;
@@ -102,12 +112,98 @@ class AnalisisSelector extends Component
         $this->cargarResultado($full);
     }
 
+    public function render()
+    {
+        return view('livewire.analisis-selector', [
+            'grupos' => $this->grupos,
+            'asignaciones' => $this->asignaciones,
+            'resultadoAnalisis' => $this->resultadoAnalisis,
+            'resultadoTipo' => $this->resultadoTipo,
+            'analisis' => $this->analisis,
+        ]);
+    }
+
+    private function hydrateInitialSelection($grupoInicial, $asignacionInicial): void
+    {
+        $assignment = null;
+
+        if ($asignacionInicial) {
+            $assignment = AsignacionTest::query()
+                ->with('test:id,nombre_test')
+                ->withCount('respuestas')
+                ->whereKey((int) $asignacionInicial)
+                ->where('profesor_id', Auth::id())
+                ->first();
+        }
+
+        $groupId = $assignment?->grupo_id ?? ($grupoInicial ? (int) $grupoInicial : null);
+
+        if (! $groupId || ! $this->grupos->contains('id', $groupId)) {
+            return;
+        }
+
+        $this->grupoSeleccionado = (string) $groupId;
+        $this->loadAssignmentsForSelectedGroup();
+
+        if ($this->asignaciones->isEmpty()) {
+            return;
+        }
+
+        $selectedAssignment = $assignment
+            && $this->asignaciones->contains('id', $assignment->id)
+                ? $assignment
+                : $this->asignaciones->firstWhere('id', $this->defaultAssignmentId());
+
+        $this->asignacionTestId = $selectedAssignment?->id;
+
+        if (($selectedAssignment->respuestas_count ?? 0) > 0) {
+            $this->procesarAnalisis(app(AnalisisGrupalService::class));
+        }
+    }
+
+    private function loadAssignmentsForSelectedGroup(): void
+    {
+        $this->asignaciones = AsignacionTest::query()
+            ->with('test:id,nombre_test')
+            ->withCount('respuestas')
+            ->where('grupo_id', $this->grupoSeleccionado)
+            ->where('profesor_id', Auth::id())
+            ->orderByDesc('created_at')
+            ->get();
+    }
+
+    private function defaultAssignmentId(): ?int
+    {
+        return $this->asignaciones
+            ->first(fn ($asignacion) => (int) ($asignacion->respuestas_count ?? 0) > 0)
+            ?->id ?? $this->asignaciones->first()?->id;
+    }
+
     private function cargarResultado(array $full): void
     {
         $this->analisis = $full;
         $this->updateTrigger = now()->timestamp;
 
-        $this->dispatch('actualizarSociograma', $full['sociograma']);
+        $centralityById = collect($full['centralities'])->keyBy('id')->toArray();
+
+        $enrichedNodes = array_map(function (array $node) use ($centralityById) {
+            $centrality = $centralityById[$node['id']] ?? null;
+
+            $node['centrality'] = $centrality ? [
+                'inDegree' => $centrality['inDegree'],
+                'outDegree' => $centrality['outDegree'],
+                'betweenness' => $centrality['betweenness'],
+                'closeness' => $centrality['closeness'],
+            ] : null;
+
+            return $node;
+        }, $full['sociograma']['nodes']);
+
+        $enrichedSociograma = $full['sociograma'];
+        $enrichedSociograma['nodes'] = $enrichedNodes;
+        $enrichedSociograma['roles'] = $full['roles'] ?? [];
+
+        $this->dispatch('actualizarSociograma', $enrichedSociograma);
         $this->dispatch('actualizarGraficoPreferencias', $full['preferencias']);
         $this->dispatch('actualizarGraficoRechazos', $full['rechazos']);
         $this->dispatch('actualizarMatrizReciprocidad', $full['reciprocidad']);
@@ -124,19 +220,21 @@ class AnalisisSelector extends Component
 
     private function relacionesDesactualizadas(int $asignacionTestId): bool
     {
-        $statsRel = Relacion::where('asignacion_test_id', $asignacionTestId)
+        $statsRel = Relacion::query()
+            ->where('asignacion_test_id', $asignacionTestId)
             ->selectRaw('COUNT(*) as total, MAX(updated_at) as max_updated_at')
             ->first();
 
-        if (!$statsRel || (int) ($statsRel->total ?? 0) === 0) {
+        if (! $statsRel || (int) ($statsRel->total ?? 0) === 0) {
             return true;
         }
 
-        $statsResp = Respuesta::where('asignacion_test_id', $asignacionTestId)
+        $statsResp = Respuesta::query()
+            ->where('asignacion_test_id', $asignacionTestId)
             ->selectRaw('COUNT(*) as total, MAX(updated_at) as max_updated_at')
             ->first();
 
-        if (!$statsResp || (int) ($statsResp->total ?? 0) === 0) {
+        if (! $statsResp || (int) ($statsResp->total ?? 0) === 0) {
             return false;
         }
 
@@ -144,16 +242,5 @@ class AnalisisSelector extends Component
         $relUpdatedAt = $statsRel->max_updated_at ? strtotime((string) $statsRel->max_updated_at) : 0;
 
         return $respUpdatedAt > $relUpdatedAt;
-    }
-
-    public function render()
-    {
-        return view('livewire.analisis-selector', [
-            'grupos' => $this->grupos,
-            'asignaciones' => $this->asignaciones,
-            'resultadoAnalisis' => $this->resultadoAnalisis,
-            'resultadoTipo' => $this->resultadoTipo,
-            'analisis' => $this->analisis,
-        ]);
     }
 }

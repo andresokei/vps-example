@@ -30,7 +30,7 @@ class GenerarAnalisisGrupalJob implements ShouldQueue
 
     public function failed(\Throwable $e): void
     {
-        Log::error('GenerarAnalisisGrupalJob falló', [
+        Log::error('GenerarAnalisisGrupalJob fallo', [
             'grupo_id' => $this->grupoId,
             'asignacion_test_id' => $this->asignacionTestId,
             'error' => $e->getMessage(),

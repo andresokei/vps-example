@@ -6,6 +6,9 @@ use App\Models\Grupo;
 use App\Models\Pregunta;
 use App\Models\Test;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(Tests\TestCase::class, RefreshDatabase::class);
 
 function crearAsignacionConAlumnos(int $numAlumnos = 4, string $estado = 'pendiente'): array
 {
@@ -69,6 +72,30 @@ it('redirige al test correcto al ingresar clave valida', function () {
     $this->get(route('test.realizar', $asignacion))
         ->assertOk()
         ->assertSee($test->nombre_test);
+});
+
+it('acepta claves de asignaciones en progreso para que el resto del grupo pueda responder', function () {
+    ['asignacion' => $asignacion, 'pregPref' => $pregPref, 'pregRec' => $pregRec, 'alumnos' => $alumnos] = crearAsignacionConAlumnos();
+
+    $respondiente = $alumnos[0];
+    $otros = $alumnos->filter(fn ($a) => $a->id !== $respondiente->id)->values();
+
+    $this->withSession(['test_access.assignment_id' => $asignacion->id])
+        ->post(route('test.submit', $asignacion), [
+            'estudiante_id' => $respondiente->id,
+            'respuesta_' . $pregPref->id . '_1' => $otros[0]->id,
+            'respuesta_' . $pregPref->id . '_2' => $otros[1]->id,
+            'respuesta_' . $pregPref->id . '_3' => $otros[2]->id,
+            'respuesta_' . $pregRec->id . '_1' => $otros[2]->id,
+            'respuesta_' . $pregRec->id . '_2' => $otros[1]->id,
+            'respuesta_' . $pregRec->id . '_3' => $otros[0]->id,
+        ])
+        ->assertRedirect(route('test.success'));
+
+    expect($asignacion->fresh()->estado)->toBe('en progreso');
+
+    $this->post(route('test.verificar'), ['clave_acceso' => $asignacion->clave_acceso])
+        ->assertRedirect(route('test.realizar', $asignacion));
 });
 
 it('muestra los alumnos del grupo en el formulario del test', function () {

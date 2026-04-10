@@ -1,69 +1,51 @@
-<!-- Topbar -->
-<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+{{-- resources/views/partials/topbar.blade.php --}}
+<header class="app-topbar">
 
-    <!-- Sidebar Toggle (Topbar) -->
-    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-        <i class="fa fa-bars"></i>
+  <button class="topbar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar">
+    <i class="bi bi-list"></i>
+  </button>
+
+  <div class="topbar-spacer"></div>
+
+  <div class="dropdown">
+    <button class="topbar-user-btn"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false">
+      <div class="topbar-avatar">
+        {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+      </div>
+      <span class="topbar-username d-none d-sm-block">
+        {{ auth()->user()->name }}
+      </span>
+      <i class="bi bi-chevron-down" style="font-size:0.7rem;color:#94a3b8;"></i>
     </button>
 
-    <!-- Topbar Navbar -->
-    <ul class="navbar-nav ml-auto">
-        <!-- Nav Item - Notifications -->
-        <li class="nav-item dropdown no-arrow mx-1">
-            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <!-- <i class="fas fa-bell fa-fw"></i> -->
-                <!-- <span class="badge badge-danger badge-counter">3+</span> -->
-            </a>
-            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown">
-                <h6 class="dropdown-header">
-                    Notifications Center
-                </h6>
-                <!-- Example notifications -->
-                <!-- <a class="dropdown-item d-flex align-items-center" href="#">
-                    <div class="mr-3">
-                        <div class="icon-circle bg-primary">
-                            <i class="fas fa-file-alt text-white"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="small text-gray-500">December 12, 2024</div>
-                        <span class="font-weight-bold">A new monthly report is ready to download!</span>
-                    </div>
-                </a> -->
-            </div>
-        </li>
-
-        <!-- Nav Item - User Information -->
-        <li class="nav-item dropdown no-arrow">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ auth()->user()->name }}</span>
-                <img class="img-profile rounded-circle" src="{{ asset('assets/img/undraw_profile.svg') }}" alt="Profile Image">
-            </a>
-            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-                <!-- <a class="dropdown-item" href="#">
-                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Profile
-                </a>
-                <a class="dropdown-item" href="#">
-                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Settings
-                </a>
-                <a class="dropdown-item" href="#">
-                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                    Activity Log
-                </a> -->
-                <div class="dropdown-divider"></div>
-                <!-- Formulario de logout -->
-                <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="dropdown-item">
-                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Logout
-                    </button>
-                </form>
-            </div>
-        </li>
+    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="min-width:200px;border-color:#e2e8f0;border-radius:10px;">
+      <li>
+        <div class="px-3 py-2">
+          <div style="font-size:0.82rem;font-weight:600;color:#0f172a;">{{ auth()->user()->name }}</div>
+          <div style="font-size:0.75rem;color:#64748b;">{{ auth()->user()->email }}</div>
+        </div>
+      </li>
+      <li><hr class="dropdown-divider my-1"></li>
+      <li>
+        <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('profile.edit') }}">
+          <i class="bi bi-person" style="font-size:0.9rem;"></i>
+          Mi perfil
+        </a>
+      </li>
+      <li><hr class="dropdown-divider my-1"></li>
+      <li>
+        <form action="{{ route('logout') }}" method="POST">
+          @csrf
+          <button type="submit" class="dropdown-item d-flex align-items-center gap-2 text-danger">
+            <i class="bi bi-box-arrow-right" style="font-size:0.9rem;"></i>
+            Cerrar sesion
+          </button>
+        </form>
+      </li>
     </ul>
+  </div>
 
-</nav>
-<!-- End of Topbar -->
+</header>

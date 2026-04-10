@@ -1,137 +1,57 @@
-<!-- Sidebar -->
-<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+{{-- resources/views/partials/sidebar.blade.php --}}
+<aside class="app-sidebar" id="appSidebar">
 
-    <!-- Sidebar - Brand -->
-    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url('/dashboard') }}">
-        <div class="sidebar-brand-icon rotate-n-15">
-            <i class="fas fa-laugh-wink"></i>
+  <a class="sidebar-brand" href="{{ route('dashboard') }}">
+    <div class="sidebar-brand-icon">
+      <i class="bi bi-diagram-3-fill"></i>
+    </div>
+    <span class="sidebar-brand-text">Sociogram</span>
+  </a>
+
+  <ul class="sidebar-nav">
+    <li class="sidebar-section-label">Principal</li>
+
+    <li>
+      <a class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+         href="{{ route('dashboard') }}">
+        <i class="bi bi-house nav-icon"></i>
+        Dashboard
+      </a>
+    </li>
+
+    <li class="sidebar-section-label">Herramientas</li>
+
+    <li>
+      <a class="sidebar-link {{ request()->routeIs('grupos.*') ? 'active' : '' }}"
+         href="{{ route('grupos.index') }}">
+        <i class="bi bi-people nav-icon"></i>
+        Grupos
+      </a>
+    </li>
+
+    <li>
+      <a class="sidebar-link {{ request()->routeIs('analisis') ? 'active' : '' }}"
+         href="{{ route('analisis') }}">
+        <i class="bi bi-graph-up nav-icon"></i>
+        Analisis
+      </a>
+    </li>
+  </ul>
+
+  <div style="padding: 1rem 1.25rem; border-top: 1px solid rgba(255,255,255,0.07); flex-shrink:0;">
+    <div style="display:flex; align-items:center; gap:0.6rem;">
+      <div class="topbar-avatar" style="width:30px;height:30px;font-size:0.72rem;">
+        {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+      </div>
+      <div style="overflow:hidden;">
+        <div style="font-size:0.8rem;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          {{ auth()->user()->name }}
         </div>
-        <div class="sidebar-brand-text mx-3">Sociogram <sup>2</sup></div>
-    </a>
-
-    <!-- Divider -->
-    <hr class="sidebar-divider my-0">
-
-    <!-- Nav Item - Dashboard -->
-    <li class="nav-item active">
-        <a class="nav-link" href="{{ url('/dashboard') }}">
-            <i class="fas fa-fw fa-tachometer-alt"></i>
-            <span>Dashboard</span></a>
-    </li>
-
-    <!-- Divider -->
-    {{-- <hr class="sidebar-divider"> --}}
-
-    <!-- Heading -->
-    {{-- <div class="sidebar-heading">
-        Interface
-    </div> --}}
-
-    <!-- Nav Item - Pages Collapse Menu -->
-    {{-- <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-            aria-expanded="true" aria-controls="collapseTwo">
-            <i class="fas fa-fw fa-cog"></i>
-            <span>Grupos</span>
-        </a> --}}
-        {{-- <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                <h6 class="collapse-header">Custom Components:</h6>
-                <a class="collapse-item" href="{{ url('/buttons') }}">Buttons</a>
-                <a class="collapse-item" href="{{ url('/cards') }}">Cards</a>
-            </div>
-        </div> --}}
-    {{-- </li> --}}
-
-    <!-- Nav Item - Utilities Collapse Menu -->
-    {{-- <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-            aria-expanded="true" aria-controls="collapseUtilities">
-            <i class="fas fa-fw fa-wrench"></i>
-            <span>Tests</span>
-        </a> --}}
-        {{-- <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
-            data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                <h6 class="collapse-header">Custom Utilities:</h6>
-                <a class="collapse-item" href="{{ url('/utilities-color') }}">Colors</a>
-                <a class="collapse-item" href="{{ url('/utilities-border') }}">Borders</a>
-                <a class="collapse-item" href="{{ url('/utilities-animation') }}">Animations</a>
-                <a class="collapse-item" href="{{ url('/utilities-other') }}">Other</a>
-            </div>
-        </div> --}}
-    </li>
-
-    <!-- Divider -->
-    <hr class="sidebar-divider">
-
-    <!-- Heading -->
-    <div class="sidebar-heading">
-        Addons
-    </div>
-
-    <!-- Nav Item - Pages Collapse Menu -->
-    <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-            aria-expanded="true" aria-controls="collapsePages">
-            <i class="fas fa-fw fa-folder"></i>
-            <span>Grupos</span>
-        </a>
-        <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                <h6 class="collapse-header">Login Screens:</h6>
-                <a class="collapse-item" href="{{ url('/login') }}">Login</a>
-                <a class="collapse-item" href="{{ url('/register') }}">Register</a>
-                <a class="collapse-item" href="{{ url('/forgot-password') }}">Forgot Password</a>
-                <div class="collapse-divider"></div>
-                <h6 class="collapse-header">Other Pages:</h6>
-                <a class="collapse-item" href="{{ url('/404') }}">404 Page</a>
-                <a class="collapse-item" href="{{ url('/blank') }}">Blank Page</a>
-            </div>
+        <div style="font-size:0.7rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          {{ auth()->user()->email }}
         </div>
-    </li>
-
-    <!-- Nav Item - Charts -->
-    <!-- Nav Item - Análisis -->
-<li class="nav-item">
-    <a class="nav-link" href="{{ route('analisis') }}">
-        <i class="fas fa-fw fa-chart-area"></i>
-        <span>Análisis</span>
-    </a>
-</li>
-    <li class="nav-item">
-        <a class="nav-link" href="{{ url('/charts') }}">
-            <i class="fas fa-fw fa-chart-area"></i>
-            <span>Tests</span></a>
-    </li>
-
-    <li class="nav-item">
-        <a class="nav-link" href="{{ url('/charts') }}">
-            <i class="fas fa-fw fa-chart-area"></i>
-            <span>Alumnos</span></a>
-    </li>
-
-    {{-- <!-- Nav Item - Tables -->
-    <li class="nav-item">
-        <a class="nav-link" href="{{ url('/tables') }}">
-            <i class="fas fa-fw fa-table"></i>
-            <span>Tables</span></a>
-    </li>
-
-    <!-- Divider -->
-    <hr class="sidebar-divider d-none d-md-block"> --}}
-
-    <!-- Sidebar Toggler (Sidebar) -->
-    <div class="text-center d-none d-md-inline">
-        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+      </div>
     </div>
+  </div>
 
-    <!-- Sidebar Message -->
-    <div class="sidebar-card d-none d-lg-flex">
-        <img class="sidebar-card-illustration mb-2" src="{{ asset('assets/img/undraw_rocket.svg') }}" alt="...">
-        <p class="text-center mb-2"><strong>Sociogram Pro</strong> </p>
-        <a class="btn btn-success btn-sm" href="https://startbootstrap.com/theme/sb-admin-pro">Upgrade to Pro!</a>
-    </div>
-
-</ul>
-<!-- End of Sidebar -->
+</aside>

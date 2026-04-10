@@ -1,101 +1,148 @@
 @extends('layouts.new-age')
 
-@section('title', 'Sociogram App - Landing Page')
+@section('title', 'Sociogram – Analiza las relaciones en tu aula')
 
 @section('content')
 
-<!-- Masthead section (Cabecera) -->
+<!-- Masthead / Hero -->
 <header class="masthead">
     <div class="container px-5">
         <div class="row gx-5 align-items-center">
             <div class="col-lg-6">
                 <div class="mb-5 mb-lg-0 text-center text-lg-start">
-                    <h1 class="display-1 lh-1 mb-3">Analiza las relaciones en tu aula fácilmente :D</h1>
-                    <p class="lead fw-normal text-muted mb-5">Con Sociogram.app puedes visualizar y comprender las dinámicas sociales de tu grupo de estudiantes en tiempo real. Todo desde tu navegador web.</p>
-                    <div class="d-flex flex-column flex-lg-row align-items-center">
-                        <a class="btn btn-primary rounded-pill" href="#signup">Regístrate Gratis</a>
+                    <span class="badge-pill-landing">Para docentes</span>
+                    <h1 class="display-1 lh-1 mb-3">
+                        Entiende a tu clase<br>
+                        <span class="text-gradient">como nunca antes</span>
+                    </h1>
+                    <p class="lead fw-normal text-muted mb-5">
+                        Sociogram convierte los tests sociométricos en mapas visuales de relaciones.
+                        Identifica líderes, estudiantes aislados y dinámicas grupales en minutos,
+                        directamente desde tu navegador.
+                    </p>
+                    <div class="d-flex flex-column flex-lg-row align-items-center gap-3">
+                        <a class="btn btn-primary rounded-pill px-4 py-2" href="{{ route('register') }}">
+                            Regístrate gratis
+                        </a>
+                        <a class="btn btn-link text-muted text-decoration-none" href="{{ route('login') }}">
+                            ¿Ya tienes cuenta? Inicia sesión →
+                        </a>
                     </div>
                 </div>
             </div>
             <div class="col-lg-6">
                 <div class="masthead-device-mockup">
-                    <img src="{{ asset('assets/img/1.png') }}" alt="Sociogram App Demo" style="max-width: 100%;">
+                    <img src="{{ asset('assets/img/1.png') }}" alt="Vista previa de Sociogram" style="max-width: 100%;">
                 </div>
             </div>
         </div>
     </div>
 </header>
 
-<!-- Testimonial Section -->
-<aside class="text-center bg-gradient-primary-to-secondary">
-    <div class="container px-5">
-        <div class="row gx-5 justify-content-center">
-            <div class="col-xl-8">
-                <div class="h2 fs-1 text-white mb-4">"Una herramienta innovadora para comprender las dinámicas sociales en el aula."</div>
-            </div>
-        </div>
-    </div>
-</aside>
-
-<!-- App features section (Características) -->
+<!-- Features -->
 <section id="features">
     <div class="container px-5">
-        <div class="row gx-5 align-items-center">
-            <div class="col-lg-8 order-lg-1 mb-5 mb-lg-0">
-                <div class="container-fluid px-5">
-                    <div class="row gx-5">
-                        <div class="col-md-6 mb-5">
-                            <div class="text-center">
-                                <i class="bi-person-lines-fill icon-feature text-gradient d-block mb-3"></i>
-                                <h3 class="font-alt">Visualiza Sociogramas</h3>
-                                <p class="text-muted mb-0">Crea representaciones gráficas de las relaciones entre tus estudiantes con solo unos clics.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-5">
-                            <div class="text-center">
-                                <i class="bi-bar-chart icon-feature text-gradient d-block mb-3"></i>
-                                <h3 class="font-alt">Análisis Detallados</h3>
-                                <p class="text-muted mb-0">Obtén información profunda sobre las dinámicas sociales y comportamientos grupales.</p>
-                            </div>
-                        </div>
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Todo lo que necesitas para entender tu aula</h2>
+            <p class="text-muted lead">Herramientas diseñadas específicamente para el contexto educativo.</p>
+        </div>
+        <div class="row gx-4 gy-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <div class="icon-wrap">
+                        <i class="bi-person-lines-fill icon-feature text-gradient"></i>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-5 mb-md-0">
-                            <div class="text-center">
-                                <i class="bi-cloud-download icon-feature text-gradient d-block mb-3"></i>
-                                <h3 class="font-alt">Exporta los Resultados</h3>
-                                <p class="text-muted mb-0">Descarga los sociogramas y análisis en formatos PDF y CSV que puedes compartir fácilmente.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="text-center">
-                                <i class="bi-shield-lock icon-feature text-gradient d-block mb-3"></i>
-                                <h3 class="font-alt">Privacidad Asegurada</h3>
-                                <p class="text-muted mb-0">Protege los datos de tus estudiantes con nuestra tecnología de seguridad avanzada.</p>
-                            </div>
-                        </div>
-                    </div>
+                    <h5 class="font-alt mb-2">Visualiza Sociogramas</h5>
+                    <p class="text-muted mb-0 small">
+                        Representaciones gráficas de las relaciones entre estudiantes generadas automáticamente.
+                    </p>
                 </div>
             </div>
-            <div class="col-lg-4 order-lg-0">
-                <!-- Imagen o gráfico que represente el análisis de sociogramas -->
-                <img src="{{ asset('assets/img/5.png') }}" alt="Sociogram App Demo" style="max-width: 100%;">
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <div class="icon-wrap">
+                        <i class="bi-bar-chart icon-feature text-gradient"></i>
+                    </div>
+                    <h5 class="font-alt mb-2">Análisis Detallados</h5>
+                    <p class="text-muted mb-0 small">
+                        Índices de cohesión, reciprocidad y centralidad para cada grupo.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <div class="icon-wrap">
+                        <i class="bi-cloud-download icon-feature text-gradient"></i>
+                    </div>
+                    <h5 class="font-alt mb-2">Exporta Resultados</h5>
+                    <p class="text-muted mb-0 small">
+                        Descarga los sociogramas y análisis en PDF y CSV para compartir con tu equipo.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <div class="icon-wrap">
+                        <i class="bi-shield-lock icon-feature text-gradient"></i>
+                    </div>
+                    <h5 class="font-alt mb-2">Privacidad Asegurada</h5>
+                    <p class="text-muted mb-0 small">
+                        Los datos de tus estudiantes se almacenan de forma segura y nunca se comparten.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Call to Action Section -->
-<section class="cta">
-    <div class="cta-content">
-        <div class="container px-5">
-            <h2 class="text-white display-1 lh-1 mb-4">
-                Comienza a usar Sociogram.app hoy mismo.
-                <br />
-                ¡Regístrate Gratis!
-            </h2>
-            <a class="btn btn-outline-light py-3 px-4 rounded-pill" href="#signup">Empieza Ahora</a>
+<!-- Cómo funciona -->
+<section class="how-it-works" id="como-funciona">
+    <div class="container px-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">¿Cómo funciona?</h2>
+            <p class="text-muted lead">En tres pasos tienes tu primer sociograma listo.</p>
         </div>
+        <div class="row gx-5 justify-content-center text-center">
+            <div class="col-md-4 mb-4 mb-md-0">
+                <div class="step-number">1</div>
+                <h5 class="font-alt">Crea un test</h5>
+                <p class="text-muted small">
+                    Define las preguntas sociométricas para tu grupo — ¿con quién estudiarías? ¿a quién elegirías de compañero?
+                </p>
+            </div>
+            <div class="col-md-4 mb-4 mb-md-0">
+                <div class="step-number">2</div>
+                <h5 class="font-alt">Tus alumnos responden</h5>
+                <p class="text-muted small">
+                    Comparte un enlace único. Los estudiantes contestan desde cualquier dispositivo, sin registros ni apps.
+                </p>
+            </div>
+            <div class="col-md-4">
+                <div class="step-number">3</div>
+                <h5 class="font-alt">Analiza los resultados</h5>
+                <p class="text-muted small">
+                    Sociogram genera el grafo de relaciones al instante. Explora, filtra y exporta desde el panel.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta-gradient" id="cta">
+    <div class="container px-5 text-center">
+        <h2 class="display-4 text-white fw-bold lh-1 mb-4">
+            Comienza a entender tu aula<br>
+            <span style="opacity:0.85;">hoy mismo. Es gratis.</span>
+        </h2>
+        <p class="text-white-50 lead mb-5">
+            Sin tarjeta de crédito. Sin instalaciones. Listo en menos de 2 minutos.
+        </p>
+        <a class="btn btn-light btn-lg rounded-pill px-5 py-3 fw-bold"
+           href="{{ route('register') }}"
+           style="color:#2937f0;">
+            Crear mi cuenta gratis
+        </a>
     </div>
 </section>
 

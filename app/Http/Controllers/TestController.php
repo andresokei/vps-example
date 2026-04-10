@@ -26,7 +26,7 @@ class TestController extends Controller
 
         $asignacion = AsignacionTest::with(['grupo.estudiantes', 'test.preguntas'])
             ->where('clave_acceso', $validated['clave_acceso'])
-            ->where('estado', 'pendiente')
+            ->whereIn('estado', ['pendiente', 'en progreso'])
             ->first();
 
         if (

@@ -10,6 +10,8 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
+uses(Tests\TestCase::class, RefreshDatabase::class);
+
 function createAssignedTestWithStudents(int $studentCount = 4): array
 {
     static $sequence = 1;

@@ -1,191 +1,239 @@
 <div>
-    <!-- Mensaje de éxito o error -->
-    @if (session()->has('message'))
-        <div class="alert alert-success d-flex align-items-center" role="alert">
-            <i class="fas fa-check-circle mr-2"></i> {{ session('message') }}
-        </div>
-    @endif
+  @if (session()->has('message'))
+    <div class="alert alert-success d-flex align-items-center gap-2" role="alert">
+      <i class="bi bi-check-circle-fill flex-shrink-0"></i>
+      {{ session('message') }}
+    </div>
+  @endif
 
-    <!-- Formulario para crear un nuevo grupo -->
-    <form wire:submit.prevent="createGroup" class="mb-4">
-        <div class="input-group" style="max-width: 400px; width: 100%;">
-            <input type="text" wire:model="groupName" placeholder="Nuevo grupo" class="form-control rounded-left" aria-label="Nombre del grupo">
-            <div class="input-group-append">
-                <button class="btn btn-primary rounded-right" type="submit">
-                    <i class="fas fa-plus"></i>
-                </button>
-            </div>
-        </div>
-    </form>
+  <form wire:submit.prevent="createGroup" class="mb-4">
+    <div class="input-group">
+      <input type="text"
+             wire:model="groupName"
+             placeholder="Nombre del nuevo grupo"
+             class="form-control"
+             aria-label="Nombre del grupo">
+      <button class="btn btn-primary" type="submit">
+        <i class="bi bi-plus-lg"></i>
+      </button>
+    </div>
+  </form>
 
-    <!-- Lista de grupos -->
-    <ul class="list-unstyled">
-        @foreach ($groups as $group)
-            <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                <span class="font-weight-bold">{{ $group->nombre_grupo }}</span>
-                <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-secondary" wire:click.prevent="openModal({{ $group->id }})">
-                        <i class="fas fa-user-plus"></i>
-                    </button>
-                    <button class="btn btn-outline-danger" wire:click.prevent="deleteGroup({{ $group->id }})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
+  <ul class="list-unstyled mb-0">
+    @forelse ($groups as $group)
+      <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+        <span class="fw-medium">{{ $group->nombre_grupo }}</span>
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-secondary"
+                  wire:click.prevent="openModal({{ $group->id }})"
+                  title="Anadir alumnos">
+            <i class="bi bi-person-plus"></i>
+          </button>
+          <button class="btn btn-outline-danger"
+                  wire:click.prevent="deleteGroup({{ $group->id }})"
+                  title="Eliminar grupo">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </li>
+    @empty
+      <li class="text-center text-muted py-3" style="font-size:0.875rem;">
+        No hay grupos creados aun.
+      </li>
+    @endforelse
+  </ul>
+
+  <div class="modal fade" id="addStudentsModal"
+       tabindex="-1"
+       aria-labelledby="addStudentsModalLabel"
+       aria-hidden="true"
+       wire:ignore.self>
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addStudentsModalLabel">Anadir alumnos</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <ul class="nav nav-tabs mb-4" id="addStudentsTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link"
+                      id="csv-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#csv"
+                      type="button"
+                      role="tab">
+                Importar CSV
+              </button>
             </li>
-        @endforeach
-    </ul>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active"
+                      id="manual-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#manual"
+                      type="button"
+                      role="tab">
+                Anadir manualmente
+              </button>
+            </li>
+          </ul>
 
-    <!-- Modal para añadir alumnos -->
-    <!-- Modal para añadir alumnos -->
-<div class="modal fade" id="addStudentsModal" tabindex="-1" aria-labelledby="addStudentsModalLabel" aria-hidden="true" wire:ignore.self>
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow rounded-lg">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title font-weight-bold" id="addStudentsModalLabel">Añadir Alumnos</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body p-4">
-                <!-- Pestañas para alternar entre métodos -->
-                <ul class="nav nav-tabs mb-4">
-                    <li class="nav-item">
-                        <a class="nav-link" id="csv-tab" data-toggle="tab" href="#csv" role="tab">Importar CSV</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" id="manual-tab" data-toggle="tab" href="#manual" role="tab">Añadir Manualmente</a>
-                    </li>
-                </ul>
-                
-                <div class="tab-content">
-                    <!-- Pestaña CSV -->
-                    <div class="tab-pane fade" id="csv" role="tabpanel">
-                        <div class="custom-file mb-3">
-                            <input type="file" class="custom-file-input" id="csvFileInput" wire:model="csvFile">
-                            <label class="custom-file-label" for="csvFileInput">Seleccionar archivo</label>
-                        </div>
-                        @error('csvFile') <div class="text-danger mb-3 small"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div> @enderror
-                        
-                        <button class="btn btn-primary btn-block" wire:click="uploadCSV" wire:loading.attr="disabled">
-                            <i class="fas fa-upload mr-1"></i> Importar Alumnos
-                            <span wire:loading wire:target="uploadCSV" class="spinner-border spinner-border-sm ml-1" role="status"></span>
-                        </button>
-                        
-                        <div class="text-center mt-2">
-                            <small class="text-muted">Formato: un nombre por línea</small>
-                        </div>
-                    </div>
-                    
-                    <!-- Pestaña Manual -->
-                    <div class="tab-pane fade show active" id="manual" role="tabpanel">
-                        <form wire:submit.prevent="addStudentFromList">
-                            <div class="form-group">
-                                <label for="studentNames">Nombres separados por comas:</label>
-                                <textarea wire:model="studentNames" class="form-control" id="studentNames" rows="3" placeholder="Ej: Juan Pérez, María García"></textarea>
-                                <small class="form-text text-muted">Utiliza comas para separar cada nombre</small>
-                                @error('studentNames') <div class="text-danger small"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</div> @enderror
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary btn-block" wire:loading.attr="disabled">
-                                <i class="fas fa-plus mr-1"></i> Añadir Alumnos
-                                <span wire:loading wire:target="addStudentFromList" class="spinner-border spinner-border-sm ml-1" role="status"></span>
-                            </button>
-                        </form>
-                    </div>
+          <div class="tab-content">
+            <div class="tab-pane fade" id="csv" role="tabpanel">
+              <div class="mb-3">
+                <label for="csvFileInput" class="form-label">Seleccionar archivo CSV</label>
+                <input type="file"
+                       class="form-control"
+                       id="csvFileInput"
+                       wire:model="csvFile">
+                <div class="form-text">Formato: un nombre por linea.</div>
+              </div>
+              @error('csvFile')
+                <div class="text-danger small mb-2">
+                  <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
                 </div>
-                
-                <!-- Lista de alumnos en el grupo -->
-                <div class="mt-4 pt-3 border-top">
-                    <h6 class="d-flex justify-content-between align-items-center mb-3">
-                        <span>Alumnos en este grupo</span>
-                        <span class="badge badge-primary badge-pill" wire:loading.class="d-none" wire:target="loadGroupStudents">
-                            {{ count($groupStudents ?? []) }}
-                        </span>
-                        <span wire:loading wire:target="loadGroupStudents" class="spinner-border spinner-border-sm" role="status"></span>
-                    </h6>
-                    
-                    @if(!empty($groupStudents) && count($groupStudents) > 0)
-                        <div class="list-group list-group-flush" style="max-height: 250px; overflow-y: auto;">
-                            @foreach($groupStudents as $student)
-                                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3">
-                                    <div>
-                                        <div class="font-weight-medium">{{ $student->nombre }}</div>
-                                    </div>
-                                    <button class="btn btn-sm btn-outline-danger" wire:click="removeStudentFromGroup({{ $student->id }})" wire:loading.attr="disabled">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-center py-3 text-muted">
-                            <i class="fas fa-users fa-2x mb-2 d-block"></i>
-                            <p class="mb-0">No hay alumnos en este grupo</p>
-                        </div>
-                    @endif
+              @enderror
+              <div class="d-grid">
+                <button class="btn btn-primary"
+                        wire:click="uploadCSV"
+                        wire:loading.attr="disabled">
+                  <span wire:loading.remove wire:target="uploadCSV">
+                    <i class="bi bi-upload me-1"></i> Importar alumnos
+                  </span>
+                  <span wire:loading wire:target="uploadCSV">
+                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    Importando...
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div class="tab-pane fade show active" id="manual" role="tabpanel">
+              <form wire:submit.prevent="addStudentFromList">
+                <div class="mb-3">
+                  <label for="studentNames" class="form-label">Nombres separados por comas</label>
+                  <textarea wire:model="studentNames"
+                            class="form-control"
+                            id="studentNames"
+                            rows="3"
+                            placeholder="Ej: Juan Perez, Maria Garcia"></textarea>
+                  @error('studentNames')
+                    <div class="text-danger small mt-1">
+                      <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
+                    </div>
+                  @enderror
                 </div>
+                <div class="d-grid">
+                  <button type="submit"
+                          class="btn btn-primary"
+                          wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="addStudentFromList">
+                      <i class="bi bi-plus-lg me-1"></i> Anadir alumnos
+                    </span>
+                    <span wire:loading wire:target="addStudentFromList">
+                      <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                      Anadiendo...
+                    </span>
+                  </button>
+                </div>
+              </form>
             </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" wire:click="closeModal">Cerrar</button>
+          </div>
+
+          <div class="mt-4 pt-3 border-top">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="mb-0 fw-semibold" style="font-size:0.875rem;">Alumnos en este grupo</h6>
+              <span class="badge bg-primary rounded-pill"
+                    wire:loading.class="d-none"
+                    wire:target="loadGroupStudents">
+                {{ count($groupStudents ?? []) }}
+              </span>
+              <span wire:loading wire:target="loadGroupStudents"
+                    class="spinner-border spinner-border-sm text-primary"
+                    role="status"></span>
             </div>
+
+            @if(!empty($groupStudents) && count($groupStudents) > 0)
+              <div class="list-group list-group-flush" style="max-height:240px;overflow-y:auto;">
+                @foreach($groupStudents as $student)
+                  <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-2">
+                    <span style="font-size:0.875rem;">{{ $student->nombre }}</span>
+                    <button class="btn btn-sm btn-outline-danger"
+                            wire:click="removeStudentFromGroup({{ $student->id }})"
+                            wire:loading.attr="disabled">
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </div>
+                @endforeach
+              </div>
+            @else
+              <div class="text-center py-3 text-muted" style="font-size:0.855rem;">
+                <i class="bi bi-people mb-2 d-block" style="font-size:1.75rem;"></i>
+                No hay alumnos en este grupo.
+              </div>
+            @endif
+          </div>
         </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" wire:click="closeModal">Cerrar</button>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 
-
-<!-- Modal para confirmar eliminación de grupo -->
-<div class="modal fade" id="deleteGroupModal" tabindex="-1" aria-labelledby="deleteGroupModalLabel" aria-hidden="true" wire:ignore.self>
+  <div class="modal fade" id="deleteGroupModal"
+       tabindex="-1"
+       aria-labelledby="deleteGroupModalLabel"
+       aria-hidden="true"
+       wire:ignore.self>
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow rounded-lg">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title font-weight-bold" id="deleteGroupModalLabel">Confirmar eliminación</h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body p-4 text-center">
-                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                <p class="mb-1">¿Estás seguro de que quieres eliminar este grupo?</p>
-                <p class="text-danger mb-0"><strong>Esta acción no se puede deshacer.</strong></p>
-            </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                    <i class="fas fa-times mr-1"></i> Cancelar
-                </button>
-                <button type="button" class="btn btn-danger" wire:click="confirmDeleteGroup" wire:loading.attr="disabled">
-                    <i class="fas fa-trash mr-1"></i> Eliminar
-                    <span wire:loading wire:target="confirmDeleteGroup" class="spinner-border spinner-border-sm ml-1" role="status"></span>
-                </button>
-            </div>
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="deleteGroupModalLabel">Confirmar eliminacion</h5>
+          <button type="button"
+                  class="btn-close btn-close-white"
+                  data-bs-dismiss="modal"
+                  aria-label="Cerrar"></button>
         </div>
+        <div class="modal-body text-center py-4">
+          <i class="bi bi-exclamation-triangle text-warning mb-3 d-block" style="font-size:2.5rem;"></i>
+          <p class="mb-1">Estas seguro de que quieres eliminar este grupo?</p>
+          <p class="text-danger fw-medium mb-0">Esta accion no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg me-1"></i> Cancelar
+          </button>
+          <button type="button"
+                  class="btn btn-danger"
+                  wire:click="confirmDeleteGroup"
+                  wire:loading.attr="disabled">
+            <span wire:loading.remove wire:target="confirmDeleteGroup">
+              <i class="bi bi-trash me-1"></i> Eliminar
+            </span>
+            <span wire:loading wire:target="confirmDeleteGroup">
+              <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+              Eliminando...
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 </div>
 
 @push('scripts')
 <script>
-    document.addEventListener('livewire:init', () => {
+document.addEventListener('livewire:init', () => {
+  const addModal = new bootstrap.Modal(document.getElementById('addStudentsModal'));
+  const deleteModal = new bootstrap.Modal(document.getElementById('deleteGroupModal'));
 
-        /* —— Modal alumnos —— */
-        Livewire.on('openModal',  () => $('#addStudentsModal').modal('show'));
-        Livewire.on('closeModal', () => $('#addStudentsModal').modal('hide'));
-
-        /* —— Modal eliminar grupo —— */
-        Livewire.on('openDeleteModal',  () => $('#deleteGroupModal').modal('show'));
-        Livewire.on('closeDeleteModal', () => $('#deleteGroupModal').modal('hide'));
-
-        /* Extra: nombre del CSV y pestaña activa (opcional) */
-        $(document).on('change', '.custom-file-input', function () {
-            const fileName = $(this).val().split('\\').pop();
-            $(this).next('.custom-file-label').text(fileName || 'Seleccionar archivo');
-        });
-
-        const activeTab = sessionStorage.getItem('activeTab');
-        if (activeTab) $('#' + activeTab).tab('show');
-
-        $('a[data-toggle="tab"]').on('shown.bs.tab', e =>
-            sessionStorage.setItem('activeTab', $(e.target).attr('id'))
-        );
-    });
+  Livewire.on('openModal', () => addModal.show());
+  Livewire.on('closeModal', () => addModal.hide());
+  Livewire.on('openDeleteModal', () => deleteModal.show());
+  Livewire.on('closeDeleteModal', () => deleteModal.hide());
+});
 </script>
 @endpush

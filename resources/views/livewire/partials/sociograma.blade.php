@@ -116,7 +116,7 @@
   --shadow-md: 0 1px 5px rgba(0,0,0,0.08);
   --shadow-lg: 0 2px 8px rgba(0,0,0,0.1);
   --transition: all 0.2s ease;
-  --sidebar-width: 280px;
+  --soc-panel-width: 280px;
   --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
@@ -142,13 +142,13 @@ body {
   transition: var(--transition);
 }
 
-.card-header {
+.sociograma-card .card-header {
   background-color: white;
   border-bottom: 1px solid var(--gray-200);
   padding: 1rem 1.5rem;
 }
 
-.card-header h5 {
+.sociograma-card .card-header h5 {
   color: var(--gray-800);
   font-weight: 600;
 }
@@ -187,7 +187,7 @@ body {
 /* Barra lateral - por defecto oculta en pantallas pequeñas */
 .sidebar-controls {
   position: absolute;
-  width: var(--sidebar-width);
+  width: var(--soc-panel-width);
   height: 100%;
   background-color: white;
   border-right: 1px solid var(--gray-200);
@@ -564,10 +564,10 @@ body {
   .sidebar-controls {
     left: 0; /* Por defecto visible en pantallas grandes */
   }
-  
+
   .sociograma-visualization {
-    margin-left: var(--sidebar-width);
-    width: calc(100% - var(--sidebar-width));
+    margin-left: var(--soc-panel-width);
+    width: calc(100% - var(--soc-panel-width));
   }
   
   .sidebar-toggle-btn {

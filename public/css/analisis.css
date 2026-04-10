@@ -897,3 +897,115 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
+
+/* ========================================================
+   REDISEÑO ANÁLISIS — estilos adicionales
+   ======================================================== */
+
+/* --- Tabs de análisis --- */
+.nav-tabs-analisis {
+    border-bottom: 1px solid #dee2e6;
+    gap: 0.25rem;
+}
+.nav-tabs-analisis .nav-item { margin-bottom: -1px; }
+.nav-tabs-analisis .nav-link {
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    color: #6c757d;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.6rem 1rem;
+    transition: color .15s, border-color .15s;
+}
+.nav-tabs-analisis .nav-link:hover { color: #0d6efd; border-bottom-color: #adb5bd; }
+.nav-tabs-analisis .nav-link.active { color: #0d6efd; border-bottom-color: #0d6efd; background: transparent; }
+
+.tab-content-analisis {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 .5rem .5rem;
+    padding: 1.5rem;
+    background: #fff;
+}
+
+/* --- Centralidades — barras inline --- */
+.inline-bar-track {
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    min-width: 40px;
+    overflow: hidden;
+}
+.inline-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    width: 0%;
+}
+
+/* --- Centralidades — colores de fila --- */
+.table-row-leader   { background-color: rgba(25,135,84,.08) !important; }
+.table-row-bridge   { background-color: rgba(13,110,253,.08) !important; }
+.table-row-isolated { background-color: rgba(220,53,69,.08) !important; }
+
+thead th[data-sort] {
+    user-select: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+thead th[data-sort]:hover { background-color: #f1f3f5; }
+
+/* --- Modal de detalle de alumno --- */
+.student-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0d6efd, #6610f2);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.sdm-stat-card {
+    background: #f8f9fa;
+    border-radius: .4rem;
+    padding: .6rem .75rem;
+    font-size: .8rem;
+}
+.sdm-stat-card .sdm-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+.sdm-stat-card .sdm-stat-label {
+    color: #6c757d;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+/* --- Heatmap — leyenda de colores --- */
+.heatmap-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1rem;
+    margin-top: .75rem;
+    font-size: .8rem;
+    color: #495057;
+}
+.heatmap-legend-item {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+}
+.heatmap-legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}

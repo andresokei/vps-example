@@ -3,12 +3,12 @@
 namespace App\Livewire;
 
 use App\Models\Estudiante;
-use Illuminate\Support\Facades\DB;
-use Livewire\Component;
 use App\Models\Grupo;
-use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class GroupManager extends Component
 {
@@ -19,21 +19,20 @@ class GroupManager extends Component
     public $selectedGroup = null;
     public $studentNames = '';
     public $csvFile;
-    public $groupStudents = []; 
-    public $groupToDelete = null; // Nueva propiedad para el grupo a eliminar
+    public $groupStudents = [];
+    public $groupToDelete = null;
 
     protected function rules()
     {
         return [
-            'groupName'    => [
+            'groupName' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('grupos', 'nombre_grupo')
-                    ->where('id_profesor', Auth::id()),
+                Rule::unique('grupos', 'nombre_grupo')->where('id_profesor', Auth::id()),
             ],
-            'studentNames' => ['nullable', 'string', 'max:500', 'regex:/^[A-Za-zÀ-ÖØ-öø-ÿ ,]+$/'],
-            'csvFile'      => ['nullable', 'file', 'mimes:csv,txt', 'max:2048'],
+            'studentNames' => ['nullable', 'string', 'max:500', 'regex:/^[\pL\s,]+$/u'],
+            'csvFile' => ['nullable', 'file', 'mimes:csv,txt', 'max:2048'],
         ];
     }
 
@@ -44,32 +43,34 @@ class GroupManager extends Component
 
     private function loadGroups()
     {
-        $this->groups = Grupo::where('id_profesor', Auth::id())->get();
+        $this->groups = Grupo::where('id_profesor', Auth::id())
+            ->orderBy('nombre_grupo')
+            ->get();
     }
 
     public function openModal($groupId)
     {
-        // Autoriza que el grupo pertenezca al profesor
-        if (Grupo::where('id', $groupId)->where('id_profesor', Auth::id())->exists()) {
-            $this->selectedGroup = $groupId;
-            $this->loadGroupStudents(); // Cargar estudiantes del grupo seleccionado
-            $this->dispatch('openModal');
-        } else {
+        if (! Grupo::where('id', $groupId)->where('id_profesor', Auth::id())->exists()) {
             abort(403);
         }
+
+        $this->selectedGroup = $groupId;
+        $this->loadGroupStudents();
+        $this->dispatch('openModal');
     }
 
-    // Método para cargar los estudiantes del grupo
     public function loadGroupStudents()
     {
-        if ($this->selectedGroup) {
-            $group = Grupo::where('id', $this->selectedGroup)
-                ->where('id_profesor', Auth::id())
-                ->first();
-            $this->groupStudents = $group ? $group->estudiantes : [];
-        } else {
+        if (! $this->selectedGroup) {
             $this->groupStudents = [];
+            return;
         }
+
+        $group = Grupo::where('id', $this->selectedGroup)
+            ->where('id_profesor', Auth::id())
+            ->first();
+
+        $this->groupStudents = $group ? $group->estudiantes : [];
     }
 
     public function closeModal()
@@ -84,7 +85,7 @@ class GroupManager extends Component
 
         Grupo::create([
             'nombre_grupo' => $this->groupName,
-            'id_profesor'  => Auth::id(),
+            'id_profesor' => Auth::id(),
         ]);
 
         session()->flash('message', 'Grupo creado correctamente.');
@@ -102,19 +103,18 @@ class GroupManager extends Component
         $addedStudents = 0;
 
         while (($data = fgetcsv($file)) !== false && $rows < 1000) {
-            if (!empty($data[0])) {
+            if (! empty($data[0])) {
                 $this->addStudentToGroup(trim($data[0]));
                 $addedStudents++;
             }
+
             $rows++;
         }
 
         fclose($file);
         $this->reset('csvFile');
-        
-        // Recargar la lista de estudiantes
         $this->loadGroupStudents();
-        
+
         session()->flash('message', $addedStudents . ' estudiantes añadidos desde CSV.');
     }
 
@@ -122,29 +122,30 @@ class GroupManager extends Component
     {
         $this->validateOnly('studentNames');
 
-        if ($this->selectedGroup) {
-            $names = array_filter(array_map('trim', explode(',', $this->studentNames)));
-            $addedStudents = 0;
-            
-            foreach ($names as $name) {
-                $this->addStudentToGroup($name);
-                $addedStudents++;
-            }
-
-            // Recargar la lista de estudiantes
-            $this->loadGroupStudents();
-            $this->reset('studentNames');
-            
-            session()->flash('message', $addedStudents . ' estudiantes añadidos.');
+        if (! $this->selectedGroup) {
+            return;
         }
+
+        $names = array_filter(array_map('trim', explode(',', $this->studentNames)));
+        $addedStudents = 0;
+
+        foreach ($names as $name) {
+            $this->addStudentToGroup($name);
+            $addedStudents++;
+        }
+
+        $this->loadGroupStudents();
+        $this->reset('studentNames');
+
+        session()->flash('message', $addedStudents . ' estudiantes añadidos.');
     }
 
     private function addStudentToGroup($studentName)
     {
         DB::transaction(function () use ($studentName) {
             $group = Grupo::where('id', $this->selectedGroup)
-                          ->where('id_profesor', Auth::id())
-                          ->firstOrFail();
+                ->where('id_profesor', Auth::id())
+                ->firstOrFail();
 
             $studentName = trim($studentName);
             if ($studentName === '') {
@@ -165,76 +166,62 @@ class GroupManager extends Component
         });
     }
 
-    // Método para eliminar un estudiante del grupo
     public function removeStudentFromGroup($studentId)
     {
-        if ($this->selectedGroup) {
-            $group = Grupo::where('id', $this->selectedGroup)
-                         ->where('id_profesor', Auth::id())
-                         ->firstOrFail();
-                         
-            $group->estudiantes()->detach($studentId);
-            
-            // Recargar la lista de estudiantes
-            $this->loadGroupStudents();
-            
-            session()->flash('message', 'Estudiante eliminado del grupo.');
+        if (! $this->selectedGroup) {
+            return;
         }
+
+        $group = Grupo::where('id', $this->selectedGroup)
+            ->where('id_profesor', Auth::id())
+            ->firstOrFail();
+
+        $group->estudiantes()->detach($studentId);
+        $this->loadGroupStudents();
+
+        session()->flash('message', 'Estudiante eliminado del grupo.');
     }
 
-    // Método modificado para mostrar el modal de confirmación
     public function deleteGroup($groupId)
     {
-        // Debug - agregar mensaje de log
-        logger('deleteGroup llamado con ID: ' . $groupId);
-        
-        // Verificar que el grupo exista y pertenezca al profesor antes de mostrar el modal
         $group = Grupo::where('id', $groupId)
-                      ->where('id_profesor', Auth::id())
-                      ->first();
+            ->where('id_profesor', Auth::id())
+            ->first();
 
-        if (!$group) {
+        if (! $group) {
             session()->flash('error', 'Grupo no encontrado o sin permiso.');
             return;
         }
 
-        // Guardar el ID del grupo a eliminar y mostrar el modal de confirmación
         $this->groupToDelete = $groupId;
-        logger('Mostrando modal de confirmación para grupo: ' . $groupId);
-        $this->dispatch('openDeleteModal');    }
+        $this->dispatch('openDeleteModal');
+    }
 
-    // Nuevo método para confirmar la eliminación del grupo
     public function confirmDeleteGroup()
     {
-        logger('confirmDeleteGroup llamado para grupo: ' . $this->groupToDelete);
-        
-        if (!$this->groupToDelete) {
-            logger('No hay grupo para eliminar');
+        if (! $this->groupToDelete) {
             return;
         }
 
         $group = Grupo::where('id', $this->groupToDelete)
-                      ->where('id_profesor', Auth::id())
-                      ->first();
+            ->where('id_profesor', Auth::id())
+            ->first();
 
-        if (!$group) {
-            logger('Grupo no encontrado o sin permiso');
+        if (! $group) {
             session()->flash('error', 'Grupo no encontrado o sin permiso.');
-            $this->dispatch('closeDeleteModal');   // sin ->toBrowser()
+            $this->dispatch('closeDeleteModal');
             return;
         }
 
         DB::transaction(function () use ($group) {
-            // Desasocia alumnos, no borres registros globales
             $group->estudiantes()->detach();
             $group->delete();
-            logger('Grupo eliminado: ' . $group->id);
         });
 
         session()->flash('message', 'Grupo eliminado correctamente.');
         $this->loadGroups();
         $this->groupToDelete = null;
-        $this->dispatch('closeDeleteModal');   // sin ->toBrowser()
+        $this->dispatch('closeDeleteModal');
     }
 
     public function render()

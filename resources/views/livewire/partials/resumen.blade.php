@@ -1,58 +1,69 @@
 @php
-$cards = [
-    [
-        'label' => 'Participacion',
-        'value' => number_format(($datos['participation_rate'] ?? 0) * 100, 0) . '%',
-        'icon'  => 'participation',
-        'color' => 'primary',
-    ],
-    [
-        'label' => 'Densidad',
-        'value' => number_format($datos['density'] ?? 0, 2),
-        'icon'  => 'density',
-        'color' => 'success',
-    ],
-    [
-        'label' => 'Polarizacion',
-        'value' => number_format($datos['polarization'] ?? 0, 2),
-        'icon'  => 'polarization',
-        'color' => 'danger',
-    ],
-    [
-        'label' => 'Reciprocidad',
-        'value' => number_format(($datos['reciprocity'] ?? 0) * 100, 0) . '%',
-        'icon'  => 'reciprocity',
-        'color' => 'info',
-    ],
+$metrics = [
+  [
+    'label' => 'Participación',
+    'value' => number_format(($datos['participation_rate'] ?? 0) * 100, 0) . '%',
+    'icon'  => 'bi-person-check',
+    'color' => '#6366f1',
+    'bg'    => '#eef2ff',
+  ],
+  [
+    'label' => 'Densidad',
+    'value' => number_format($datos['density'] ?? 0, 2),
+    'icon'  => 'bi-bezier2',
+    'color' => '#22c55e',
+    'bg'    => '#f0fdf4',
+  ],
+  [
+    'label' => 'Polarización',
+    'value' => number_format($datos['polarization'] ?? 0, 2),
+    'icon'  => 'bi-arrow-left-right',
+    'color' => '#ef4444',
+    'bg'    => '#fff1f2',
+  ],
+  [
+    'label' => 'Reciprocidad',
+    'value' => number_format(($datos['reciprocity'] ?? 0) * 100, 0) . '%',
+    'icon'  => 'bi-arrow-repeat',
+    'color' => '#0ea5e9',
+    'bg'    => '#f0f9ff',
+  ],
 ];
 @endphp
 
-<div class="stats-cards-container">
-    <div class="row g-4">
-        @foreach($cards as $c)
-            <div class="col-lg-3 col-md-6 col-sm-6">
-                <div class="stats-card stats-card-{{ $c['color'] }}">
-                    <div class="stats-card-content">
-                        <div class="stats-info">
-                            <div class="stats-label">{{ $c['label'] }}</div>
-                            <div class="stats-value">{{ $c['value'] }}</div>
-                        </div>
-                        <div class="stats-icon stats-icon-{{ $c['color'] }} {{ $c['icon'] }}"></div>
-                    </div>
-                </div>
+<div class="row g-3 mb-4">
+  @foreach($metrics as $m)
+    <div class="col-6 col-lg-3">
+      <div class="card h-100" style="border-color:#e2e8f0;">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div style="width:44px;height:44px;border-radius:10px;background:{{ $m['bg'] }};
+                      display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="bi {{ $m['icon'] }}" style="font-size:1.25rem;color:{{ $m['color'] }};"></i>
+          </div>
+          <div>
+            <div style="font-size:1.4rem;font-weight:700;color:#0f172a;line-height:1.1;">
+              {{ $m['value'] }}
             </div>
-        @endforeach
-    </div>
-
-    @if(!empty($datos['totales']))
-        <div class="card shadow-sm border-0 mt-3">
-            <div class="card-body py-3 d-flex flex-wrap gap-3">
-                <span><strong>Alumnos:</strong> {{ $datos['totales']['alumnos'] ?? 0 }}</span>
-                <span><strong>Respondieron:</strong> {{ $datos['totales']['respondieron'] ?? 0 }}</span>
-                <span><strong>Relaciones:</strong> {{ $datos['totales']['relaciones'] ?? 0 }}</span>
-                <span><strong>Preferencias:</strong> {{ $datos['totales']['preferencias'] ?? 0 }}</span>
-                <span><strong>Rechazos:</strong> {{ $datos['totales']['rechazos'] ?? 0 }}</span>
+            <div style="font-size:0.72rem;color:#64748b;text-transform:uppercase;letter-spacing:0.04em;font-weight:500;">
+              {{ $m['label'] }}
             </div>
+          </div>
         </div>
-    @endif
+      </div>
+    </div>
+  @endforeach
 </div>
+
+@if(!empty($datos['totales']))
+  <div class="card mb-4">
+    <div class="card-body py-3">
+      <div class="d-flex flex-wrap gap-4" style="font-size:0.875rem;">
+        <span><span class="text-muted">Alumnos:</span> <strong>{{ $datos['totales']['alumnos'] ?? 0 }}</strong></span>
+        <span><span class="text-muted">Respondieron:</span> <strong>{{ $datos['totales']['respondieron'] ?? 0 }}</strong></span>
+        <span><span class="text-muted">Relaciones:</span> <strong>{{ $datos['totales']['relaciones'] ?? 0 }}</strong></span>
+        <span><span class="text-muted">Preferencias:</span> <strong>{{ $datos['totales']['preferencias'] ?? 0 }}</strong></span>
+        <span><span class="text-muted">Rechazos:</span> <strong>{{ $datos['totales']['rechazos'] ?? 0 }}</strong></span>
+      </div>
+    </div>
+  </div>
+@endif
