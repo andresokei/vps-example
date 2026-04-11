@@ -11,6 +11,7 @@
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.5",
         "livewire/volt": "^1.6",
+        "resend/resend-laravel": "*",
         "spatie/laravel-permission": "^6.25"
     },
     "require-dev": {

@@ -236,12 +236,6 @@
         <div class="modal-footer justify-content-between">
           @if ($asignacionSeleccionada)
             <div class="d-flex flex-wrap gap-2">
-              <button type="button"
-                      class="btn btn-outline-secondary btn-sm"
-                      wire:click="regenerarClave({{ $asignacionSeleccionada->id }})">
-                <i class="bi bi-arrow-repeat me-1"></i>{{ __('Regenerate key') }}
-              </button>
-
               @if ($asignacionSeleccionada->can_close)
                 <button type="button"
                         class="btn btn-outline-danger btn-sm"

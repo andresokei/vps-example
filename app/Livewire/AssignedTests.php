@@ -6,7 +6,6 @@ use App\Models\AsignacionTest;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Livewire\Component;
 
 class AssignedTests extends Component
@@ -54,28 +53,6 @@ class AssignedTests extends Component
         }
 
         $this->asignacionSeleccionada = $this->decorateAssignment($asignacion);
-    }
-
-    public function regenerarClave(int $id): void
-    {
-        $asignacion = $this->findAssignment($id);
-
-        if (! $asignacion) {
-            $this->setResult(__('You do not have permission to update this assignment.'), 'danger');
-            return;
-        }
-
-        if ($asignacion->estado === 'aplicado') {
-            $this->setResult(__('You cannot regenerate the key for a closed assignment.'), 'warning');
-            return;
-        }
-
-        $asignacion->update([
-            'clave_acceso' => $this->generateAccessKey(),
-        ]);
-
-        $this->setResult(__('A new access key was generated for the test.'), 'success');
-        $this->refreshState($id);
     }
 
     public function cerrarAsignacion(int $id): void
@@ -205,19 +182,6 @@ class AssignedTests extends Component
     {
         $this->loadAsignaciones();
         $this->seleccionarAsignacion($id);
-    }
-
-    private function generateAccessKey(): string
-    {
-        do {
-            $key = Str::upper(Str::random(8));
-        } while (
-            AsignacionTest::query()
-                ->where('clave_acceso', $key)
-                ->exists()
-        );
-
-        return $key;
     }
 
     private function setResult(string $message, string $type = 'success'): void

@@ -75,7 +75,7 @@ it('muestra alumnos pendientes y progreso al seleccionar una asignacion', functi
     expect($component->instance()->asignacionSeleccionada->alumnos_pendientes_count)->toBe(3);
 });
 
-it('permite regenerar la clave y reabrir una asignacion incompleta', function () {
+it('permite reabrir una asignacion incompleta', function () {
     ['profesor' => $profesor, 'pregunta' => $pregunta, 'asignacion' => $asignacion, 'alumnos' => $alumnos] = crearAsignacionParaPanelProfesor();
 
     Respuesta::create([
@@ -88,14 +88,6 @@ it('permite regenerar la clave y reabrir una asignacion incompleta', function ()
     ]);
 
     $this->actingAs($profesor);
-
-    $claveOriginal = $asignacion->clave_acceso;
-
-    Livewire::test(AssignedTests::class)
-        ->call('regenerarClave', $asignacion->id);
-
-    $asignacion->refresh();
-    expect($asignacion->clave_acceso)->not->toBe($claveOriginal);
 
     Livewire::test(AssignedTests::class)
         ->call('cerrarAsignacion', $asignacion->id);
