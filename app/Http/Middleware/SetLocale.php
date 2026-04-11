@@ -13,10 +13,10 @@ class SetLocale
 
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = session('locale', config('app.locale'));
+        $locale = $request->cookie('locale_preference');
 
         if (!in_array($locale, self::SUPPORTED, true)) {
-            $locale = config('app.locale');
+            $locale = $request->getPreferredLanguage(self::SUPPORTED) ?? config('app.locale');
         }
 
         App::setLocale($locale);
