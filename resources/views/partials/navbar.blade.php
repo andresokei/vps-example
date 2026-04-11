@@ -6,7 +6,7 @@
             <i class="bi-list"></i>
         </button>
         <div class="collapse navbar-collapse" id="navbarResponsive">
-            <ul class="navbar-nav ms-auto me-4 my-3 my-lg-0">
+            <ul class="navbar-nav ms-auto my-3 my-lg-0 landing-nav-links">
                 @guest
                     <li class="nav-item"><a class="nav-link me-lg-3" href="#features">{{ __('Features') }}</a></li>
                     <li class="nav-item"><a class="nav-link me-lg-3" href="#como-funciona">{{ __('How it works') }}</a></li>
@@ -25,27 +25,29 @@
                 @endauth
             </ul>
 
-            {{-- Language Switcher --}}
-            <div class="d-flex gap-1 align-items-center me-2">
-                @foreach(['es' => 'ES', 'en' => 'EN'] as $lang => $label)
-                    <form action="{{ route('locale.switch') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="locale" value="{{ $lang }}">
-                        <button type="submit"
-                            class="btn btn-sm {{ app()->getLocale() === $lang ? 'btn-primary' : 'btn-outline-primary' }} rounded-pill px-2 py-1"
-                            style="font-size:0.75rem;">
-                            {{ $label }}
-                        </button>
-                    </form>
-                @endforeach
-            </div>
+            <div class="landing-nav-actions">
+                {{-- Language Switcher --}}
+                <div class="landing-lang-switcher">
+                    @foreach(['es' => 'ES', 'en' => 'EN'] as $lang => $label)
+                        <form action="{{ route('locale.switch') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="locale" value="{{ $lang }}">
+                            <button type="submit"
+                                class="btn btn-sm {{ app()->getLocale() === $lang ? 'btn-primary' : 'btn-outline-primary' }} rounded-pill px-2 py-1"
+                                style="font-size:0.75rem;">
+                                {{ $label }}
+                            </button>
+                        </form>
+                    @endforeach
+                </div>
 
-            <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" data-bs-toggle="modal" data-bs-target="#feedbackModal">
-                <span class="d-flex align-items-center">
-                    <i class="bi-chat-text-fill me-2"></i>
-                    <span class="small">Feedback</span>
-                </span>
-            </button>
+                <button class="btn btn-primary rounded-pill px-3 landing-feedback-btn" data-bs-toggle="modal" data-bs-target="#feedbackModal">
+                    <span class="d-flex align-items-center justify-content-center">
+                        <i class="bi-chat-text-fill me-2"></i>
+                        <span class="small">Feedback</span>
+                    </span>
+                </button>
+            </div>
         </div>
     </div>
 </nav>

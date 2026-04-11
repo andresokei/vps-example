@@ -105,6 +105,65 @@
                 background: linear-gradient(135deg, #1a21c8 0%, #2937f0 40%, #9f1ae2 100%);
                 padding: 6rem 0 !important;
             }
+
+            #mainNav .navbar-toggler {
+                border: 1px solid rgba(41, 55, 240, 0.15);
+                border-radius: 999px;
+            }
+
+            #mainNav .navbar-collapse {
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid #e9ecef;
+            }
+
+            #mainNav .landing-nav-links {
+                gap: 0.25rem;
+            }
+
+            #mainNav .landing-nav-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+                width: 100%;
+            }
+
+            #mainNav .landing-lang-switcher {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            #mainNav .landing-lang-switcher form {
+                margin: 0;
+            }
+
+            #mainNav .landing-lang-switcher .btn,
+            #mainNav .landing-feedback-btn {
+                width: 100%;
+            }
+
+            @media (min-width: 992px) {
+                #mainNav .navbar-collapse {
+                    margin-top: 0;
+                    padding-top: 0;
+                    border-top: 0;
+                }
+
+                #mainNav .landing-nav-actions {
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: flex-end;
+                    gap: 0.75rem;
+                    width: auto;
+                    margin-left: 1rem;
+                }
+
+                #mainNav .landing-lang-switcher .btn,
+                #mainNav .landing-feedback-btn {
+                    width: auto;
+                }
+            }
         </style>
     </head>
     <body id="page-top">
@@ -132,7 +191,7 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 
         <!-- Core theme JS-->
-        <script src="{{ asset('js/scripts.js') }}"></script>
+        <script src="{{ asset('js/script.js') }}"></script>
 
     </body>
 </html>

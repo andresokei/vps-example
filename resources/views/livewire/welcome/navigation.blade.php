@@ -6,7 +6,7 @@
             <i class="bi-list"></i>
         </button>
         <div class="collapse navbar-collapse" id="navbarResponsive">
-            <ul class="navbar-nav ms-auto me-4 my-3 my-lg-0">
+            <ul class="navbar-nav ms-auto my-3 my-lg-0 landing-nav-links">
                 @guest
                     <!-- Enlaces para usuarios no autenticados -->
                     <li class="nav-item"><a class="nav-link me-lg-3" href="{{ route('login') }}">Login</a></li>
@@ -26,12 +26,14 @@
                     </li>
                 @endauth
             </ul>
-            <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" data-bs-toggle="modal" data-bs-target="#feedbackModal">
-                <span class="d-flex align-items-center">
-                    <i class="bi-chat-text-fill me-2"></i>
-                    <span class="small">Feedback</span>
-                </span>
-            </button>
+            <div class="landing-nav-actions">
+                <button class="btn btn-primary rounded-pill px-3 landing-feedback-btn" data-bs-toggle="modal" data-bs-target="#feedbackModal">
+                    <span class="d-flex align-items-center justify-content-center">
+                        <i class="bi-chat-text-fill me-2"></i>
+                        <span class="small">Feedback</span>
+                    </span>
+                </button>
+            </div>
         </div>
     </div>
 </nav>
