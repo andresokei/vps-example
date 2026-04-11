@@ -8,26 +8,37 @@
         <div class="collapse navbar-collapse" id="navbarResponsive">
             <ul class="navbar-nav ms-auto me-4 my-3 my-lg-0">
                 @guest
-                    <!-- Mostrar login y registro cuando el usuario NO está autenticado -->
-                    <li class="nav-item"><a class="nav-link me-lg-3" href="#features">Características</a></li>
-                    <li class="nav-item"><a class="nav-link me-lg-3" href="#como-funciona">Cómo funciona</a></li>
-                    <li class="nav-item"><a class="nav-link me-lg-3" href="{{ route('login') }}">Iniciar sesión</a></li>
-                    <li class="nav-item"><a class="nav-link me-lg-3" href="{{ route('register') }}">Registrarse</a></li>
+                    <li class="nav-item"><a class="nav-link me-lg-3" href="#features">{{ __('Features') }}</a></li>
+                    <li class="nav-item"><a class="nav-link me-lg-3" href="#como-funciona">{{ __('How it works') }}</a></li>
+                    <li class="nav-item"><a class="nav-link me-lg-3" href="{{ route('login') }}">{{ __('Log in') }}</a></li>
+                    <li class="nav-item"><a class="nav-link me-lg-3" href="{{ route('register') }}">{{ __('Register') }}</a></li>
                 @endguest
 
                 @auth
-                    <!-- Mostrar el enlace al perfil cuando el usuario ESTÁ autenticado -->
-                    <li class="nav-item"><a class="nav-link me-lg-3" href="{{ url('/dashboard') }}">Perfil</a></li>
-                    
-                    <!-- Botón de logout para usuarios autenticados -->
+                    <li class="nav-item"><a class="nav-link me-lg-3" href="{{ url('/dashboard') }}">{{ __('Profile') }}</a></li>
                     <li class="nav-item">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="nav-link btn btn-link" style="color: inherit; text-decoration: none;">Logout</button>
+                            <button type="submit" class="nav-link btn btn-link" style="color: inherit; text-decoration: none;">{{ __('Log out') }}</button>
                         </form>
                     </li>
                 @endauth
             </ul>
+
+            {{-- Language Switcher --}}
+            <div class="d-flex gap-1 align-items-center me-2">
+                @foreach(['es' => 'ES', 'en' => 'EN'] as $lang => $label)
+                    <form action="{{ route('locale.switch') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="locale" value="{{ $lang }}">
+                        <button type="submit"
+                            class="btn btn-sm {{ app()->getLocale() === $lang ? 'btn-primary' : 'btn-outline-primary' }} rounded-pill px-2 py-1"
+                            style="font-size:0.75rem;">
+                            {{ $label }}
+                        </button>
+                    </form>
+                @endforeach
+            </div>
 
             <button class="btn btn-primary rounded-pill px-3 mb-2 mb-lg-0" data-bs-toggle="modal" data-bs-target="#feedbackModal">
                 <span class="d-flex align-items-center">

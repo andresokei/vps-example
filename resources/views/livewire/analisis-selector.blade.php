@@ -1,9 +1,9 @@
 <div>
   <div class="page-header">
     <h1 class="page-title">
-      <i class="bi bi-graph-up me-2 text-primary"></i>Analisis de grupos
+      <i class="bi bi-graph-up me-2 text-primary"></i>{{ __('Group Analysis') }}
     </h1>
-    <p class="page-subtitle">Selecciona un grupo y una asignacion para generar el analisis sociometrico.</p>
+    <p class="page-subtitle">{{ __('Select a group and an assignment to generate the sociometric analysis.') }}</p>
   </div>
 
   @include('livewire.partials.selectores')
@@ -28,7 +28,7 @@
       <a href="{{ route('analisis.pdf', $asignacionTestId) }}"
          target="_blank"
          class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-file-earmark-pdf me-1"></i> Exportar PDF
+        <i class="bi bi-file-earmark-pdf me-1"></i> {{ __('Export PDF') }}
       </a>
     </div>
 
@@ -37,28 +37,28 @@
         <button class="nav-link active" id="tab-resumen-btn"
                 data-bs-toggle="tab" data-bs-target="#tab-resumen"
                 type="button" role="tab" aria-controls="tab-resumen" aria-selected="true">
-          <i class="bi bi-speedometer2 me-1"></i>Resumen
+          <i class="bi bi-speedometer2 me-1"></i>{{ __('Summary') }}
         </button>
       </li>
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="tab-sociograma-btn"
                 data-bs-toggle="tab" data-bs-target="#tab-sociograma"
                 type="button" role="tab" aria-controls="tab-sociograma" aria-selected="false">
-          <i class="bi bi-diagram-3 me-1"></i>Sociograma
+          <i class="bi bi-diagram-3 me-1"></i>{{ __('Sociogram') }}
         </button>
       </li>
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="tab-detalles-btn"
                 data-bs-toggle="tab" data-bs-target="#tab-detalles"
                 type="button" role="tab" aria-controls="tab-detalles" aria-selected="false">
-          <i class="bi bi-table me-1"></i>Detalles
+          <i class="bi bi-table me-1"></i>{{ __('Details') }}
         </button>
       </li>
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="tab-reciprocidad-btn"
                 data-bs-toggle="tab" data-bs-target="#tab-reciprocidad"
                 type="button" role="tab" aria-controls="tab-reciprocidad" aria-selected="false">
-          <i class="bi bi-grid me-1"></i>Reciprocidad
+          <i class="bi bi-grid me-1"></i>{{ __('Reciprocity') }}
         </button>
       </li>
     </ul>
@@ -98,17 +98,17 @@
                 <span class="badge mt-1" id="sdm-role-badge"></span>
               </div>
             </div>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
           </div>
           <div class="modal-body pt-3">
             <p class="text-muted mb-2" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;">
-              Relaciones
+              {{ __('Relations') }}
             </p>
             <div class="row g-2 mb-3" id="sdm-metrics-row">
             </div>
 
             <p class="text-muted mb-2" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;">
-              Centralidad
+              {{ __('Centrality') }}
             </p>
             <div class="row g-2 mb-3" id="sdm-centrality-row">
             </div>

@@ -4,10 +4,10 @@
 <div class="card shadow-sm mb-4">
   <div class="card-header d-flex align-items-center justify-content-between">
     <span>
-      <i class="bi bi-bar-chart-steps me-1 text-primary"></i>Tabla de Centralidades
+      <i class="bi bi-bar-chart-steps me-1 text-primary"></i>{{ __('Centrality Table') }}
     </span>
     <small class="text-muted d-none d-md-block">
-      Clic en encabezado para ordenar &middot; Clic en fila para ver detalles
+      {{ __('Click header to sort · Click row for details') }}
     </small>
   </div>
   <div class="card-body p-0">
@@ -15,7 +15,7 @@
       <table class="table table-hover mb-0 align-middle" id="centralidades-table">
         <thead class="table-light">
           <tr>
-            <th data-sort="name"        class="ps-3">Alumno <i class="bi bi-arrow-down-up text-muted small ms-1"></i></th>
+            <th data-sort="name"        class="ps-3">{{ __('Student') }} <i class="bi bi-arrow-down-up text-muted small ms-1"></i></th>
             <th data-sort="inDegree"    class="text-center">In-Degree <i class="bi bi-arrow-down-up text-muted small ms-1"></i></th>
             <th data-sort="outDegree"   class="text-center">Out-Degree <i class="bi bi-arrow-down-up text-muted small ms-1"></i></th>
             <th data-sort="betweenness" class="text-center">Betweenness <i class="bi bi-arrow-down-up text-muted small ms-1"></i></th>
@@ -54,7 +54,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="5" class="text-center text-muted py-3">Sin datos de centralidad.</td>
+              <td colspan="5" class="text-center text-muted py-3">{{ __('No centrality data.') }}</td>
             </tr>
           @endforelse
         </tbody>

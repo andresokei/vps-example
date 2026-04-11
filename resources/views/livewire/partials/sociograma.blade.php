@@ -1,7 +1,7 @@
 {{-- Sociograma con grafo a pantalla completa --}}
 <div class="card sociograma-card shadow-sm mb-4 border-0">
   <div class="card-header py-3 d-flex align-items-center">
-    <h5 class="mb-0 fw-semibold">Sociograma</h5>
+    <h5 class="mb-0 fw-semibold">{{ __('Sociogram') }}</h5>
   </div>
 
   <div id="soc-wrapper" class="socio-wrapper">
@@ -12,7 +12,7 @@
     
     <aside id="barra-socio" class="sidebar-controls">
       <div class="sidebar-header">
-        <h6 class="mb-0">Filtros</h6>
+        <h6 class="mb-0">{{ __('Filters') }}</h6>
         <button class="close-sidebar-btn" id="close-sidebar">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
@@ -20,12 +20,12 @@
       
       {{-- Secciones de filtros --}}
       <div class="filter-section">
-        <label class="filter-label">Filtrar alumno(s)</label>
+        <label class="filter-label">{{ __('Filter student(s)') }}</label>
         <select id="soc-select" class="select-minimal" multiple></select>
       </div>
 
       <div class="filter-section">
-        <label class="filter-label">Filtrar por pregunta</label>
+        <label class="filter-label">{{ __('Filter by question') }}</label>
         
         @php
           $preguntas = data_get($datos, 'sociograma.preguntas', []);
@@ -45,12 +45,12 @@
                 <span class="select-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
                 </span>
-                Seleccionar todas
+                {{ __('Select all') }}
               </button>
             </div>
           </div>
         @else
-          <div class="empty-state">No hay preguntas de test disponibles.</div>
+          <div class="empty-state">{{ __('No test questions available.') }}</div>
         @endif
       </div>
 
@@ -60,7 +60,7 @@
             <input type="checkbox" id="soc-onlyMatch" class="toggle-input">
             <label for="soc-onlyMatch">
               <div class="toggle-control"></div>
-              <span>Solo matches</span>
+              <span>{{ __('Only matches') }}</span>
             </label>
           </div>
           
@@ -68,7 +68,7 @@
             <input type="checkbox" id="soc-markIsol" class="toggle-input" checked>
             <label for="soc-markIsol">
               <div class="toggle-control"></div>
-              <span>Marcar no-elegidos</span>
+              <span>{{ __('Mark non-chosen') }}</span>
             </label>
           </div>
         </div>
@@ -76,18 +76,18 @@
 
       <button id="soc-reset" class="reset-btn">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-        Limpiar filtros
+        {{ __('Clear filters') }}
       </button>
     </aside>
 
     {{-- GRAFO --}}
     <div class="sociograma-visualization">
       <div class="sociograma-legend" aria-label="Leyenda del sociograma">
-        <span class="legend-item"><i class="legend-dot legend-dot--default"></i> Alumno</span>
-        <span class="legend-item"><i class="legend-dot legend-dot--isolated"></i> No elegido</span>
-        <span class="legend-item"><i class="legend-line legend-line--pref"></i> Preferencia</span>
-        <span class="legend-item"><i class="legend-line legend-line--rech"></i> Rechazo</span>
-        <span class="legend-item"><i class="legend-line legend-line--match"></i> Match mutuo</span>
+        <span class="legend-item"><i class="legend-dot legend-dot--default"></i> {{ __('Student') }}</span>
+        <span class="legend-item"><i class="legend-dot legend-dot--isolated"></i> {{ __('Not chosen') }}</span>
+        <span class="legend-item"><i class="legend-line legend-line--pref"></i> {{ __('Preference') }}</span>
+        <span class="legend-item"><i class="legend-line legend-line--rech"></i> {{ __('Rejection') }}</span>
+        <span class="legend-item"><i class="legend-line legend-line--match"></i> {{ __('Mutual match') }}</span>
       </div>
       <div id="sociograma"></div>
     </div>

@@ -9,13 +9,13 @@
                     <div class="public-result__icon">
                         <i class="fas fa-check"></i>
                     </div>
-                    <h1 class="public-result__title">Respuestas guardadas correctamente</h1>
-                    <p class="public-result__text">Gracias por completar el test. Ya puedes cerrar esta ventana o volver al panel si necesitas continuar.</p>
+                    <h1 class="public-result__title">{{ __('Answers saved successfully') }}</h1>
+                    <p class="public-result__text">{{ __('Thank you for completing the test. You can close this window or return to the panel.') }}</p>
 
                     <div class="public-actions">
                         <a href="{{ route('dashboard') }}" class="public-button">
                             <i class="fas fa-arrow-left"></i>
-                            Volver al dashboard
+                            {{ __('Return to dashboard') }}
                         </a>
                     </div>
                 </div>

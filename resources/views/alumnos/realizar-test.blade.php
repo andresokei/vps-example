@@ -7,7 +7,7 @@
             <div class="public-card__header">
                 <span class="public-card__eyebrow">
                     <i class="fas fa-clipboard-check"></i>
-                    Test sociometrico
+                    {{ __('Sociometric test') }}
                 </span>
                 <h1 class="public-card__title">{{ $test->nombre_test }}</h1>
                 @if ($test->descripcion)
@@ -36,7 +36,7 @@
                     <div id="validationMessage" class="public-alert public-alert--danger" data-validation-message hidden></div>
 
                     <div>
-                        <label for="estudiante_quien_responde" class="public-label">Selecciona el estudiante que responde</label>
+                        <label for="estudiante_quien_responde" class="public-label">{{ __('Select the student who is answering') }}</label>
                         <select
                             name="estudiante_id"
                             id="estudiante_quien_responde"
@@ -44,7 +44,7 @@
                             data-respondent-select
                             required
                         >
-                            <option value="">Selecciona un estudiante</option>
+                            <option value="">{{ __('Select a student') }}</option>
                             @foreach($estudiantes as $estudiante)
                                 <option value="{{ $estudiante->id }}" @selected(old('estudiante_id') == $estudiante->id)>
                                     {{ $estudiante->nombre }}
@@ -52,8 +52,9 @@
                             @endforeach
                         </select>
                         <p class="public-help">
-                            Cada pregunta requiere {{ $selectionCount }}
-                            {{ $selectionCount === 1 ? 'seleccion distinta.' : 'selecciones distintas.' }}
+                            {{ $selectionCount === 1
+                                ? __('Each question requires :count distinct selection.', ['count' => $selectionCount])
+                                : __('Each question requires :count distinct selections.', ['count' => $selectionCount]) }}
                         </p>
                     </div>
 
@@ -67,7 +68,7 @@
                                 <div class="test-form__question-header">
                                     <h2 class="test-form__question-title">{{ $pregunta->texto_pregunta }}</h2>
                                     <span class="test-form__question-badge test-form__question-badge--{{ $pregunta->tipo_pregunta === 'rechazo' ? 'rechazo' : 'preferencia' }}">
-                                        {{ $pregunta->tipo_pregunta === 'rechazo' ? 'Rechazo' : 'Preferencia' }}
+                                        {{ $pregunta->tipo_pregunta === 'rechazo' ? __('Rejection (badge)') : __('Preference (badge)') }}
                                     </span>
                                 </div>
 
@@ -75,7 +76,7 @@
 
                                 <div class="test-form__selection-box">
                                     <div class="test-form__selection-meta">
-                                        <span>Seleccionados</span>
+                                        <span>{{ __('Selected') }}</span>
                                         <span><span class="selected-count">0</span>/{{ $selectionCount }}</span>
                                     </div>
                                     <div class="test-form__selection-list selected-students-list"></div>
@@ -109,14 +110,14 @@
                     @else
                         <div class="public-alert public-alert--warning">
                             <i class="fas fa-triangle-exclamation"></i>
-                            <span>No hay preguntas disponibles para este test.</span>
+                            <span>{{ __('This test has no available questions.') }}</span>
                         </div>
                     @endif
 
                     <div class="public-actions">
                         <button type="submit" class="public-button" data-submit-button>
                             <i class="fas fa-paper-plane"></i>
-                            Enviar respuestas
+                            {{ __('Submit answers') }}
                         </button>
                     </div>
                 </form>

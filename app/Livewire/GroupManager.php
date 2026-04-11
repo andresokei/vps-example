@@ -88,7 +88,7 @@ class GroupManager extends Component
             'id_profesor' => Auth::id(),
         ]);
 
-        session()->flash('message', 'Grupo creado correctamente.');
+        session()->flash('message', __('Group created successfully.'));
         $this->groupName = '';
         $this->loadGroups();
     }
@@ -115,7 +115,7 @@ class GroupManager extends Component
         $this->reset('csvFile');
         $this->loadGroupStudents();
 
-        session()->flash('message', $addedStudents . ' estudiantes añadidos desde CSV.');
+        session()->flash('message', __(':count students added from CSV.', ['count' => $addedStudents]));
     }
 
     public function addStudentFromList()
@@ -137,7 +137,7 @@ class GroupManager extends Component
         $this->loadGroupStudents();
         $this->reset('studentNames');
 
-        session()->flash('message', $addedStudents . ' estudiantes añadidos.');
+        session()->flash('message', __(':count students added.', ['count' => $addedStudents]));
     }
 
     private function addStudentToGroup($studentName)
@@ -179,7 +179,7 @@ class GroupManager extends Component
         $group->estudiantes()->detach($studentId);
         $this->loadGroupStudents();
 
-        session()->flash('message', 'Estudiante eliminado del grupo.');
+        session()->flash('message', __('Student removed from group.'));
     }
 
     public function deleteGroup($groupId)
@@ -189,7 +189,7 @@ class GroupManager extends Component
             ->first();
 
         if (! $group) {
-            session()->flash('error', 'Grupo no encontrado o sin permiso.');
+            session()->flash('error', __('Group not found or no permission.'));
             return;
         }
 
@@ -208,7 +208,7 @@ class GroupManager extends Component
             ->first();
 
         if (! $group) {
-            session()->flash('error', 'Grupo no encontrado o sin permiso.');
+            session()->flash('error', __('Group not found or no permission.'));
             $this->dispatch('closeDeleteModal');
             return;
         }
@@ -218,7 +218,7 @@ class GroupManager extends Component
             $group->delete();
         });
 
-        session()->flash('message', 'Grupo eliminado correctamente.');
+        session()->flash('message', __('Group deleted successfully.'));
         $this->loadGroups();
         $this->groupToDelete = null;
         $this->dispatch('closeDeleteModal');

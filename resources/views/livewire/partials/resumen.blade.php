@@ -1,28 +1,28 @@
 @php
 $metrics = [
   [
-    'label' => 'Participación',
+    'label' => __('Participation'),
     'value' => number_format(($datos['participation_rate'] ?? 0) * 100, 0) . '%',
     'icon'  => 'bi-person-check',
     'color' => '#6366f1',
     'bg'    => '#eef2ff',
   ],
   [
-    'label' => 'Densidad',
+    'label' => __('Density'),
     'value' => number_format($datos['density'] ?? 0, 2),
     'icon'  => 'bi-bezier2',
     'color' => '#22c55e',
     'bg'    => '#f0fdf4',
   ],
   [
-    'label' => 'Polarización',
+    'label' => __('Polarization'),
     'value' => number_format($datos['polarization'] ?? 0, 2),
     'icon'  => 'bi-arrow-left-right',
     'color' => '#ef4444',
     'bg'    => '#fff1f2',
   ],
   [
-    'label' => 'Reciprocidad',
+    'label' => __('Reciprocity rate'),
     'value' => number_format(($datos['reciprocity'] ?? 0) * 100, 0) . '%',
     'icon'  => 'bi-arrow-repeat',
     'color' => '#0ea5e9',
@@ -58,11 +58,11 @@ $metrics = [
   <div class="card mb-4">
     <div class="card-body py-3">
       <div class="d-flex flex-wrap gap-4" style="font-size:0.875rem;">
-        <span><span class="text-muted">Alumnos:</span> <strong>{{ $datos['totales']['alumnos'] ?? 0 }}</strong></span>
-        <span><span class="text-muted">Respondieron:</span> <strong>{{ $datos['totales']['respondieron'] ?? 0 }}</strong></span>
-        <span><span class="text-muted">Relaciones:</span> <strong>{{ $datos['totales']['relaciones'] ?? 0 }}</strong></span>
-        <span><span class="text-muted">Preferencias:</span> <strong>{{ $datos['totales']['preferencias'] ?? 0 }}</strong></span>
-        <span><span class="text-muted">Rechazos:</span> <strong>{{ $datos['totales']['rechazos'] ?? 0 }}</strong></span>
+        <span><span class="text-muted">{{ __('Students') }}:</span> <strong>{{ $datos['totales']['alumnos'] ?? 0 }}</strong></span>
+        <span><span class="text-muted">{{ __('Answered') }}:</span> <strong>{{ $datos['totales']['respondieron'] ?? 0 }}</strong></span>
+        <span><span class="text-muted">{{ __('Relations') }}:</span> <strong>{{ $datos['totales']['relaciones'] ?? 0 }}</strong></span>
+        <span><span class="text-muted">{{ __('Preferences') }}:</span> <strong>{{ $datos['totales']['preferencias'] ?? 0 }}</strong></span>
+        <span><span class="text-muted">{{ __('Rejections') }}:</span> <strong>{{ $datos['totales']['rechazos'] ?? 0 }}</strong></span>
       </div>
     </div>
   </div>

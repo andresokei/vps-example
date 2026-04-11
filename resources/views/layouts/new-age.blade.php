@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -120,10 +120,10 @@
             <div class="container px-5">
                 <div class="text-white-50 small">
                     <div class="mb-1 fw-bold text-white" style="font-family:'Kanit',sans-serif;font-size:1.1rem;">Sociogram</div>
-                    <div class="mb-2">&copy; Sociogram {{ date('Y') }}. Todos los derechos reservados.</div>
-                    <a href="{{ route('login') }}">Acceder</a>
+                    <div class="mb-2">&copy; Sociogram {{ date('Y') }}. {{ __('All rights reserved.') }}</div>
+                    <a href="{{ route('login') }}">{{ __('Log in') }}</a>
                     <span class="mx-1">&middot;</span>
-                    <a href="{{ route('register') }}">Registrarse</a>
+                    <a href="{{ route('register') }}">{{ __('Register') }}</a>
                 </div>
             </div>
         </footer>

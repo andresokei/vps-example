@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
 <meta charset="UTF-8">
 <style>
@@ -26,33 +26,33 @@
 </head>
 <body>
 
-<h1>Reporte de Análisis Sociométrico</h1>
+<h1>{{ __('Sociometric Analysis Report') }}</h1>
 <div class="meta">
-  Grupo: <strong>{{ $grupo }}</strong> &nbsp;|&nbsp;
-  Test: <strong>{{ $test }}</strong> &nbsp;|&nbsp;
-  Generado: {{ now()->format('d/m/Y H:i') }}
+  {{ __('Group') }}: <strong>{{ $grupo }}</strong> &nbsp;|&nbsp;
+  {{ __('Test') }}: <strong>{{ $test }}</strong> &nbsp;|&nbsp;
+  {{ __('Generated:') }} {{ now()->format('d/m/Y H:i') }}
 </div>
 
 {{-- ── Métricas de red ── --}}
-<h2>Métricas de Red</h2>
+<h2>{{ __('Network Metrics') }}</h2>
 <table class="metrics">
-  <tr><td>Participación</td><td>{{ number_format(($analisis['participation_rate'] ?? 0) * 100, 0) }}%</td></tr>
-  <tr><td>Densidad</td><td>{{ number_format($analisis['density'] ?? 0, 4) }}</td></tr>
-  <tr><td>Polarización</td><td>{{ number_format($analisis['polarization'] ?? 0, 4) }}</td></tr>
-  <tr><td>Reciprocidad</td><td>{{ number_format(($analisis['reciprocity'] ?? 0) * 100, 0) }}%</td></tr>
-  <tr><td>Total alumnos</td><td>{{ $analisis['totales']['alumnos'] ?? 0 }}</td></tr>
-  <tr><td>Respondieron</td><td>{{ $analisis['totales']['respondieron'] ?? 0 }}</td></tr>
-  <tr><td>Total relaciones</td><td>{{ $analisis['totales']['relaciones'] ?? 0 }}</td></tr>
-  <tr><td>Preferencias</td><td>{{ $analisis['totales']['preferencias'] ?? 0 }}</td></tr>
-  <tr><td>Rechazos</td><td>{{ $analisis['totales']['rechazos'] ?? 0 }}</td></tr>
+  <tr><td>{{ __('Participation') }}</td><td>{{ number_format(($analisis['participation_rate'] ?? 0) * 100, 0) }}%</td></tr>
+  <tr><td>{{ __('Density') }}</td><td>{{ number_format($analisis['density'] ?? 0, 4) }}</td></tr>
+  <tr><td>{{ __('Polarization') }}</td><td>{{ number_format($analisis['polarization'] ?? 0, 4) }}</td></tr>
+  <tr><td>{{ __('Reciprocity') }}</td><td>{{ number_format(($analisis['reciprocity'] ?? 0) * 100, 0) }}%</td></tr>
+  <tr><td>{{ __('Total students') }}</td><td>{{ $analisis['totales']['alumnos'] ?? 0 }}</td></tr>
+  <tr><td>{{ __('Responded') }}</td><td>{{ $analisis['totales']['respondieron'] ?? 0 }}</td></tr>
+  <tr><td>{{ __('Total relations') }}</td><td>{{ $analisis['totales']['relaciones'] ?? 0 }}</td></tr>
+  <tr><td>{{ __('Preferences') }}</td><td>{{ $analisis['totales']['preferencias'] ?? 0 }}</td></tr>
+  <tr><td>{{ __('Rejections') }}</td><td>{{ $analisis['totales']['rechazos'] ?? 0 }}</td></tr>
 </table>
 
 {{-- ── Centralidades ── --}}
-<h2>Tabla de Centralidades</h2>
+<h2>{{ __('Centrality Table') }}</h2>
 <table class="data">
   <thead>
     <tr>
-      <th>Alumno</th><th>In-Degree</th><th>Out-Degree</th><th>Betweenness</th><th>Closeness</th>
+      <th>{{ __('Student') }}</th><th>In-Degree</th><th>Out-Degree</th><th>Betweenness</th><th>Closeness</th>
     </tr>
   </thead>
   <tbody>
@@ -65,15 +65,15 @@
         <td>{{ number_format($c['closeness'], 2) }}</td>
       </tr>
     @empty
-      <tr><td colspan="5">Sin datos.</td></tr>
+      <tr><td colspan="5">{{ __('No data.') }}</td></tr>
     @endforelse
   </tbody>
 </table>
 
 {{-- ── Roles ── --}}
-<h2>Roles Detectados</h2>
+<h2>{{ __('Detected Roles') }}</h2>
 <table class="roles">
-  @foreach(['leaders' => 'Líderes', 'puentes' => 'Puentes', 'aislados' => 'Aislados', 'cohesivos' => 'Grupo Cohesivo'] as $key => $label)
+  @foreach(['leaders' => __('Leaders'), 'puentes' => __('Bridges'), 'aislados' => __('Isolated'), 'cohesivos' => __('Cohesive group')] as $key => $label)
   <td>
     <strong>{{ $label }}</strong>
     @forelse($analisis['roles'][$key] ?? [] as $name)
@@ -86,18 +86,18 @@
 </table>
 
 {{-- ── Comunidades ── --}}
-<h2>Comunidades Detectadas</h2>
+<h2>{{ __('Detected Communities') }}</h2>
 @forelse($analisis['communities'] ?? [] as $i => $comunidad)
   <div><strong>Cluster {{ $i + 1 }}:</strong> {{ implode(', ', $comunidad) }}</div>
 @empty
-  <div style="color:#999">No se detectaron subgrupos.</div>
+  <div style="color:#999">{{ __('No subgroups detected.') }}</div>
 @endforelse
 
 {{-- ── Preferencias recibidas ── --}}
 @if(!empty($analisis['preferencias']['labels']))
-<h2>Preferencias Recibidas</h2>
+<h2>{{ __('Received Preferences') }}</h2>
 <table class="data">
-  <thead><tr><th>Alumno</th><th>Veces elegido</th></tr></thead>
+  <thead><tr><th>{{ __('Student') }}</th><th>{{ __('Times chosen') }}</th></tr></thead>
   <tbody>
     @foreach($analisis['preferencias']['labels'] as $i => $nombre)
       <tr><td>{{ $nombre }}</td><td>{{ $analisis['preferencias']['data'][$i] ?? 0 }}</td></tr>
@@ -108,9 +108,9 @@
 
 {{-- ── Rechazos recibidos ── --}}
 @if(!empty($analisis['rechazos']['labels']))
-<h2>Rechazos Recibidos</h2>
+<h2>{{ __('Received Rejections') }}</h2>
 <table class="data">
-  <thead><tr><th>Alumno</th><th>Veces rechazado</th></tr></thead>
+  <thead><tr><th>{{ __('Student') }}</th><th>{{ __('Times rejected') }}</th></tr></thead>
   <tbody>
     @foreach($analisis['rechazos']['labels'] as $i => $nombre)
       <tr><td>{{ $nombre }}</td><td>{{ $analisis['rechazos']['data'][$i] ?? 0 }}</td></tr>
@@ -119,6 +119,6 @@
 </table>
 @endif
 
-<div class="footer">Generado por la plataforma sociométrica &mdash; {{ now()->format('d/m/Y') }}</div>
+<div class="footer">{{ __('Generated by the sociometric platform') }} &mdash; {{ now()->format('d/m/Y') }}</div>
 </body>
 </html>

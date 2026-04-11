@@ -7,6 +7,21 @@
 
   <div class="topbar-spacer"></div>
 
+  {{-- Language Switcher --}}
+  <div class="d-flex align-items-center gap-1 me-3">
+    @foreach(['es' => '🇪🇸', 'en' => '🇬🇧'] as $lang => $flag)
+      <form action="{{ route('locale.switch') }}" method="POST">
+        @csrf
+        <input type="hidden" name="locale" value="{{ $lang }}">
+        <button type="submit"
+          class="btn btn-sm px-2 py-1 {{ app()->getLocale() === $lang ? 'btn-primary' : 'btn-outline-secondary' }}"
+          style="font-size:0.75rem;min-width:2rem;">
+          {{ $flag }} {{ strtoupper($lang) }}
+        </button>
+      </form>
+    @endforeach
+  </div>
+
   <div class="dropdown">
     <button class="topbar-user-btn"
             type="button"
@@ -32,7 +47,7 @@
       <li>
         <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('profile.edit') }}">
           <i class="bi bi-person" style="font-size:0.9rem;"></i>
-          Mi perfil
+          {{ __('My Profile') }}
         </a>
       </li>
       <li><hr class="dropdown-divider my-1"></li>
@@ -41,7 +56,7 @@
           @csrf
           <button type="submit" class="dropdown-item d-flex align-items-center gap-2 text-danger">
             <i class="bi bi-box-arrow-right" style="font-size:0.9rem;"></i>
-            Cerrar sesion
+            {{ __('Log out') }}
           </button>
         </form>
       </li>

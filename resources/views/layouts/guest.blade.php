@@ -29,17 +29,17 @@
                 Sociogram
             </h1>
             <p class="text-lg text-white/75 text-center max-w-xs leading-relaxed">
-                Comprende las dinámicas sociales de tu aula como nunca antes.
+                {{ __('Understand the social dynamics of your classroom like never before.') }}
             </p>
             <div class="mt-12 grid grid-cols-1 gap-3 w-full max-w-xs">
                 <div class="flex items-center gap-3 text-white/70 text-sm">
-                    <span class="text-white/90">✓</span> Sociogramas visuales en segundos
+                    <span class="text-white/90">✓</span> {{ __('Visual sociograms in seconds') }}
                 </div>
                 <div class="flex items-center gap-3 text-white/70 text-sm">
-                    <span class="text-white/90">✓</span> Análisis de cohesión y reciprocidad
+                    <span class="text-white/90">✓</span> {{ __('Cohesion and reciprocity analysis') }}
                 </div>
                 <div class="flex items-center gap-3 text-white/70 text-sm">
-                    <span class="text-white/90">✓</span> Exporta en PDF y CSV
+                    <span class="text-white/90">✓</span> {{ __('Export in PDF and CSV') }}
                 </div>
             </div>
         </div>
@@ -59,7 +59,7 @@
                 {{ $slot }}
 
                 <p class="mt-6 text-center text-sm text-gray-400">
-                    <a href="/" class="hover:text-gray-600 transition-colors">← Volver al inicio</a>
+                    <a href="/" class="hover:text-gray-600 transition-colors">{{ __('← Back to home') }}</a>
                 </p>
             </div>
         </div>

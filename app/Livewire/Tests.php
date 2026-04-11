@@ -44,7 +44,7 @@ class Tests extends Component
             ->first();
 
         if (!$grupo) {
-            session()->flash('error', 'No tienes permiso para asignar tests a este grupo.');
+            session()->flash('error', __('You do not have permission to assign tests to this group.'));
             return;
         }
 
@@ -56,7 +56,7 @@ class Tests extends Component
             'estado' => 'pendiente',
         ]);
 
-        session()->flash('success', 'Test asignado con éxito.');
+        session()->flash('success', __('Test assigned successfully (legacy).'));
         $this->reset(['test_id', 'grupo_id']);
     }
 

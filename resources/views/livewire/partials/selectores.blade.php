@@ -3,12 +3,12 @@
     <div class="row g-3">
       <div class="col-md-6">
         <label for="grupoSeleccionado" class="form-label">
-          <i class="bi bi-people me-1 text-primary"></i> Grupo
+          <i class="bi bi-people me-1 text-primary"></i> {{ __('Group') }}
         </label>
         <select id="grupoSeleccionado"
                 class="form-select"
                 wire:model.live="grupoSeleccionado">
-          <option value="">— Seleccione un grupo —</option>
+          <option value="">{{ __('— Select a group —') }}</option>
           @foreach ($grupos as $grupo)
             <option value="{{ $grupo->id }}">{{ $grupo->nombre_grupo }}</option>
           @endforeach
@@ -17,13 +17,13 @@
 
       <div class="col-md-6">
         <label for="asignacionSeleccionada" class="form-label">
-          <i class="bi bi-file-earmark-text me-1 text-primary"></i> Asignación de test
+          <i class="bi bi-file-earmark-text me-1 text-primary"></i> {{ __('Test assignment') }}
         </label>
         <select id="asignacionSeleccionada"
                 class="form-select"
                 wire:model.live="asignacionTestId"
                 @disabled(!$asignaciones || (is_object($asignaciones) && $asignaciones->isEmpty()))>
-          <option value="">— Seleccione una asignación —</option>
+          <option value="">{{ __('— Select an assignment —') }}</option>
           @foreach ($asignaciones as $asignacion)
             <option value="{{ $asignacion->id }}">
               {{ optional($asignacion->test)->nombre_test ?: 'Test' }}
@@ -42,11 +42,11 @@
               @disabled(!$grupoSeleccionado || !$asignacionTestId)
               class="btn btn-primary px-5">
         <span wire:loading.remove wire:target="procesarAnalisis">
-          <i class="bi bi-play-fill me-1"></i> Procesar análisis
+          <i class="bi bi-play-fill me-1"></i> {{ __('Process analysis') }}
         </span>
         <span wire:loading wire:target="procesarAnalisis">
           <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-          Procesando…
+          {{ __('Processing...') }}
         </span>
       </button>
     </div>

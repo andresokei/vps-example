@@ -58,7 +58,7 @@ class AnalisisSelector extends Component
 
         if ($this->asignaciones->isEmpty()) {
             $this->resultadoTipo = 'info';
-            $this->resultadoAnalisis = 'No se encontraron asignaciones de test para este grupo.';
+            $this->resultadoAnalisis = __('No test assignments found for this group.');
             return;
         }
 
@@ -76,7 +76,7 @@ class AnalisisSelector extends Component
     {
         if (! $this->grupoSeleccionado || ! $this->asignacionTestId) {
             $this->resultadoTipo = 'warning';
-            $this->resultadoAnalisis = 'Seleccione un grupo y una asignacion.';
+            $this->resultadoAnalisis = __('Select a group and an assignment.');
             return;
         }
 
@@ -88,13 +88,13 @@ class AnalisisSelector extends Component
 
         if (! $asignacionValida) {
             $this->resultadoTipo = 'danger';
-            $this->resultadoAnalisis = 'La asignacion seleccionada no es valida para este grupo.';
+            $this->resultadoAnalisis = __('The selected assignment is not valid for this group.');
             return;
         }
 
         if (! Respuesta::query()->where('asignacion_test_id', $this->asignacionTestId)->exists()) {
             $this->resultadoTipo = 'warning';
-            $this->resultadoAnalisis = 'La asignacion seleccionada no tiene respuestas.';
+            $this->resultadoAnalisis = __('The selected assignment has no responses.');
             return;
         }
 
@@ -209,7 +209,7 @@ class AnalisisSelector extends Component
         $this->dispatch('actualizarMatrizReciprocidad', $full['reciprocidad']);
 
         $this->resultadoTipo = 'success';
-        $this->resultadoAnalisis = 'Analisis generado correctamente.';
+        $this->resultadoAnalisis = __('Analysis generated successfully.');
     }
 
     private function resetEstadoAnalisis(): void

@@ -56,7 +56,7 @@ class AssignTests extends Component
 
             if (! $grupo) {
                 $this->successMessage = null;
-                $this->errorMessage = 'El grupo seleccionado no existe o no tienes permiso para asignarle tests.';
+                $this->errorMessage = __('The selected group does not exist or you do not have permission to assign tests to it.');
                 return;
             }
 
@@ -66,7 +66,7 @@ class AssignTests extends Component
 
             if ($exists) {
                 $this->successMessage = null;
-                $this->errorMessage = 'Este test ya está asignado a ese grupo.';
+                $this->errorMessage = __('This test is already assigned to that group.');
                 return;
             }
 
@@ -80,14 +80,14 @@ class AssignTests extends Component
                 ]);
             });
 
-            $this->successMessage = 'Test asignado correctamente.';
+            $this->successMessage = __('Test assigned successfully.');
             $this->errorMessage = null;
             $this->reset(['grupo_id', 'test_id']);
 
             $this->dispatch('refreshAssignedTests');
         } catch (\Throwable $e) {
             $this->successMessage = null;
-            $this->errorMessage = 'Error al asignar el test: ' . $e->getMessage();
+            $this->errorMessage = __('Error assigning test: :error', ['error' => $e->getMessage()]);
         }
     }
 

@@ -1,9 +1,9 @@
 <div>
   <form wire:submit.prevent="assign">
     <div class="mb-3">
-      <label class="form-label">Grupo</label>
+      <label class="form-label">{{ __('Group') }}</label>
       <select wire:model="grupo_id" class="form-select">
-        <option value="" disabled selected>Selecciona un grupo</option>
+        <option value="" disabled selected>{{ __('Select a group') }}</option>
         @foreach($grupos as $g)
           <option value="{{ $g->id }}">{{ $g->nombre_grupo }}</option>
         @endforeach
@@ -11,9 +11,9 @@
     </div>
 
     <div class="mb-3">
-      <label class="form-label">Test</label>
+      <label class="form-label">{{ __('Test') }}</label>
       <select wire:model="test_id" class="form-select">
-        <option value="" disabled selected>Selecciona un test</option>
+        <option value="" disabled selected>{{ __('Select a test') }}</option>
         @foreach($tests as $t)
           <option value="{{ $t->id }}">{{ $t->nombre_test }}</option>
         @endforeach
@@ -22,7 +22,7 @@
 
     <div class="d-grid">
       <button type="submit" class="btn btn-primary">
-        <i class="bi bi-clipboard-check me-1"></i> Asignar test
+        <i class="bi bi-clipboard-check me-1"></i> {{ __('Assign test') }}
       </button>
     </div>
   </form>

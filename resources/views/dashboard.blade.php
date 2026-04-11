@@ -4,8 +4,8 @@
 
 @section('content')
 <div class="page-header">
-  <h1 class="page-title">Dashboard</h1>
-  <p class="page-subtitle">Gestiona tus grupos, tests y análisis sociométricos.</p>
+  <h1 class="page-title">{{ __('Dashboard') }}</h1>
+  <p class="page-subtitle">{{ __('Manage your groups, tests and sociometric analyses.') }}</p>
 </div>
 
 <div class="row g-4">
@@ -15,7 +15,7 @@
     <div class="card h-100">
       <div class="card-header">
         <h5 class="card-title">
-          <i class="bi bi-people me-2 text-primary"></i>Gestión de Grupos
+          <i class="bi bi-people me-2 text-primary"></i>{{ __('Group Management') }}
         </h5>
       </div>
       <div class="card-body">
@@ -29,7 +29,7 @@
     <div class="card h-100">
       <div class="card-header">
         <h5 class="card-title">
-          <i class="bi bi-clipboard-plus me-2 text-primary"></i>Asignar Tests a Grupos
+          <i class="bi bi-clipboard-plus me-2 text-primary"></i>{{ __('Assign Tests to Groups') }}
         </h5>
       </div>
       <div class="card-body">
@@ -43,7 +43,7 @@
     <div class="card">
       <div class="card-header">
         <h5 class="card-title">
-          <i class="bi bi-table me-2 text-primary"></i>Tests Asignados
+          <i class="bi bi-table me-2 text-primary"></i>{{ __('Assigned Tests') }}
         </h5>
       </div>
       <div class="card-body p-0">

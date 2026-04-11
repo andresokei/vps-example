@@ -1,24 +1,24 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Mi Perfil')
+@section('title', __('My Profile'))
 
 @section('content')
 <div class="page-header">
-  <h1 class="page-title">Mi Perfil</h1>
-  <p class="page-subtitle">Gestiona la información de tu cuenta.</p>
+  <h1 class="page-title">{{ __('My Profile') }}</h1>
+  <p class="page-subtitle">{{ __('Manage your account information.') }}</p>
 </div>
 
 @if (session('status') === 'profile-updated')
   <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
     <i class="bi bi-check-circle-fill flex-shrink-0"></i>
-    Perfil actualizado correctamente.
+    {{ __('Profile updated successfully.') }}
   </div>
 @endif
 
 @if (session('status') === 'password-updated')
   <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
     <i class="bi bi-check-circle-fill flex-shrink-0"></i>
-    Contraseña actualizada correctamente.
+    {{ __('Password updated successfully.') }}
   </div>
 @endif
 
@@ -29,7 +29,7 @@
     <div class="card h-100">
       <div class="card-header">
         <h5 class="card-title">
-          <i class="bi bi-person me-2 text-primary"></i>Información Personal
+          <i class="bi bi-person me-2 text-primary"></i>{{ __('Personal Information') }}
         </h5>
       </div>
       <div class="card-body">
@@ -38,7 +38,7 @@
           @method('PATCH')
 
           <div class="mb-3">
-            <label for="name" class="form-label">Nombre</label>
+            <label for="name" class="form-label">{{ __('Full name') }}</label>
             <input type="text"
                    id="name"
                    name="name"
@@ -52,7 +52,7 @@
           </div>
 
           <div class="mb-4">
-            <label for="email" class="form-label">Correo electrónico</label>
+            <label for="email" class="form-label">{{ __('Email address') }}</label>
             <input type="email"
                    id="email"
                    name="email"
@@ -66,7 +66,7 @@
           </div>
 
           <button type="submit" class="btn btn-primary">
-            <i class="bi bi-floppy me-1"></i> Guardar cambios
+            <i class="bi bi-floppy me-1"></i> {{ __('Save changes') }}
           </button>
         </form>
       </div>
@@ -78,7 +78,7 @@
     <div class="card h-100">
       <div class="card-header">
         <h5 class="card-title">
-          <i class="bi bi-lock me-2 text-primary"></i>Cambiar Contraseña
+          <i class="bi bi-lock me-2 text-primary"></i>{{ __('Change Password') }}
         </h5>
       </div>
       <div class="card-body">
@@ -87,7 +87,7 @@
           @method('PUT')
 
           <div class="mb-3">
-            <label for="current_password" class="form-label">Contraseña actual</label>
+            <label for="current_password" class="form-label">{{ __('Current password') }}</label>
             <input type="password"
                    id="current_password"
                    name="current_password"
@@ -99,7 +99,7 @@
           </div>
 
           <div class="mb-3">
-            <label for="password" class="form-label">Nueva contraseña</label>
+            <label for="password" class="form-label">{{ __('New password') }}</label>
             <input type="password"
                    id="password"
                    name="password"
@@ -111,7 +111,7 @@
           </div>
 
           <div class="mb-4">
-            <label for="password_confirmation" class="form-label">Confirmar nueva contraseña</label>
+            <label for="password_confirmation" class="form-label">{{ __('Confirm new password') }}</label>
             <input type="password"
                    id="password_confirmation"
                    name="password_confirmation"
@@ -120,7 +120,7 @@
           </div>
 
           <button type="submit" class="btn btn-primary">
-            <i class="bi bi-shield-lock me-1"></i> Actualizar contraseña
+            <i class="bi bi-shield-lock me-1"></i> {{ __('Update password') }}
           </button>
         </form>
       </div>
@@ -132,18 +132,18 @@
     <div class="card border-danger-subtle">
       <div class="card-header" style="border-bottom-color:#fee2e2;">
         <h5 class="card-title text-danger">
-          <i class="bi bi-exclamation-triangle me-2"></i>Zona de Peligro
+          <i class="bi bi-exclamation-triangle me-2"></i>{{ __('Danger Zone') }}
         </h5>
       </div>
       <div class="card-body">
         <p class="text-muted mb-3" style="font-size:0.875rem;">
-          Una vez eliminada tu cuenta, todos los datos serán borrados permanentemente. Esta acción no se puede deshacer.
+          {{ __('Once your account is deleted, all data will be permanently removed. This action cannot be undone.') }}
         </p>
         <button type="button"
                 class="btn btn-outline-danger btn-sm"
                 data-bs-toggle="modal"
                 data-bs-target="#deleteAccountModal">
-          <i class="bi bi-trash me-1"></i> Eliminar cuenta
+          <i class="bi bi-trash me-1"></i> {{ __('Delete account') }}
         </button>
       </div>
     </div>
@@ -157,24 +157,24 @@
     <div class="modal-content">
       <div class="modal-header border-danger" style="border-bottom-color:#fee2e2 !important;">
         <h5 class="modal-title text-danger">
-          <i class="bi bi-exclamation-triangle me-2"></i>Confirmar eliminación
+          <i class="bi bi-exclamation-triangle me-2"></i>{{ __('Confirm deletion') }}
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
       </div>
       <div class="modal-body">
         <p class="mb-3" style="font-size:0.875rem;">
-          Para confirmar la eliminación, introduce tu contraseña actual.
+          {{ __('To confirm deletion, enter your current password.') }}
         </p>
         <form id="deleteAccountForm" method="POST" action="{{ route('profile.destroy') }}">
           @csrf
           @method('DELETE')
           <div class="mb-3">
-            <label for="delete_password" class="form-label">Contraseña</label>
+            <label for="delete_password" class="form-label">{{ __('Password') }}</label>
             <input type="password"
                    id="delete_password"
                    name="password"
                    class="form-control @error('password', 'userDeletion') is-invalid @enderror"
-                   placeholder="Introduce tu contraseña"
+                   placeholder="{{ __('Enter your password') }}"
                    required>
             @error('password', 'userDeletion')
               <div class="invalid-feedback">{{ $message }}</div>
@@ -183,9 +183,9 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
         <button type="submit" form="deleteAccountForm" class="btn btn-danger">
-          <i class="bi bi-trash me-1"></i> Eliminar cuenta definitivamente
+          <i class="bi bi-trash me-1"></i> {{ __('Delete account permanently') }}
         </button>
       </div>
     </div>

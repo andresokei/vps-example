@@ -36,7 +36,7 @@ class TestController extends Controller
             $asignacion->grupo?->estudiantes->isEmpty()
         ) {
             return back()->withErrors([
-                'clave_acceso' => 'Clave de acceso invalida o test no disponible.',
+                'clave_acceso' => __('Invalid access key or test unavailable.'),
             ]);
         }
 
@@ -55,7 +55,7 @@ class TestController extends Controller
             $this->forgetAssignmentAccess($request);
 
             return redirect()->route('test.ingresar')->withErrors([
-                'clave_acceso' => 'Clave de acceso invalida o test no disponible.',
+                'clave_acceso' => __('Invalid access key or test unavailable.'),
             ]);
         }
 
@@ -65,7 +65,7 @@ class TestController extends Controller
             $this->forgetAssignmentAccess($request);
 
             return redirect()->route('test.ingresar')->withErrors([
-                'clave_acceso' => 'Este test no tiene preguntas disponibles.',
+                'clave_acceso' => __('This test has no available questions.'),
             ]);
         }
 
@@ -77,7 +77,7 @@ class TestController extends Controller
             $this->forgetAssignmentAccess($request);
 
             return redirect()->route('test.ingresar')->withErrors([
-                'clave_acceso' => 'Este grupo no tiene estudiantes asignados.',
+                'clave_acceso' => __('This group has no assigned students.'),
             ]);
         }
 
@@ -87,7 +87,7 @@ class TestController extends Controller
             $this->forgetAssignmentAccess($request);
 
             return redirect()->route('test.ingresar')->withErrors([
-                'clave_acceso' => 'Este grupo necesita al menos 2 estudiantes para responder el test.',
+                'clave_acceso' => __('This group needs at least 2 students to answer the test.'),
             ]);
         }
 
@@ -109,7 +109,7 @@ class TestController extends Controller
 
         if ($asignacion->estado === 'aplicado') {
             throw ValidationException::withMessages([
-                'clave_acceso' => 'Clave de acceso invalida o test no disponible.',
+                'clave_acceso' => __('Invalid access key or test unavailable.'),
             ]);
         }
 
@@ -121,7 +121,7 @@ class TestController extends Controller
 
         if (empty($studentIds)) {
             throw ValidationException::withMessages([
-                'estudiante_id' => 'No hay estudiantes disponibles para este test.',
+                'estudiante_id' => __('No students available for this test.'),
             ]);
         }
 
@@ -129,7 +129,7 @@ class TestController extends Controller
 
         if ($selectionCount < 1) {
             throw ValidationException::withMessages([
-                'estudiante_id' => 'Este grupo necesita al menos 2 estudiantes para responder el test.',
+                'estudiante_id' => __('This group needs at least 2 students to answer the test.'),
             ]);
         }
 
@@ -156,7 +156,7 @@ class TestController extends Controller
                 ->exists()
         ) {
             throw ValidationException::withMessages([
-                'estudiante_id' => 'Este estudiante ya ha respondido este test.',
+                'estudiante_id' => __('This student has already answered this test.'),
             ]);
         }
 
@@ -169,11 +169,11 @@ class TestController extends Controller
             }
 
             if (in_array($studentId, $choices, true)) {
-                $errors['respuesta_'.$pregunta->id.'_1'] = 'No puedes seleccionarte a ti mismo.';
+                $errors['respuesta_'.$pregunta->id.'_1'] = __('You cannot select yourself.');
             }
 
             if (count(array_unique($choices)) !== count($choices)) {
-                $errors['respuesta_'.$pregunta->id.'_1'] = 'Cada respuesta debe apuntar a un estudiante distinto.';
+                $errors['respuesta_'.$pregunta->id.'_1'] = __('Each answer must target a different student.');
             }
         }
 
@@ -223,7 +223,7 @@ class TestController extends Controller
 
         return redirect()
             ->route('test.success')
-            ->with('status', 'Respuestas y relaciones guardadas exitosamente');
+            ->with('status', __('Answers saved successfully'));
     }
 
     private function redirectIfAssignmentAccessMissing(Request $request, AsignacionTest $asignacion): ?RedirectResponse
@@ -232,7 +232,7 @@ class TestController extends Controller
             return redirect()
                 ->route('test.ingresar')
                 ->withErrors([
-                    'clave_acceso' => 'La sesion del test ha expirado. Vuelve a introducir la clave de acceso.',
+                    'clave_acceso' => __('Your test session has expired. Please enter the access key again.'),
                 ]);
         }
 

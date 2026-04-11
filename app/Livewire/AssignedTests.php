@@ -49,7 +49,7 @@ class AssignedTests extends Component
             ->first();
 
         if (! $asignacion) {
-            $this->setResult('No se encontro la asignacion solicitada.', 'warning');
+            $this->setResult(__('Assignment not found.'), 'warning');
             return;
         }
 
@@ -61,12 +61,12 @@ class AssignedTests extends Component
         $asignacion = $this->findAssignment($id);
 
         if (! $asignacion) {
-            $this->setResult('No tienes permiso para actualizar esta asignacion.', 'danger');
+            $this->setResult(__('You do not have permission to update this assignment.'), 'danger');
             return;
         }
 
         if ($asignacion->estado === 'aplicado') {
-            $this->setResult('No puedes regenerar la clave de una asignacion cerrada.', 'warning');
+            $this->setResult(__('You cannot regenerate the key for a closed assignment.'), 'warning');
             return;
         }
 
@@ -74,7 +74,7 @@ class AssignedTests extends Component
             'clave_acceso' => $this->generateAccessKey(),
         ]);
 
-        $this->setResult('Se genero una nueva clave de acceso para el test.', 'success');
+        $this->setResult(__('A new access key was generated for the test.'), 'success');
         $this->refreshState($id);
     }
 
@@ -83,18 +83,18 @@ class AssignedTests extends Component
         $asignacion = $this->findAssignment($id);
 
         if (! $asignacion) {
-            $this->setResult('No tienes permiso para cerrar esta asignacion.', 'danger');
+            $this->setResult(__('You do not have permission to close this assignment.'), 'danger');
             return;
         }
 
         if ($asignacion->estado === 'aplicado') {
-            $this->setResult('La asignacion ya estaba cerrada.', 'info');
+            $this->setResult(__('The assignment was already closed.'), 'info');
             return;
         }
 
         $asignacion->update(['estado' => 'aplicado']);
 
-        $this->setResult('La asignacion se cerro y ya no admitira nuevas respuestas.', 'success');
+        $this->setResult(__('The assignment is closed and will no longer accept new responses.'), 'success');
         $this->refreshState($id);
     }
 
@@ -103,21 +103,21 @@ class AssignedTests extends Component
         $asignacion = $this->findAssignment($id);
 
         if (! $asignacion) {
-            $this->setResult('No tienes permiso para reabrir esta asignacion.', 'danger');
+            $this->setResult(__('You do not have permission to reopen this assignment.'), 'danger');
             return;
         }
 
         [$respondieron, $total] = $this->calculateProgress($asignacion);
 
         if ($total > 0 && $respondieron >= $total) {
-            $this->setResult('La asignacion ya esta completa. No hace falta reabrirla.', 'info');
+            $this->setResult(__('The assignment is already complete. No need to reopen it.'), 'info');
             return;
         }
 
         $nuevoEstado = $respondieron > 0 ? 'en progreso' : 'pendiente';
         $asignacion->update(['estado' => $nuevoEstado]);
 
-        $this->setResult('La asignacion volvio a quedar disponible para el alumnado.', 'success');
+        $this->setResult(__('The assignment is now available to students again.'), 'success');
         $this->refreshState($id);
     }
 

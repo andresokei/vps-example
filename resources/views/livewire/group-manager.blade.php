@@ -10,9 +10,9 @@
     <div class="input-group">
       <input type="text"
              wire:model="groupName"
-             placeholder="Nombre del nuevo grupo"
+             placeholder="{{ __('New group name') }}"
              class="form-control"
-             aria-label="Nombre del grupo">
+             aria-label="{{ __('New group name') }}">
       <button class="btn btn-primary" type="submit">
         <i class="bi bi-plus-lg"></i>
       </button>
@@ -26,19 +26,19 @@
         <div class="btn-group btn-group-sm">
           <button class="btn btn-outline-secondary"
                   wire:click.prevent="openModal({{ $group->id }})"
-                  title="Anadir alumnos">
+                  title="{{ __('Add students') }}">
             <i class="bi bi-person-plus"></i>
           </button>
           <button class="btn btn-outline-danger"
                   wire:click.prevent="deleteGroup({{ $group->id }})"
-                  title="Eliminar grupo">
+                  title="{{ __('Delete group') }}">
             <i class="bi bi-trash"></i>
           </button>
         </div>
       </li>
     @empty
       <li class="text-center text-muted py-3" style="font-size:0.875rem;">
-        No hay grupos creados aun.
+        {{ __('No groups created yet.') }}
       </li>
     @endforelse
   </ul>
@@ -51,8 +51,8 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addStudentsModalLabel">Anadir alumnos</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          <h5 class="modal-title" id="addStudentsModalLabel">{{ __('Add students') }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
         </div>
 
         <div class="modal-body">
@@ -64,7 +64,7 @@
                       data-bs-target="#csv"
                       type="button"
                       role="tab">
-                Importar CSV
+                {{ __('Import CSV') }}
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -74,7 +74,7 @@
                       data-bs-target="#manual"
                       type="button"
                       role="tab">
-                Anadir manualmente
+                {{ __('Add manually') }}
               </button>
             </li>
           </ul>
@@ -82,12 +82,12 @@
           <div class="tab-content">
             <div class="tab-pane fade" id="csv" role="tabpanel">
               <div class="mb-3">
-                <label for="csvFileInput" class="form-label">Seleccionar archivo CSV</label>
+                <label for="csvFileInput" class="form-label">{{ __('Select CSV file') }}</label>
                 <input type="file"
                        class="form-control"
                        id="csvFileInput"
                        wire:model="csvFile">
-                <div class="form-text">Formato: un nombre por linea.</div>
+                <div class="form-text">{{ __('Format: one name per line.') }}</div>
               </div>
               @error('csvFile')
                 <div class="text-danger small mb-2">
@@ -99,11 +99,11 @@
                         wire:click="uploadCSV"
                         wire:loading.attr="disabled">
                   <span wire:loading.remove wire:target="uploadCSV">
-                    <i class="bi bi-upload me-1"></i> Importar alumnos
+                    <i class="bi bi-upload me-1"></i> {{ __('Import students') }}
                   </span>
                   <span wire:loading wire:target="uploadCSV">
                     <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                    Importando...
+                    {{ __('Importing...') }}
                   </span>
                 </button>
               </div>
@@ -112,12 +112,12 @@
             <div class="tab-pane fade show active" id="manual" role="tabpanel">
               <form wire:submit.prevent="addStudentFromList">
                 <div class="mb-3">
-                  <label for="studentNames" class="form-label">Nombres separados por comas</label>
+                  <label for="studentNames" class="form-label">{{ __('Names separated by commas') }}</label>
                   <textarea wire:model="studentNames"
                             class="form-control"
                             id="studentNames"
                             rows="3"
-                            placeholder="Ej: Juan Perez, Maria Garcia"></textarea>
+                            placeholder="{{ __('E.g.: Juan Perez, Maria Garcia') }}"></textarea>
                   @error('studentNames')
                     <div class="text-danger small mt-1">
                       <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
@@ -129,11 +129,11 @@
                           class="btn btn-primary"
                           wire:loading.attr="disabled">
                     <span wire:loading.remove wire:target="addStudentFromList">
-                      <i class="bi bi-plus-lg me-1"></i> Anadir alumnos
+                      <i class="bi bi-plus-lg me-1"></i> {{ __('Add students to group') }}
                     </span>
                     <span wire:loading wire:target="addStudentFromList">
                       <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                      Anadiendo...
+                      {{ __('Adding...') }}
                     </span>
                   </button>
                 </div>
@@ -143,7 +143,7 @@
 
           <div class="mt-4 pt-3 border-top">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h6 class="mb-0 fw-semibold" style="font-size:0.875rem;">Alumnos en este grupo</h6>
+              <h6 class="mb-0 fw-semibold" style="font-size:0.875rem;">{{ __('Students in this group') }}</h6>
               <span class="badge bg-primary rounded-pill"
                     wire:loading.class="d-none"
                     wire:target="loadGroupStudents">
@@ -170,14 +170,14 @@
             @else
               <div class="text-center py-3 text-muted" style="font-size:0.855rem;">
                 <i class="bi bi-people mb-2 d-block" style="font-size:1.75rem;"></i>
-                No hay alumnos en este grupo.
+                {{ __('No students in this group.') }}
               </div>
             @endif
           </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" wire:click="closeModal">Cerrar</button>
+          <button type="button" class="btn btn-secondary" wire:click="closeModal">{{ __('Close') }}</button>
         </div>
       </div>
     </div>
@@ -191,31 +191,31 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title" id="deleteGroupModalLabel">Confirmar eliminacion</h5>
+          <h5 class="modal-title" id="deleteGroupModalLabel">{{ __('Confirm deletion') }}</h5>
           <button type="button"
                   class="btn-close btn-close-white"
                   data-bs-dismiss="modal"
-                  aria-label="Cerrar"></button>
+                  aria-label="{{ __('Close') }}"></button>
         </div>
         <div class="modal-body text-center py-4">
           <i class="bi bi-exclamation-triangle text-warning mb-3 d-block" style="font-size:2.5rem;"></i>
-          <p class="mb-1">Estas seguro de que quieres eliminar este grupo?</p>
-          <p class="text-danger fw-medium mb-0">Esta accion no se puede deshacer.</p>
+          <p class="mb-1">{{ __('Are you sure you want to delete this group?') }}</p>
+          <p class="text-danger fw-medium mb-0">{{ __('This action cannot be undone.') }}</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="bi bi-x-lg me-1"></i> Cancelar
+            <i class="bi bi-x-lg me-1"></i> {{ __('Cancel') }}
           </button>
           <button type="button"
                   class="btn btn-danger"
                   wire:click="confirmDeleteGroup"
                   wire:loading.attr="disabled">
             <span wire:loading.remove wire:target="confirmDeleteGroup">
-              <i class="bi bi-trash me-1"></i> Eliminar
+              <i class="bi bi-trash me-1"></i> {{ __('Delete group') }}
             </span>
             <span wire:loading wire:target="confirmDeleteGroup">
               <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-              Eliminando...
+              {{ __('Deleting...') }}
             </span>
           </button>
         </div>

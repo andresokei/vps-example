@@ -1,15 +1,15 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Grupos')
+@section('title', __('My Groups'))
 
 @section('content')
 <div class="page-header d-flex justify-content-between align-items-start">
   <div>
-    <h1 class="page-title">Mis Grupos</h1>
-    <p class="page-subtitle">Gestiona los grupos de alumnos.</p>
+    <h1 class="page-title">{{ __('My Groups') }}</h1>
+    <p class="page-subtitle">{{ __('Manage student groups.') }}</p>
   </div>
   <a href="{{ route('grupos.create') }}" class="btn btn-primary btn-sm">
-    <i class="bi bi-plus-lg me-1"></i> Nuevo Grupo
+    <i class="bi bi-plus-lg me-1"></i> {{ __('New Group') }}
   </a>
 </div>
 
@@ -19,8 +19,8 @@
       <thead>
         <tr>
           <th>#</th>
-          <th>Nombre del Grupo</th>
-          <th>Alumnos</th>
+          <th>{{ __('Group Name') }}</th>
+          <th>{{ __('Students') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -33,7 +33,7 @@
         @empty
           <tr>
             <td colspan="3" class="text-center py-4 text-muted">
-              No hay grupos creados. Crea el primero desde el Dashboard.
+              {{ __('No groups created. Create the first one from the Dashboard.') }}
             </td>
           </tr>
         @endforelse

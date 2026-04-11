@@ -57,7 +57,7 @@ class Sociograma extends Component
         // Continuar con la carga de nodos y enlaces...
     } catch (\Exception $e) {
         logger('Error loading sociogram data: ' . $e->getMessage());
-        session()->flash('error', 'Error al cargar los datos del sociograma.');
+        session()->flash('error', __('Error loading sociogram data.'));
     }
 }
 

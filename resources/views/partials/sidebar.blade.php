@@ -9,23 +9,23 @@
   </a>
 
   <ul class="sidebar-nav">
-    <li class="sidebar-section-label">Principal</li>
+    <li class="sidebar-section-label">{{ __('Main') }}</li>
 
     <li>
       <a class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
          href="{{ route('dashboard') }}">
         <i class="bi bi-house nav-icon"></i>
-        Dashboard
+        {{ __('Dashboard') }}
       </a>
     </li>
 
-    <li class="sidebar-section-label">Herramientas</li>
+    <li class="sidebar-section-label">{{ __('Tools') }}</li>
 
     <li>
       <a class="sidebar-link {{ request()->routeIs('grupos.*') ? 'active' : '' }}"
          href="{{ route('grupos.index') }}">
         <i class="bi bi-people nav-icon"></i>
-        Grupos
+        {{ __('Groups') }}
       </a>
     </li>
 
@@ -33,7 +33,7 @@
       <a class="sidebar-link {{ request()->routeIs('analisis') ? 'active' : '' }}"
          href="{{ route('analisis') }}">
         <i class="bi bi-graph-up nav-icon"></i>
-        Analisis
+        {{ __('Analysis') }}
       </a>
     </li>
   </ul>

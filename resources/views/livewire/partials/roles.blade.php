@@ -2,28 +2,28 @@
 @php
 $rolesMeta = [
   'leaders'   => [
-    'label'   => 'Líderes',
+    'label'   => __('Leaders'),
     'icon'    => 'bi-star-fill',
     'color'   => 'warning',
-    'tooltip' => 'Estudiantes con mayor número de elecciones recibidas (in-degree)',
+    'tooltip' => __('Students with the highest number of received choices (in-degree)'),
   ],
   'puentes'   => [
-    'label'   => 'Puentes',
+    'label'   => __('Bridges'),
     'icon'    => 'bi-intersect',
     'color'   => 'info',
-    'tooltip' => 'Estudiantes con mayor betweenness: conectan diferentes subgrupos',
+    'tooltip' => __('Students with highest betweenness: connect different subgroups'),
   ],
   'aislados'  => [
-    'label'   => 'Aislados',
+    'label'   => __('Isolated'),
     'icon'    => 'bi-person-slash',
     'color'   => 'danger',
-    'tooltip' => 'Estudiantes sin ninguna relación (ni elegidos ni eligen)',
+    'tooltip' => __('Students with no relationships (neither chosen nor choose)'),
   ],
   'cohesivos' => [
-    'label'   => 'Cohesivos',
+    'label'   => __('Cohesive group'),
     'icon'    => 'bi-people-fill',
     'color'   => 'success',
-    'tooltip' => 'Miembros del subgrupo más grande detectado',
+    'tooltip' => __('Members of the largest detected subgroup'),
   ],
 ];
 @endphp
@@ -44,7 +44,7 @@ $rolesMeta = [
           @forelse($datos['roles'][$key] ?? [] as $name)
             <span class="badge text-bg-{{ $meta['color'] }} mb-1 me-1 fw-normal">{{ $name }}</span>
           @empty
-            <span class="text-muted" style="font-size:0.8rem;">Ninguno identificado</span>
+            <span class="text-muted" style="font-size:0.8rem;">{{ __('None identified') }}</span>
           @endforelse
         </div>
       </div>
