@@ -37,8 +37,10 @@
         </div>
       </li>
     @empty
-      <li class="text-center text-muted py-3" style="font-size:0.875rem;">
-        {{ __('No groups created yet.') }}
+      <li class="text-center py-4">
+        <i class="bi bi-collection text-muted d-block mb-2" style="font-size:2rem;"></i>
+        <span class="text-muted d-block mb-2" style="font-size:0.875rem;">{{ __('No groups created yet.') }}</span>
+        <span class="text-muted" style="font-size:0.8rem;">{{ __('Type a name above and press + to create your first group.') }}</span>
       </li>
     @endforelse
   </ul>

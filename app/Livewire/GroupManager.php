@@ -91,6 +91,8 @@ class GroupManager extends Component
         session()->flash('message', __('Group created successfully.'));
         $this->groupName = '';
         $this->loadGroups();
+        $this->dispatch('refreshAssignedTests');
+        $this->dispatch('onboarding-progress-updated');
     }
 
     public function uploadCSV()
@@ -114,6 +116,7 @@ class GroupManager extends Component
         fclose($file);
         $this->reset('csvFile');
         $this->loadGroupStudents();
+        $this->dispatch('onboarding-progress-updated');
 
         session()->flash('message', __(':count students added from CSV.', ['count' => $addedStudents]));
     }
@@ -136,6 +139,7 @@ class GroupManager extends Component
 
         $this->loadGroupStudents();
         $this->reset('studentNames');
+        $this->dispatch('onboarding-progress-updated');
 
         session()->flash('message', __(':count students added.', ['count' => $addedStudents]));
     }

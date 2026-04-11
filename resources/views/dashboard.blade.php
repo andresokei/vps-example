@@ -8,10 +8,14 @@
   <p class="page-subtitle">{{ __('Manage your groups, tests and sociometric analyses.') }}</p>
 </div>
 
+@if (!Auth::user()->onboarding_dismissed_at)
+  <livewire:onboarding-checklist />
+@endif
+
 <div class="row g-4">
 
   {{-- Gestión de Grupos --}}
-  <div class="col-lg-4">
+  <div class="col-lg-4" id="group-manager">
     <div class="card h-100">
       <div class="card-header">
         <h5 class="card-title">
@@ -25,7 +29,7 @@
   </div>
 
   {{-- Asignar Tests --}}
-  <div class="col-lg-8">
+  <div class="col-lg-8" id="assign-tests">
     <div class="card h-100">
       <div class="card-header">
         <h5 class="card-title">

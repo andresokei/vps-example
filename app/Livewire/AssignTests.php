@@ -21,7 +21,7 @@ class AssignTests extends Component
     public $successMessage;
     public $errorMessage;
 
-    protected $listeners = ['refreshAssignedTests' => '$refresh'];
+    protected $listeners = ['refreshAssignedTests' => 'reloadGroups'];
 
     protected function rules()
     {
@@ -43,6 +43,11 @@ class AssignTests extends Component
     {
         $this->grupos = Grupo::where('id_profesor', Auth::id())->orderBy('nombre_grupo')->get();
         $this->tests = Test::orderBy('nombre_test')->get();
+    }
+
+    public function reloadGroups(): void
+    {
+        $this->grupos = Grupo::where('id_profesor', Auth::id())->orderBy('nombre_grupo')->get();
     }
 
     public function assign()
@@ -85,6 +90,7 @@ class AssignTests extends Component
             $this->reset(['grupo_id', 'test_id']);
 
             $this->dispatch('refreshAssignedTests');
+            $this->dispatch('onboarding-progress-updated');
         } catch (\Throwable $e) {
             $this->successMessage = null;
             $this->errorMessage = __('Error assigning test: :error', ['error' => $e->getMessage()]);

@@ -84,8 +84,10 @@
           </tr>
         @empty
           <tr>
-            <td colspan="7" class="text-center py-4 text-muted">
-              {{ __('No tests assigned.') }}
+            <td colspan="7" class="text-center py-5 text-muted">
+              <i class="bi bi-clipboard-x d-block mb-2" style="font-size:2rem;"></i>
+              <span class="d-block mb-1" style="font-size:0.9rem;">{{ __('No tests assigned.') }}</span>
+              <span style="font-size:0.8rem;">{{ __('Assign a test to a group to start collecting responses.') }}</span>
             </td>
           </tr>
         @endforelse
