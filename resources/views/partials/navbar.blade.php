@@ -29,15 +29,15 @@
                 {{-- Language Switcher --}}
                 <div class="landing-lang-switcher">
                     @foreach(['es' => 'ES', 'en' => 'EN'] as $lang => $label)
-                        <form action="{{ route('locale.switch') }}" method="POST">
+                        <form action="{{ route('locale.switch') }}" method="POST" style="display:inline;">
                             @csrf
                             <input type="hidden" name="locale" value="{{ $lang }}">
                             <button type="submit"
-                                class="btn btn-sm {{ app()->getLocale() === $lang ? 'btn-primary' : 'btn-outline-primary' }} rounded-pill px-2 py-1"
-                                style="font-size:0.75rem;">
+                                class="lang-text-btn {{ app()->getLocale() === $lang ? 'lang-text-btn--active' : 'lang-text-btn--inactive' }}">
                                 {{ $label }}
                             </button>
                         </form>
+                        @if(!$loop->last)<span class="lang-sep">|</span>@endif
                     @endforeach
                 </div>
 

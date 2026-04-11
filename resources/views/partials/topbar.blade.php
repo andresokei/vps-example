@@ -8,17 +8,17 @@
   <div class="topbar-spacer"></div>
 
   {{-- Language Switcher --}}
-  <div class="d-flex align-items-center gap-1 me-3">
-    @foreach(['es' => '🇪🇸', 'en' => '🇬🇧'] as $lang => $flag)
-      <form action="{{ route('locale.switch') }}" method="POST">
+  <div class="d-flex align-items-center me-3">
+    @foreach(['es' => 'ES', 'en' => 'EN'] as $lang => $label)
+      <form action="{{ route('locale.switch') }}" method="POST" style="display:inline;">
         @csrf
         <input type="hidden" name="locale" value="{{ $lang }}">
         <button type="submit"
-          class="btn btn-sm px-2 py-1 {{ app()->getLocale() === $lang ? 'btn-primary' : 'btn-outline-secondary' }}"
-          style="font-size:0.75rem;min-width:2rem;">
-          {{ $flag }} {{ strtoupper($lang) }}
+          class="lang-text-btn {{ app()->getLocale() === $lang ? 'lang-text-btn--active' : 'lang-text-btn--inactive' }}">
+          {{ $label }}
         </button>
       </form>
+      @if(!$loop->last)<span class="lang-sep">|</span>@endif
     @endforeach
   </div>
 
