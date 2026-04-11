@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -46,9 +47,16 @@ class User extends Authenticatable
         ];
     }
 
+    public function grantProfesorAccess(): void
+    {
+        $this->forceFill(['rol' => 'profesor'])->save();
+
+        $this->assignRole(Role::findOrCreate('profesor', $this->getDefaultGuardName()));
+    }
+
     public function grupos()
-{
-    return $this->hasMany(Grupo::class, 'id_profesor');
-}
+    {
+        return $this->hasMany(Grupo::class, 'id_profesor');
+    }
 
 }

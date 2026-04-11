@@ -87,7 +87,7 @@ it('preselecciona grupo y asignacion al abrir el analisis desde una asignacion c
     ])
         ->assertSet('grupoSeleccionado', (string) $grupo->id)
         ->assertSet('asignacionTestId', $asignacion->id)
-        ->assertSee('Analisis generado correctamente.');
+        ->assertSee(__('Analysis generated successfully.'));
 
     expect($component->instance()->analisis)->not->toBeEmpty();
     expect($component->instance()->analisis['totales']['respondieron'] ?? 0)->toBe(1);

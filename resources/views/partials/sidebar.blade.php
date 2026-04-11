@@ -1,4 +1,8 @@
 {{-- resources/views/partials/sidebar.blade.php --}}
+@php
+  $canUseTeacherTools = auth()->user()?->hasAnyRole(['profesor', 'admin']);
+@endphp
+
 <aside class="app-sidebar" id="appSidebar">
 
   <a class="sidebar-brand" href="{{ route('dashboard') }}">
@@ -19,23 +23,25 @@
       </a>
     </li>
 
-    <li class="sidebar-section-label">{{ __('Tools') }}</li>
+    @if ($canUseTeacherTools)
+      <li class="sidebar-section-label">{{ __('Tools') }}</li>
 
-    <li>
-      <a class="sidebar-link {{ request()->routeIs('grupos.*') ? 'active' : '' }}"
-         href="{{ route('grupos.index') }}">
-        <i class="bi bi-people nav-icon"></i>
-        {{ __('Groups') }}
-      </a>
-    </li>
+      <li>
+        <a class="sidebar-link {{ request()->routeIs('grupos.*') ? 'active' : '' }}"
+           href="{{ route('grupos.index') }}">
+          <i class="bi bi-people nav-icon"></i>
+          {{ __('Groups') }}
+        </a>
+      </li>
 
-    <li>
-      <a class="sidebar-link {{ request()->routeIs('analisis') ? 'active' : '' }}"
-         href="{{ route('analisis') }}">
-        <i class="bi bi-graph-up nav-icon"></i>
-        {{ __('Analysis') }}
-      </a>
-    </li>
+      <li>
+        <a class="sidebar-link {{ request()->routeIs('analisis*') ? 'active' : '' }}"
+           href="{{ route('analisis') }}">
+          <i class="bi bi-graph-up nav-icon"></i>
+          {{ __('Analysis') }}
+        </a>
+      </li>
+    @endif
   </ul>
 
   <div style="padding: 1rem 1.25rem; border-top: 1px solid rgba(255,255,255,0.07); flex-shrink:0;">
