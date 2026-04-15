@@ -989,7 +989,12 @@ thead th[data-sort]:hover { background-color: #f1f3f5; }
     letter-spacing: .04em;
 }
 
-/* --- Heatmap — leyenda de colores --- */
+/* --- Heatmap — contenedor y leyenda de colores --- */
+.heatmap-wrapper {
+    position: relative;
+    height: 400px;
+}
+
 .heatmap-legend {
     display: flex;
     flex-wrap: wrap;

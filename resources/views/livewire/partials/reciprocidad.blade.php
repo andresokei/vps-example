@@ -5,7 +5,7 @@
   </div>
   <div class="card-body">
     <div class="heatmap-wrapper">
-      <canvas id="heatmapReciprocidad" style="height:400px; width:100%;"></canvas>
+      <canvas id="heatmapReciprocidad"></canvas>
     </div>
   </div>
 </div>
