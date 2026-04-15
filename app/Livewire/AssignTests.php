@@ -21,7 +21,7 @@ class AssignTests extends Component
     public $successMessage;
     public $errorMessage;
 
-    protected $listeners = ['refreshAssignedTests' => 'reloadGroups'];
+    protected $listeners = ['refreshAssignedTests' => 'reload'];
 
     protected function rules()
     {
@@ -41,13 +41,20 @@ class AssignTests extends Component
 
     public function mount()
     {
-        $this->grupos = Grupo::where('id_profesor', Auth::id())->orderBy('nombre_grupo')->get();
-        $this->tests = Test::orderBy('nombre_test')->get();
+        $this->reload();
     }
 
-    public function reloadGroups(): void
+    public function reload(): void
     {
         $this->grupos = Grupo::where('id_profesor', Auth::id())->orderBy('nombre_grupo')->get();
+        $this->tests = Test::where(function ($q) {
+                $q->where('id_profesor', Auth::id())
+                  ->orWhereNull('id_profesor');
+            })
+            ->withCount('preguntas')
+            ->orderByRaw('id_profesor IS NULL ASC')
+            ->orderBy('nombre_test')
+            ->get();
     }
 
     public function assign()

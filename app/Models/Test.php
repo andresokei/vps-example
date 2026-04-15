@@ -13,11 +13,16 @@ class Test extends Model
     protected $table = 'tests';
 
     // Define los campos que se pueden llenar
-    protected $fillable = ['nombre_test', 'descripcion'];
+    protected $fillable = ['nombre_test', 'descripcion', 'id_profesor'];
 
     // Define la relación con Pregunta
     public function preguntas()
     {
-        return $this->hasMany(Pregunta::class);
+        return $this->hasMany(Pregunta::class)->orderBy('orden');
+    }
+
+    public function profesor()
+    {
+        return $this->belongsTo(User::class, 'id_profesor');
     }
 }

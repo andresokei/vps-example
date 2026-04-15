@@ -35,6 +35,14 @@
       </li>
 
       <li>
+        <a class="sidebar-link {{ request()->routeIs('tests.*') ? 'active' : '' }}"
+           href="{{ route('tests.index') }}">
+          <i class="bi bi-file-earmark-check nav-icon"></i>
+          {{ __('Tests') }}
+        </a>
+      </li>
+
+      <li>
         <a class="sidebar-link {{ request()->routeIs('analisis*') ? 'active' : '' }}"
            href="{{ route('analisis') }}">
           <i class="bi bi-graph-up nav-icon"></i>

@@ -26,6 +26,10 @@ Route::middleware(['auth'])->group(function () {
         ->middleware(['verified'])
         ->name('dashboard');
 
+    Route::get('/tests', function () {
+        return view('tests.index');
+    })->middleware(['verified', 'role:profesor|admin'])->name('tests.index');
+
     Route::get('/analisis', [AnalisisController::class, 'index'])
         ->middleware(['verified', 'role:profesor|admin'])
         ->name('analisis');

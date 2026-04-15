@@ -22,9 +22,18 @@
       <select wire:model="test_id" class="form-select">
         <option value="" disabled selected>{{ __('Select a test') }}</option>
         @foreach($tests as $t)
-          <option value="{{ $t->id }}">{{ $t->nombre_test }}</option>
+          <option value="{{ $t->id }}">
+            {{ $t->nombre_test }}
+            @if(!$t->id_profesor) · {{ __('template') }}@endif
+            ({{ $t->preguntas_count }} {{ $t->preguntas_count === 1 ? __('question') : __('questions') }})
+          </option>
         @endforeach
       </select>
+      @if($tests->isEmpty())
+        <div class="form-text text-muted">
+          <a href="{{ route('tests.index') }}">{{ __('Create a test first.') }}</a>
+        </div>
+      @endif
     </div>
 
     <div class="d-grid">
