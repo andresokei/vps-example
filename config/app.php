@@ -118,6 +118,8 @@ return [
     |
     */
 
+    'admin_email' => env('ADMIN_EMAIL'),
+
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
