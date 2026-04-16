@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\AsignacionTest;
+use App\Models\Relacion;
 use App\Models\Respuesta;
+use App\Services\AnalisisGrupalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -181,44 +184,45 @@ class TestController extends Controller
             throw ValidationException::withMessages($errors);
         }
 
-        DB::transaction(function () use ($asignacion, $studentId, $validated) {
-            $selectionCount = min(3, max($asignacion->grupo->estudiantes->count() - 1, 0));
+        try {
+            DB::transaction(function () use ($asignacion, $studentId, $validated) {
+                $selectionCount = min(3, max($asignacion->grupo->estudiantes->count() - 1, 0));
+                $timestamp = now();
+                $rows = [];
 
-            foreach ($asignacion->test->preguntas as $pregunta) {
-                $tipoPregunta = $pregunta->tipo_pregunta;
-                $tipoRelacion = $tipoPregunta === 'rechazo' ? 'rechazado' : 'preferido';
+                foreach ($asignacion->test->preguntas as $pregunta) {
+                    foreach (range(1, $selectionCount) as $i) {
+                        $respuesta = (int) $validated['respuesta_'.$pregunta->id.'_'.$i];
 
-                for ($i = 1; $i <= $selectionCount; $i++) {
-                    $respuesta = (int) $validated['respuesta_'.$pregunta->id.'_'.$i];
-
-                    DB::table('respuestas')->insert([
-                        'alumno_id' => $studentId,
-                        'asignacion_test_id' => $asignacion->id,
-                        'pregunta_id' => $pregunta->id,
-                        'respuesta' => (string) $respuesta,
-                        'orden_preferencia' => $i,
-                        'tipo_relacion' => $tipoPregunta,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-
-                    DB::table('relaciones')->insert([
-                        'asignacion_test_id' => $asignacion->id,
-                        'pregunta_id' => $pregunta->id,
-                        'alumno_a_id' => $studentId,
-                        'alumno_b_id' => $respuesta,
-                        'tipo_relacion' => $tipoRelacion,
-                        'intensidad' => $i,
-                        'estado_relacion' => 'activa',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+                        $rows[] = [
+                            'alumno_id' => $studentId,
+                            'asignacion_test_id' => $asignacion->id,
+                            'pregunta_id' => $pregunta->id,
+                            'respuesta' => (string) $respuesta,
+                            'orden_preferencia' => $i,
+                            'tipo_relacion' => $pregunta->tipo_pregunta,
+                            'created_at' => $timestamp,
+                            'updated_at' => $timestamp,
+                        ];
+                    }
                 }
+
+                DB::table('respuestas')->insert($rows);
+                Relacion::generarDesdeRespuestas((int) $asignacion->id);
+            });
+        } catch (QueryException $e) {
+            if ($this->isDuplicateSubmissionException($e)) {
+                throw ValidationException::withMessages([
+                    'estudiante_id' => __('This student has already answered this test.'),
+                ]);
             }
-        });
+
+            throw $e;
+        }
 
         $asignacion->refresh();
         $asignacion->recalcularEstado();
+        app(AnalisisGrupalService::class)->invalidateForAssignment((int) $asignacion->grupo_id, (int) $asignacion->id);
         $this->forgetAssignmentAccess($request);
 
         return redirect()
@@ -242,5 +246,20 @@ class TestController extends Controller
     private function forgetAssignmentAccess(Request $request): void
     {
         $request->session()->forget(self::ACCESS_SESSION_KEY);
+    }
+
+    private function isDuplicateSubmissionException(QueryException $e): bool
+    {
+        $message = strtolower($e->getMessage());
+
+        if (! in_array((string) $e->getCode(), ['23000', '23505'], true)) {
+            return false;
+        }
+
+        return str_contains($message, 'respuestas')
+            && str_contains($message, 'asignacion_test_id')
+            && str_contains($message, 'alumno_id')
+            && str_contains($message, 'pregunta_id')
+            && str_contains($message, 'orden_preferencia');
     }
 }

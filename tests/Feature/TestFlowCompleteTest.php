@@ -6,7 +6,9 @@ use App\Models\Grupo;
 use App\Models\Pregunta;
 use App\Models\Test;
 use App\Models\User;
+use App\Services\AnalisisGrupalService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(Tests\TestCase::class, RefreshDatabase::class);
 
@@ -152,8 +154,8 @@ it('ajusta el numero de selecciones requeridas cuando el grupo tiene menos de cu
     $this->withSession(['test_access.assignment_id' => $asignacion->id])
         ->get(route('test.realizar', $asignacion))
         ->assertOk()
-        ->assertSeeText('Cada pregunta requiere 2')
-        ->assertSeeText('selecciones distintas.');
+        ->assertSeeText('Each question requires 2')
+        ->assertSeeText('distinct selections.');
 
     $this->withSession(['test_access.assignment_id' => $asignacion->id])
         ->post(route('test.submit', $asignacion), [
@@ -234,4 +236,78 @@ it('actualiza el estado de la asignacion al completar todas las respuestas', fun
     }
 
     expect($asignacion->fresh()->estado)->toBe('aplicado');
+});
+
+it('reconstruye relaciones normalizadas e invalida cache al registrar nuevas respuestas', function () {
+    ['grupo' => $grupo, 'asignacion' => $asignacion, 'pregPref' => $pregPref, 'pregRec' => $pregRec, 'alumnos' => $alumnos] = crearAsignacionConAlumnos();
+
+    $pregPrefExtra = Pregunta::create([
+        'test_id' => $asignacion->test_id,
+        'tipo_pregunta' => 'preferencia',
+        'texto_pregunta' => 'Con quien quieres colaborar tambien?',
+        'orden' => 3,
+    ]);
+
+    $service = app(AnalisisGrupalService::class);
+
+    $primerAnalisis = $service->generar($grupo->id, $asignacion->id);
+
+    expect($primerAnalisis['totales']['relaciones'])->toBe(0)
+        ->and($primerAnalisis['totales']['respondieron'])->toBe(0);
+
+    $respondiente = $alumnos[0];
+    $otros = $alumnos->filter(fn ($a) => $a->id !== $respondiente->id)->values();
+
+    $this->withSession(['test_access.assignment_id' => $asignacion->id])
+        ->post(route('test.submit', $asignacion), [
+            'estudiante_id' => $respondiente->id,
+            'respuesta_' . $pregPref->id . '_1' => $otros[0]->id,
+            'respuesta_' . $pregPref->id . '_2' => $otros[1]->id,
+            'respuesta_' . $pregPref->id . '_3' => $otros[2]->id,
+            'respuesta_' . $pregRec->id . '_1' => $otros[2]->id,
+            'respuesta_' . $pregRec->id . '_2' => $otros[1]->id,
+            'respuesta_' . $pregRec->id . '_3' => $otros[0]->id,
+            'respuesta_' . $pregPrefExtra->id . '_1' => $otros[0]->id,
+            'respuesta_' . $pregPrefExtra->id . '_2' => $otros[2]->id,
+            'respuesta_' . $pregPrefExtra->id . '_3' => $otros[1]->id,
+        ])
+        ->assertRedirect(route('test.success'));
+
+    $analisisActualizado = $service->generar($grupo->id, $asignacion->id);
+
+    expect($analisisActualizado['totales']['respondieron'])->toBe(1)
+        ->and($analisisActualizado['totales']['relaciones'])->toBe(6)
+        ->and($analisisActualizado['totales']['preferencias'])->toBe(3)
+        ->and($analisisActualizado['totales']['rechazos'])->toBe(3);
+
+    $this->assertDatabaseCount('respuestas', 9);
+    $this->assertDatabaseCount('relaciones', 6);
+});
+
+it('protege la tabla de respuestas contra duplicados por pregunta y orden', function () {
+    ['asignacion' => $asignacion, 'pregPref' => $pregPref, 'alumnos' => $alumnos] = crearAsignacionConAlumnos();
+
+    DB::table('respuestas')->insert([
+        'alumno_id' => $alumnos[0]->id,
+        'asignacion_test_id' => $asignacion->id,
+        'pregunta_id' => $pregPref->id,
+        'respuesta' => (string) $alumnos[1]->id,
+        'orden_preferencia' => 1,
+        'tipo_relacion' => 'preferencia',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $this->expectException(\Illuminate\Database\QueryException::class);
+
+    DB::table('respuestas')->insert([
+        'alumno_id' => $alumnos[0]->id,
+        'asignacion_test_id' => $asignacion->id,
+        'pregunta_id' => $pregPref->id,
+        'respuesta' => (string) $alumnos[2]->id,
+        'orden_preferencia' => 1,
+        'tipo_relacion' => 'preferencia',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
 });

@@ -156,3 +156,54 @@ it('genera matriz de reciprocidad con dimensiones del grupo completo', function 
         ->and($cellAA['v'] ?? null)->toBe(0)
         ->and($cellEE['v'] ?? null)->toBe(0);
 });
+
+it('elige leaders por preferencias recibidas y no por rechazos', function () {
+    $fixture = seedAnalisisFixture();
+
+    DB::table('relaciones')->delete();
+
+    DB::table('relaciones')->insert([
+        [
+            'asignacion_test_id' => $fixture['asignacion_id'],
+            'pregunta_id' => DB::table('preguntas')->where('tipo_pregunta', 'preferencia')->value('id'),
+            'alumno_a_id' => $fixture['ids']['Ana'],
+            'alumno_b_id' => $fixture['ids']['Diego'],
+            'tipo_relacion' => 'preferido',
+            'intensidad' => 1,
+            'estado_relacion' => 'activa',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'asignacion_test_id' => $fixture['asignacion_id'],
+            'pregunta_id' => DB::table('preguntas')->where('tipo_pregunta', 'rechazo')->value('id'),
+            'alumno_a_id' => $fixture['ids']['Ana'],
+            'alumno_b_id' => $fixture['ids']['Beto'],
+            'tipo_relacion' => 'rechazado',
+            'intensidad' => 1,
+            'estado_relacion' => 'activa',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'asignacion_test_id' => $fixture['asignacion_id'],
+            'pregunta_id' => DB::table('preguntas')->where('tipo_pregunta', 'rechazo')->value('id'),
+            'alumno_a_id' => $fixture['ids']['Carla'],
+            'alumno_b_id' => $fixture['ids']['Beto'],
+            'tipo_relacion' => 'rechazado',
+            'intensidad' => 1,
+            'estado_relacion' => 'activa',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+    ]);
+
+    $result = app(AnalisisGrupalService::class)->generar(
+        $fixture['grupo_id'],
+        $fixture['asignacion_id'],
+        true
+    );
+
+    expect($result['roles']['leaders'])->toContain('Diego')
+        ->and($result['roles']['leaders'])->not->toContain('Beto');
+});

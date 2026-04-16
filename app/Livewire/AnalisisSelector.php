@@ -220,6 +220,17 @@ class AnalisisSelector extends Component
 
     private function relacionesDesactualizadas(int $asignacionTestId): bool
     {
+        $hasDuplicatedPairs = Relacion::query()
+            ->where('asignacion_test_id', $asignacionTestId)
+            ->selectRaw('alumno_a_id, alumno_b_id, tipo_relacion, COUNT(*) as total')
+            ->groupBy('alumno_a_id', 'alumno_b_id', 'tipo_relacion')
+            ->havingRaw('COUNT(*) > 1')
+            ->exists();
+
+        if ($hasDuplicatedPairs) {
+            return true;
+        }
+
         $statsRel = Relacion::query()
             ->where('asignacion_test_id', $asignacionTestId)
             ->selectRaw('COUNT(*) as total, MAX(updated_at) as max_updated_at')

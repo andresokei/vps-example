@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AsignacionTest;
 use App\Models\Estudiante;
 use App\Models\Pregunta;
 use App\Models\Relacion;
@@ -11,6 +12,24 @@ use Illuminate\Support\Facades\Log;
 
 class AnalisisGrupalService
 {
+    public function invalidateForAssignmentId(int $asignacionTestId): void
+    {
+        $asignacion = AsignacionTest::query()
+            ->select(['id', 'grupo_id'])
+            ->find($asignacionTestId);
+
+        if (! $asignacion) {
+            return;
+        }
+
+        $this->invalidateForAssignment((int) $asignacion->grupo_id, (int) $asignacion->id);
+    }
+
+    public function invalidateForAssignment(int $grupoId, int $asignacionTestId): void
+    {
+        Cache::forget($this->cacheKey($grupoId, $asignacionTestId));
+    }
+
     public function generar(int $grupoId, int $asignacionTestId, bool $forceRefresh = false): array
     {
         $cacheKey = $this->cacheKey($grupoId, $asignacionTestId);
@@ -268,6 +287,10 @@ class AnalisisGrupalService
 
         $inDegree = array_fill_keys($ids, 0);
         $outDegree = array_fill_keys($ids, 0);
+        $preferenceInDegree = array_fill_keys($ids, 0);
+        $preferenceOutDegree = array_fill_keys($ids, 0);
+        $rejectionInDegree = array_fill_keys($ids, 0);
+        $rejectionOutDegree = array_fill_keys($ids, 0);
         $adjUndirected = array_fill_keys($ids, []);
 
         foreach ($rel as $r) {
@@ -279,8 +302,18 @@ class AnalisisGrupalService
 
             $outDegree[$a]++;
             $inDegree[$b]++;
-            $adjUndirected[$a][$b] = true;
-            $adjUndirected[$b][$a] = true;
+
+            if ($r->tipo_relacion === 'preferido') {
+                $preferenceOutDegree[$a]++;
+                $preferenceInDegree[$b]++;
+                $adjUndirected[$a][$b] = true;
+                $adjUndirected[$b][$a] = true;
+            }
+
+            if ($r->tipo_relacion === 'rechazado') {
+                $rejectionOutDegree[$a]++;
+                $rejectionInDegree[$b]++;
+            }
         }
 
         $betweenness = $this->brandesBetweennessUndirected($ids, $adjUndirected);
@@ -293,6 +326,10 @@ class AnalisisGrupalService
                 'name' => (string) ($idToName[$id] ?? ('Alumno #' . $id)),
                 'inDegree' => (int) ($inDegree[$id] ?? 0),
                 'outDegree' => (int) ($outDegree[$id] ?? 0),
+                'preferenceInDegree' => (int) ($preferenceInDegree[$id] ?? 0),
+                'preferenceOutDegree' => (int) ($preferenceOutDegree[$id] ?? 0),
+                'rejectionInDegree' => (int) ($rejectionInDegree[$id] ?? 0),
+                'rejectionOutDegree' => (int) ($rejectionOutDegree[$id] ?? 0),
                 'betweenness' => round((float) ($betweenness[$id] ?? 0), 4),
                 'closeness' => round((float) ($closeness[$id] ?? 0), 4),
             ];
@@ -397,8 +434,8 @@ class AnalisisGrupalService
     private function calcularRoles(array $centralidades, array $comunidades): array
     {
         $leaders = collect($centralidades)
-            ->filter(fn ($c) => ($c['inDegree'] ?? 0) > 0)
-            ->sortByDesc('inDegree')
+            ->filter(fn ($c) => ($c['preferenceInDegree'] ?? 0) > 0)
+            ->sortByDesc('preferenceInDegree')
             ->take(3)
             ->pluck('name')
             ->values()
