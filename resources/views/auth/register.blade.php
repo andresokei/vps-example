@@ -6,6 +6,8 @@
 
     <form method="POST" action="{{ route('register') }}">
         @csrf
+        {{-- Honeypot: campo trampa para bots --}}
+        <input type="text" name="website" value="" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
 
         <!-- Nombre -->
         <div>
