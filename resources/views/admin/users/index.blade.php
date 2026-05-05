@@ -97,8 +97,11 @@
   </div>
 
   @if ($users->hasPages())
-    <div class="card-footer">
-      {{ $users->links() }}
+    <div class="card-footer d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+      <div class="small text-muted">
+        {{ __('Showing') }} {{ $users->firstItem() }}-{{ $users->lastItem() }} {{ __('of') }} {{ $users->total() }}
+      </div>
+      {{ $users->links('pagination::bootstrap-5') }}
     </div>
   @endif
 </div>
