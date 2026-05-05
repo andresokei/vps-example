@@ -207,6 +207,28 @@ body {
   white-space: nowrap;
 }
 
+.impersonation-banner {
+  position: fixed;
+  top: var(--topbar-height);
+  left: var(--sidebar-width);
+  right: 0;
+  min-height: 48px;
+  z-index: 1029;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 1.5rem;
+  background: #7c2d12;
+  color: #fff7ed;
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+  font-size: 0.86rem;
+}
+
+body.is-impersonating .main-wrapper {
+  padding-top: calc(var(--topbar-height) + 48px);
+}
+
 /* =====================================================================
    MAIN WRAPPER
    ===================================================================== */
@@ -409,6 +431,7 @@ span.badge.badge-danger   { background-color: #fee2e2 !important; color: #991b1b
   }
   .main-wrapper { margin-left: 0; }
   .app-topbar   { left: 0; }
+  .impersonation-banner { left: 0; }
   .topbar-toggle {
     display: flex;
     align-items: center;

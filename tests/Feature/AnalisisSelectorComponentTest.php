@@ -5,6 +5,7 @@ use App\Models\AsignacionTest;
 use App\Models\Estudiante;
 use App\Models\Grupo;
 use App\Models\Pregunta;
+use App\Models\Relacion;
 use App\Models\Respuesta;
 use App\Models\Test;
 use App\Models\User;
@@ -91,4 +92,21 @@ it('preselecciona grupo y asignacion al abrir el analisis desde una asignacion c
 
     expect($component->instance()->analisis)->not->toBeEmpty();
     expect($component->instance()->analisis['totales']['respondieron'] ?? 0)->toBe(1);
+});
+
+it('no regenera relaciones al previsualizar analisis en modo admin solo lectura', function () {
+    ['profesor' => $profesor, 'grupo' => $grupo, 'asignacion' => $asignacion] = crearAsignacionConAnalisisDisponible();
+
+    $this->actingAs($profesor);
+    session(['impersonator_id' => 999]);
+
+    Livewire::test(AnalisisSelector::class, [
+        'grupoInicial' => $grupo->id,
+        'asignacionInicial' => $asignacion->id,
+    ])
+        ->assertSet('grupoSeleccionado', (string) $grupo->id)
+        ->assertSet('asignacionTestId', $asignacion->id)
+        ->assertSee(__('This analysis needs to be regenerated before it can be previewed in read-only admin mode.'));
+
+    expect(Relacion::where('asignacion_test_id', $asignacion->id)->count())->toBe(0);
 });

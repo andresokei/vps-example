@@ -16,11 +16,12 @@
   @livewireStyles
 </head>
 
-<body>
+<body @class(['is-impersonating' => session()->has('impersonator_id')])>
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   @include('partials.sidebar')
   @include('partials.topbar')
+  @include('partials.impersonation-banner')
 
   <div class="main-wrapper">
     <div class="page-content">

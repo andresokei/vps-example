@@ -1,6 +1,7 @@
 {{-- resources/views/partials/sidebar.blade.php --}}
 @php
   $canUseTeacherTools = auth()->user()?->hasAnyRole(['profesor', 'admin']);
+  $canUseAdminTools = auth()->user()?->hasRole('admin');
 @endphp
 
 <aside class="app-sidebar" id="appSidebar">
@@ -47,6 +48,18 @@
            href="{{ route('analisis') }}">
           <i class="bi bi-graph-up nav-icon"></i>
           {{ __('Analysis') }}
+        </a>
+      </li>
+    @endif
+
+    @if ($canUseAdminTools)
+      <li class="sidebar-section-label">{{ __('Admin') }}</li>
+
+      <li>
+        <a class="sidebar-link {{ request()->routeIs('admin.*') ? 'active' : '' }}"
+           href="{{ route('admin.users.index') }}">
+          <i class="bi bi-shield-lock nav-icon"></i>
+          {{ __('Users') }}
         </a>
       </li>
     @endif

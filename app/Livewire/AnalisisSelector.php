@@ -98,7 +98,16 @@ class AnalisisSelector extends Component
             return;
         }
 
-        $forzarRefresco = $this->relacionesDesactualizadas((int) $this->asignacionTestId);
+        $readOnlyPreview = session()->has('impersonator_id');
+        $relacionesDesactualizadas = $this->relacionesDesactualizadas((int) $this->asignacionTestId);
+
+        if ($readOnlyPreview && $relacionesDesactualizadas) {
+            $this->resultadoTipo = 'warning';
+            $this->resultadoAnalisis = __('This analysis needs to be regenerated before it can be previewed in read-only admin mode.');
+            return;
+        }
+
+        $forzarRefresco = $relacionesDesactualizadas;
         if ($forzarRefresco) {
             Relacion::generarDesdeRespuestas((int) $this->asignacionTestId);
         }

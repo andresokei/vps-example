@@ -61,4 +61,13 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Grupo::class, 'id_profesor');
     }
 
+    public function tests()
+    {
+        return $this->hasMany(Test::class, 'id_profesor');
+    }
+
+    public function asignacionesTest()
+    {
+        return $this->hasMany(AsignacionTest::class, 'profesor_id');
+    }
 }

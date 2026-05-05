@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AnalisisController;
+use App\Http\Controllers\Admin\ImpersonationController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
@@ -45,6 +47,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/prueba-sociograma', function () {
         return view('prueba-sociograma');
     });
+
+    Route::post('/admin/impersonation/stop', [ImpersonationController::class, 'stop'])
+        ->name('admin.impersonation.stop');
+});
+
+Route::middleware(['auth', 'verified', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::redirect('/', '/admin/users')->name('dashboard');
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::post('/users/{user}/impersonate', [ImpersonationController::class, 'start'])
+            ->name('users.impersonate');
 });
 
 require __DIR__.'/auth.php';
