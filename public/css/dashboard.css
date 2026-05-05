@@ -395,6 +395,73 @@ span.badge.badge-danger   { background-color: #fee2e2 !important; color: #991b1b
 .alert { border-radius: 10px; font-size: 0.875rem; }
 
 /* =====================================================================
+   ADMIN OVERVIEW
+   ===================================================================== */
+.admin-stat {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 116px;
+  padding: 1.15rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.admin-stat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.admin-stat-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.admin-stat-value {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.15;
+}
+
+.admin-stat-meta {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.admin-progress-row + .admin-progress-row {
+  margin-top: 1.1rem;
+}
+
+.admin-progress-row span,
+.admin-progress-row strong {
+  font-size: 0.84rem;
+}
+
+.admin-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.admin-list-row:first-child { padding-top: 0; }
+.admin-list-row:last-child { padding-bottom: 0; border-bottom: 0; }
+
+/* =====================================================================
    MODALS
    ===================================================================== */
 .modal-content {

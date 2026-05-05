@@ -56,7 +56,15 @@
       <li class="sidebar-section-label">{{ __('Admin') }}</li>
 
       <li>
-        <a class="sidebar-link {{ request()->routeIs('admin.*') ? 'active' : '' }}"
+        <a class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
+           href="{{ route('admin.dashboard') }}">
+          <i class="bi bi-speedometer2 nav-icon"></i>
+          {{ __('Overview') }}
+        </a>
+      </li>
+
+      <li>
+        <a class="sidebar-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
            href="{{ route('admin.users.index') }}">
           <i class="bi bi-shield-lock nav-icon"></i>
           {{ __('Users') }}

@@ -23,6 +23,37 @@ test('only admins can view the admin users panel', function () {
         ->assertSee($user->email);
 });
 
+test('only admins can view the admin overview dashboard', function () {
+    Role::findOrCreate('admin', 'web');
+
+    $user = User::factory()->create();
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $this->actingAs($user)
+        ->get(route('admin.dashboard'))
+        ->assertForbidden();
+
+    $this->actingAs($admin)
+        ->get(route('admin.dashboard'))
+        ->assertOk()
+        ->assertSee(__('Admin overview'))
+        ->assertSee(__('Users'))
+        ->assertSee(__('Assignments'));
+});
+
+test('admin root no longer redirects to users list', function () {
+    Role::findOrCreate('admin', 'web');
+
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $this->actingAs($admin)
+        ->get('/admin')
+        ->assertOk()
+        ->assertSee(__('Recent users'));
+});
+
 test('an admin can view the application as a professor and return to admin', function () {
     Role::findOrCreate('admin', 'web');
     Role::findOrCreate('profesor', 'web');
