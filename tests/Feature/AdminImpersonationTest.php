@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Grupo;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
@@ -113,4 +114,50 @@ test('impersonation is read only except returning to admin', function () {
         ->assertRedirect(route('admin.users.index'));
 
     $this->assertAuthenticatedAs($admin);
+});
+
+test('admin can delete a user without activity', function () {
+    Role::findOrCreate('admin', 'web');
+
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $bot = User::factory()->create(['email' => 'bot@example.test']);
+
+    $this->actingAs($admin)
+        ->delete(route('admin.users.destroy', $bot))
+        ->assertRedirect();
+
+    $this->assertDatabaseMissing('users', ['email' => 'bot@example.test']);
+});
+
+test('admin cannot delete self, admins or users with activity', function () {
+    Role::findOrCreate('admin', 'web');
+
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $otherAdmin = User::factory()->create();
+    $otherAdmin->assignRole('admin');
+
+    $activeUser = User::factory()->create();
+    Grupo::create([
+        'nombre_grupo' => 'Grupo activo',
+        'id_profesor' => $activeUser->id,
+    ]);
+
+    $this->actingAs($admin)
+        ->delete(route('admin.users.destroy', $admin))
+        ->assertForbidden();
+
+    $this->actingAs($admin)
+        ->delete(route('admin.users.destroy', $otherAdmin))
+        ->assertForbidden();
+
+    $this->actingAs($admin)
+        ->delete(route('admin.users.destroy', $activeUser))
+        ->assertRedirect()
+        ->assertSessionHas('error');
+
+    $this->assertDatabaseHas('users', ['id' => $activeUser->id]);
 });

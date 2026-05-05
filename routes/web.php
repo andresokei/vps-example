@@ -61,6 +61,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
         Route::post('/users/{user}/impersonate', [ImpersonationController::class, 'start'])
             ->name('users.impersonate');
+        Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
 });
 
 require __DIR__.'/auth.php';

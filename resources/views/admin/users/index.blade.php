@@ -11,6 +11,9 @@
 @if (session('message'))
   <div class="alert alert-success">{{ session('message') }}</div>
 @endif
+@if (session('error'))
+  <div class="alert alert-danger">{{ session('error') }}</div>
+@endif
 
 <div class="card">
   <div class="card-header">
@@ -76,12 +79,31 @@
             </td>
             <td class="text-end">
               @if (! $user->hasRole('admin') && ! $user->is(auth()->user()))
-                <form method="POST" action="{{ route('admin.users.impersonate', $user) }}" class="d-inline">
-                  @csrf
-                  <button type="submit" class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-eye me-1"></i>{{ __('View as user') }}
-                  </button>
-                </form>
+                <div class="d-inline-flex justify-content-end gap-2">
+                  <form method="POST" action="{{ route('admin.users.impersonate', $user) }}" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-eye me-1"></i>{{ __('View as user') }}
+                    </button>
+                  </form>
+
+                  @if (($user->grupos_count + $user->tests_count + $user->asignaciones_test_count) === 0)
+                    <form
+                      method="POST"
+                      action="{{ route('admin.users.destroy', $user) }}"
+                      class="d-inline"
+                      onsubmit="return confirm('{{ __('Delete this user permanently? This cannot be undone.') }}');"
+                    >
+                      @csrf
+                      @method('DELETE')
+                      <button type="submit" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash me-1"></i>{{ __('Delete') }}
+                      </button>
+                    </form>
+                  @else
+                    <span class="badge text-bg-light border align-self-center">{{ __('Has activity') }}</span>
+                  @endif
+                </div>
               @else
                 <span class="text-muted small">{{ __('Protected') }}</span>
               @endif

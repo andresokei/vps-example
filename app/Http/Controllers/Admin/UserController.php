@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -30,5 +31,28 @@ class UserController extends Controller
             'users' => $users,
             'search' => $search,
         ]);
+    }
+
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        abort_if($user->is($request->user()), 403);
+        abort_if($user->hasRole('admin'), 403);
+
+        $user->loadCount(['grupos', 'tests', 'asignacionesTest']);
+
+        $hasActivity = $user->grupos_count > 0
+            || $user->tests_count > 0
+            || $user->asignaciones_test_count > 0;
+
+        if ($hasActivity) {
+            return back()->with('error', __('This user has activity and cannot be deleted from the quick admin cleanup.'));
+        }
+
+        $deletedEmail = $user->email;
+
+        $user->syncRoles([]);
+        $user->delete();
+
+        return back()->with('message', __('User :email deleted.', ['email' => $deletedEmail]));
     }
 }
