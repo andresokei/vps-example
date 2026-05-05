@@ -40,7 +40,7 @@
       <div>
         <div class="admin-stat-label">{{ __('Content') }}</div>
         <div class="admin-stat-value">{{ number_format($totals['groups'] + $totals['tests']) }}</div>
-        <div class="admin-stat-meta">{{ $totals['groups'] }} {{ __('groups') }} · {{ $totals['tests'] }} {{ __('tests') }}</div>
+        <div class="admin-stat-meta">{{ $totals['groups'] }} {{ __('groups') }} / {{ $totals['tests'] }} {{ __('tests') }}</div>
       </div>
     </div>
   </div>
@@ -57,6 +57,34 @@
 </div>
 
 <div class="row g-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title"><i class="bi bi-calendar-event me-2 text-primary"></i>{{ __('Recent timeline') }}</h5>
+      </div>
+      <div class="card-body">
+        @forelse ($timeline as $event)
+          <div class="admin-timeline-row">
+            <div class="admin-timeline-icon"><i class="bi {{ $event['icon'] }}"></i></div>
+            <div class="flex-grow-1">
+              <div class="d-flex flex-column flex-md-row justify-content-md-between gap-1">
+                <div>
+                  <div class="fw-semibold">{{ $event['type'] }} / {{ $event['title'] }}</div>
+                  <div class="small text-muted">{{ $event['detail'] }}</div>
+                </div>
+                <time class="admin-time" datetime="{{ $event['created_at']->toIso8601String() }}">
+                  {{ $event['created_at']->format('d/m/Y H:i') }}
+                </time>
+              </div>
+            </div>
+          </div>
+        @empty
+          <div class="text-muted">{{ __('No activity yet.') }}</div>
+        @endforelse
+      </div>
+    </div>
+  </div>
+
   <div class="col-xl-4">
     <div class="card h-100">
       <div class="card-header">
@@ -101,6 +129,7 @@
               <th>{{ __('Group') }}</th>
               <th class="text-center">{{ __('Responses') }}</th>
               <th>{{ __('Status') }}</th>
+              <th>{{ __('Created') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -114,9 +143,14 @@
                 <td>{{ $assignment->grupo?->nombre_grupo ?? __('Unknown') }}</td>
                 <td class="text-center">{{ $assignment->respuestas_count }}</td>
                 <td><span class="badge text-bg-light border">{{ $assignment->estado }}</span></td>
+                <td>
+                  <time class="admin-time" datetime="{{ optional($assignment->created_at)->toIso8601String() }}">
+                    {{ optional($assignment->created_at)->format('d/m/Y H:i') }}
+                  </time>
+                </td>
               </tr>
             @empty
-              <tr><td colspan="5" class="text-center text-muted py-4">{{ __('No assignments yet.') }}</td></tr>
+              <tr><td colspan="6" class="text-center text-muted py-4">{{ __('No assignments yet.') }}</td></tr>
             @endforelse
           </tbody>
         </table>
@@ -154,7 +188,11 @@
                   @endforelse
                 </td>
                 <td class="text-center">{{ $user->grupos_count + $user->tests_count + $user->asignaciones_test_count }}</td>
-                <td>{{ optional($user->created_at)->format('d/m/Y') }}</td>
+                <td>
+                  <time class="admin-time" datetime="{{ optional($user->created_at)->toIso8601String() }}">
+                    {{ optional($user->created_at)->format('d/m/Y H:i') }}
+                  </time>
+                </td>
               </tr>
             @empty
               <tr><td colspan="4" class="text-center text-muted py-4">{{ __('No users yet.') }}</td></tr>
@@ -179,7 +217,7 @@
             </div>
             <div class="text-end small">
               <div>{{ $professor->grupos_count }} {{ __('groups') }}</div>
-              <div class="text-muted">{{ $professor->tests_count }} {{ __('tests') }} · {{ $professor->asignaciones_test_count }} {{ __('assignments') }}</div>
+              <div class="text-muted">{{ $professor->tests_count }} {{ __('tests') }} / {{ $professor->asignaciones_test_count }} {{ __('assignments') }}</div>
             </div>
           </div>
         @empty
@@ -201,7 +239,9 @@
               <div class="fw-semibold">{{ $user->name }}</div>
               <div class="small text-muted">{{ $user->email }}</div>
             </div>
-            <div class="small text-muted">{{ __('Registered') }} {{ optional($user->created_at)->format('d/m/Y') }}</div>
+            <time class="admin-time" datetime="{{ optional($user->created_at)->toIso8601String() }}">
+              {{ __('Registered') }} {{ optional($user->created_at)->format('d/m/Y H:i') }}
+            </time>
           </div>
         @empty
           <div class="text-muted">{{ __('No inactive users older than one day.') }}</div>

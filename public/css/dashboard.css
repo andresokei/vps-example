@@ -461,6 +461,35 @@ span.badge.badge-danger   { background-color: #fee2e2 !important; color: #991b1b
 .admin-list-row:first-child { padding-top: 0; }
 .admin-list-row:last-child { padding-bottom: 0; border-bottom: 0; }
 
+.admin-time {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.admin-timeline-row {
+  display: flex;
+  gap: 0.85rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.admin-timeline-row:first-child { padding-top: 0; }
+.admin-timeline-row:last-child { padding-bottom: 0; border-bottom: 0; }
+
+.admin-timeline-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #eef2ff;
+  color: var(--brand-color);
+}
+
 /* =====================================================================
    MODALS
    ===================================================================== */

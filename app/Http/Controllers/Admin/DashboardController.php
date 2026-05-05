@@ -53,6 +53,62 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
+        $timeline = collect()
+            ->merge($recentUsers->map(fn (User $user) => [
+                'type' => __('New user'),
+                'icon' => 'bi-person-plus',
+                'title' => $user->name,
+                'detail' => $user->email,
+                'created_at' => $user->created_at,
+            ]))
+            ->merge(Grupo::query()
+                ->with('profesor:id,name,email')
+                ->latest()
+                ->limit(8)
+                ->get()
+                ->map(fn (Grupo $group) => [
+                    'type' => __('Group created'),
+                    'icon' => 'bi-people',
+                    'title' => $group->nombre_grupo,
+                    'detail' => $group->profesor?->name ?? __('Unknown professor'),
+                    'created_at' => $group->created_at,
+                ]))
+            ->merge(Test::query()
+                ->with('profesor:id,name,email')
+                ->latest()
+                ->limit(8)
+                ->get()
+                ->map(fn (Test $test) => [
+                    'type' => __('Test created'),
+                    'icon' => 'bi-file-earmark-check',
+                    'title' => $test->nombre_test,
+                    'detail' => $test->profesor?->name ?? __('Unknown professor'),
+                    'created_at' => $test->created_at,
+                ]))
+            ->merge($recentAssignments->map(fn (AsignacionTest $assignment) => [
+                'type' => __('Test assigned'),
+                'icon' => 'bi-clipboard-plus',
+                'title' => $assignment->test?->nombre_test ?? __('Untitled test'),
+                'detail' => ($assignment->grupo?->nombre_grupo ?? __('Unknown group')).' / '.($assignment->profesor?->name ?? __('Unknown professor')),
+                'created_at' => $assignment->created_at,
+            ]))
+            ->merge(Respuesta::query()
+                ->with(['asignacion.profesor:id,name,email', 'asignacion.test:id,nombre_test'])
+                ->latest()
+                ->limit(8)
+                ->get()
+                ->map(fn (Respuesta $response) => [
+                    'type' => __('Response submitted'),
+                    'icon' => 'bi-chat-square-text',
+                    'title' => $response->asignacion?->test?->nombre_test ?? __('Unknown test'),
+                    'detail' => $response->asignacion?->profesor?->name ?? __('Unknown professor'),
+                    'created_at' => $response->created_at,
+                ]))
+            ->filter(fn (array $event) => $event['created_at'])
+            ->sortByDesc('created_at')
+            ->take(12)
+            ->values();
+
         return view('admin.dashboard', [
             'totals' => [
                 'users' => User::count(),
@@ -71,6 +127,7 @@ class DashboardController extends Controller
             'recentAssignments' => $recentAssignments,
             'activeProfessors' => $activeProfessors,
             'inactiveUsers' => $inactiveUsers,
+            'timeline' => $timeline,
         ]);
     }
 }
