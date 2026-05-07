@@ -72,6 +72,20 @@ class AssignTests extends Component
                 return;
             }
 
+            $test = Test::where('id', $this->test_id)
+                ->where(function ($q) {
+                    $q->where('id_profesor', Auth::id())
+                      ->orWhereNull('id_profesor');
+                })
+                ->withCount('preguntas')
+                ->first();
+
+            if (! $test || $test->preguntas_count < 1) {
+                $this->successMessage = null;
+                $this->errorMessage = __('This test has no available questions.');
+                return;
+            }
+
             $exists = AsignacionTest::where('grupo_id', $this->grupo_id)
                 ->where('test_id', $this->test_id)
                 ->exists();

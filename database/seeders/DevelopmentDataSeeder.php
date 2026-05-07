@@ -91,20 +91,24 @@ class DevelopmentDataSeeder extends Seeder
                 ['tipo_pregunta' => 'rechazo', 'texto_pregunta' => 'Con quien preferirias no trabajar en grupo?'],
                 ['tipo_pregunta' => 'preferencia', 'texto_pregunta' => 'A quien elegirias para un proyecto de clase?'],
                 ['tipo_pregunta' => 'rechazo', 'texto_pregunta' => 'A quien preferirias no tener en tu equipo para un proyecto?'],
-            ])->map(fn (array $data) => Pregunta::create([
+            ])->map(fn (array $data, int $index) => Pregunta::create([
                 'test_id' => $testA->id,
                 'tipo_pregunta' => $data['tipo_pregunta'],
                 'texto_pregunta' => $data['texto_pregunta'],
+                'orden' => $index + 1,
             ]));
 
             foreach ([
                 ['tipo_pregunta' => 'preferencia', 'texto_pregunta' => 'Con quien te sentarias en clase?'],
                 ['tipo_pregunta' => 'rechazo', 'texto_pregunta' => 'Con quien preferirias no sentarte?'],
-            ] as $data) {
+                ['tipo_pregunta' => 'preferencia', 'texto_pregunta' => 'A quien elegirias para compartir una actividad del recreo?'],
+                ['tipo_pregunta' => 'rechazo', 'texto_pregunta' => 'Con quien preferirias no compartir una actividad del recreo?'],
+            ] as $index => $data) {
                 Pregunta::create([
                     'test_id' => $testB->id,
                     'tipo_pregunta' => $data['tipo_pregunta'],
                     'texto_pregunta' => $data['texto_pregunta'],
+                    'orden' => $index + 1,
                 ]);
             }
 
