@@ -349,4 +349,12 @@
     "Reviewed by": "Revisado por",
     "No feedback yet.": "Todavía no hay feedback.",
     "Feedback status updated.": "Estado del feedback actualizado."
+    ,
+    "No one selected yet.": "Aun no has seleccionado a nadie.",
+    "Select the student who is answering first.": "Selecciona primero el estudiante que responde.",
+    "You cannot select yourself in this question.": "No puedes seleccionarte a ti mismo en esta pregunta.",
+    "You can only choose :count classmates per question.": "Solo puedes elegir :count companeros por pregunta.",
+    "Review:": "Revisa:",
+    "Complete all required selections before submitting the test.": "Completa todas las selecciones requeridas antes de enviar el test.",
+    "Question": "Pregunta"
 }

@@ -61,6 +61,7 @@
     }
 
     function renderQuestion(block, store, maxSelections) {
+        const form = block.closest('[data-test-form]');
         const questionId = block.dataset.questionId;
         const selections = getQuestionState(store, questionId);
         const hiddenInputs = Array.from(block.querySelectorAll('.response-input'));
@@ -84,11 +85,13 @@
             list.innerHTML = '';
 
             if (uniqueSelections.length === 0) {
-                list.innerHTML = '<span class="test-form__selection-empty">Aun no has seleccionado a nadie.</span>';
+                const emptySelection = form?.dataset.msgEmptySelection ?? 'No one selected yet.';
+                list.innerHTML = `<span class="test-form__selection-empty">${emptySelection}</span>`;
             } else {
                 uniqueSelections.forEach((studentId, index) => {
                     const choice = block.querySelector(`[data-student-choice][data-student-id="${studentId}"]`);
-                    const name = choice?.dataset.studentName ?? `Alumno ${studentId}`;
+                    const studentFallback = form?.dataset.msgStudentFallback ?? 'Student';
+                    const name = choice?.dataset.studentName ?? `${studentFallback} ${studentId}`;
 
                     list.insertAdjacentHTML(
                         'beforeend',
@@ -173,7 +176,8 @@
                 ? syncedSelections
                 : getSelectedButtonSelections(block, maxSelections);
             const questionValid = selections.length === Math.min(requiredSelections, maxSelections);
-            const title = block.querySelector('.test-form__question-title')?.textContent?.trim() ?? `Pregunta ${questionId}`;
+            const questionFallback = form.dataset.msgQuestionFallback ?? 'Question';
+            const title = block.querySelector('.test-form__question-title')?.textContent?.trim() ?? `${questionFallback} ${questionId}`;
 
             store.set(questionId, selections);
             renderQuestion(block, store, maxSelections);
@@ -229,13 +233,13 @@
                 }
 
                 if (!respondentId) {
-                    showMessage(validationMessage, 'Selecciona primero el estudiante que responde.', 'warning');
+                    showMessage(validationMessage, form.dataset.msgSelectRespondent ?? 'Select the student who is answering first.', 'warning');
                     respondent?.focus();
                     return;
                 }
 
                 if (choice.dataset.studentId === respondentId) {
-                    showMessage(validationMessage, 'No puedes seleccionarte a ti mismo en esta pregunta.', 'danger');
+                    showMessage(validationMessage, form.dataset.msgSelfSelection ?? 'You cannot select yourself in this question.', 'danger');
                     return;
                 }
 
@@ -247,7 +251,7 @@
                 if (selectedIndex >= 0) {
                     selections.splice(selectedIndex, 1);
                 } else if (selections.length >= maxSelections) {
-                    showMessage(validationMessage, `Solo puedes elegir ${maxSelections} companeros por pregunta.`, 'warning');
+                    showMessage(validationMessage, form.dataset.msgMaxSelections ?? `You can only choose ${maxSelections} classmates per question.`, 'warning');
                     return;
                 } else {
                     selections.push(choice.dataset.studentId);
@@ -286,8 +290,8 @@
             if (!validation.isValid) {
                 event.preventDefault();
                 const detail = validation.incompleteQuestions.length > 0
-                    ? `Revisa: ${validation.incompleteQuestions.join(' | ')}.`
-                    : 'Completa todas las selecciones requeridas antes de enviar el test.';
+                    ? `${form.dataset.msgReviewPrefix ?? 'Review:'} ${validation.incompleteQuestions.join(' | ')}.`
+                    : form.dataset.msgCompleteRequired ?? 'Complete all required selections before submitting the test.';
 
                 showMessage(validationMessage, detail, 'danger');
                 (validation.firstInvalidBlock ?? form).scrollIntoView({ behavior: 'smooth', block: 'center' });

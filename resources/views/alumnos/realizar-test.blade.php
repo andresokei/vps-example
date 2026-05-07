@@ -23,6 +23,14 @@
                     method="POST"
                     data-test-form
                     data-max-selections="{{ $selectionCount }}"
+                    data-msg-empty-selection="{{ __('No one selected yet.') }}"
+                    data-msg-select-respondent="{{ __('Select the student who is answering first.') }}"
+                    data-msg-self-selection="{{ __('You cannot select yourself in this question.') }}"
+                    data-msg-max-selections="{{ __('You can only choose :count classmates per question.', ['count' => $selectionCount]) }}"
+                    data-msg-review-prefix="{{ __('Review:') }}"
+                    data-msg-complete-required="{{ __('Complete all required selections before submitting the test.') }}"
+                    data-msg-question-fallback="{{ __('Question') }}"
+                    data-msg-student-fallback="{{ __('Student') }}"
                 >
                     @csrf
 
@@ -125,5 +133,5 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/test-form.js') }}"></script>
+<script src="{{ asset('js/test-form.js') }}?v=202605071300"></script>
 @endpush
