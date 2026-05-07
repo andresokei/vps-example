@@ -106,7 +106,10 @@ it('muestra los alumnos del grupo en el formulario del test', function () {
     $this->withSession(['test_access.assignment_id' => $asignacion->id])
         ->get(route('test.realizar', $asignacion))
         ->assertOk()
-        ->assertSee($alumnos->first()->nombre);
+        ->assertSee($alumnos->first()->nombre)
+        ->assertDontSee('Preference (badge)')
+        ->assertDontSee('Rejection (badge)')
+        ->assertDontSee('test-form__question-badge', false);
 });
 
 it('guarda respuestas y relaciones al enviar el test correctamente', function () {

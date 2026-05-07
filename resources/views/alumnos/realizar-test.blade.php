@@ -67,9 +67,6 @@
                             >
                                 <div class="test-form__question-header">
                                     <h2 class="test-form__question-title">{{ $pregunta->texto_pregunta }}</h2>
-                                    <span class="test-form__question-badge test-form__question-badge--{{ $pregunta->tipo_pregunta === 'rechazo' ? 'rechazo' : 'preferencia' }}">
-                                        {{ $pregunta->tipo_pregunta === 'rechazo' ? __('Rejection (badge)') : __('Preference (badge)') }}
-                                    </span>
                                 </div>
 
                                 <input type="hidden" name="tipo_relacion_{{ $pregunta->id }}" value="{{ $pregunta->tipo_pregunta }}">
