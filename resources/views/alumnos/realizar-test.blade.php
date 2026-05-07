@@ -9,9 +9,9 @@
                     <i class="fas fa-clipboard-check"></i>
                     {{ __('Sociometric test') }}
                 </span>
-                <h1 class="public-card__title">{{ $test->nombre_test }}</h1>
-                @if ($test->descripcion)
-                    <p class="public-card__subtitle">{{ $test->descripcion }}</p>
+                <h1 class="public-card__title">{{ $test->localized_nombre_test }}</h1>
+                @if ($test->localized_descripcion)
+                    <p class="public-card__subtitle">{{ $test->localized_descripcion }}</p>
                 @endif
             </div>
 
@@ -66,7 +66,7 @@
                                 data-question-type="{{ $pregunta->tipo_pregunta }}"
                             >
                                 <div class="test-form__question-header">
-                                    <h2 class="test-form__question-title">{{ $pregunta->texto_pregunta }}</h2>
+                                    <h2 class="test-form__question-title">{{ $pregunta->localized_texto_pregunta }}</h2>
                                 </div>
 
                                 <input type="hidden" name="tipo_relacion_{{ $pregunta->id }}" value="{{ $pregunta->tipo_pregunta }}">

@@ -31,7 +31,7 @@
           <div class="card-body py-2 px-3">
             <div class="d-flex justify-content-between align-items-start gap-2">
               <div class="flex-grow-1 min-width-0">
-                <div class="fw-medium text-truncate">{{ $test->nombre_test }}</div>
+                <div class="fw-medium text-truncate">{{ $test->localized_nombre_test }}</div>
                 <small class="text-muted">
                   {{ $test->preguntas_count }}
                   {{ $test->preguntas_count === 1 ? __('question') : __('questions') }}
@@ -71,7 +71,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-semibold mb-0 text-truncate">
             <i class="bi bi-list-ol me-1 text-primary"></i>
-            {{ $testSeleccionado?->nombre_test }}
+            {{ $testSeleccionado?->localized_nombre_test }}
           </h6>
           <span class="badge bg-primary-subtle text-primary">
             {{ count($preguntas) }} {{ count($preguntas) === 1 ? __('question') : __('questions') }}
@@ -85,7 +85,7 @@
               <div class="list-group-item list-group-item-action d-flex align-items-start gap-2 py-2">
                 <span class="text-muted small mt-1 fw-medium" style="min-width:1.5rem">{{ $i + 1 }}.</span>
                 <div class="flex-grow-1">
-                  <div class="mb-1">{{ $pregunta['texto_pregunta'] }}</div>
+                  <div class="mb-1">{{ $pregunta['localized_texto_pregunta'] }}</div>
                   <span class="badge {{ $pregunta['tipo_pregunta'] === 'preferencia' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} rounded-pill">
                     <i class="bi {{ $pregunta['tipo_pregunta'] === 'preferencia' ? 'bi-heart' : 'bi-x-circle' }} me-1"></i>
                     {{ $pregunta['tipo_pregunta'] === 'preferencia' ? __('Preference') : __('Rejection') }}
@@ -127,8 +127,17 @@
             <textarea wire:model="preguntaTexto"
                       class="form-control form-control-sm @error('preguntaTexto') is-invalid @enderror"
                       rows="2"
-                      placeholder="{{ __('Question text...') }}"></textarea>
+                      placeholder="{{ __('Question text...') }} (ES)"></textarea>
             @error('preguntaTexto')
+              <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+          </div>
+          <div class="mb-2">
+            <textarea wire:model="preguntaTextoEn"
+                      class="form-control form-control-sm @error('preguntaTextoEn') is-invalid @enderror"
+                      rows="2"
+                      placeholder="{{ __('Question text...') }} (EN)"></textarea>
+            @error('preguntaTextoEn')
               <div class="invalid-feedback">{{ $message }}</div>
             @enderror
           </div>
@@ -172,7 +181,7 @@
           </div>
           <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label fw-medium">{{ __('Test name') }} <span class="text-danger">*</span></label>
+              <label class="form-label fw-medium">{{ __('Test name') }} (ES) <span class="text-danger">*</span></label>
               <input type="text"
                      wire:model="nombre"
                      class="form-control @error('nombre') is-invalid @enderror"
@@ -182,13 +191,33 @@
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>
+            <div class="mb-3">
+              <label class="form-label fw-medium">{{ __('Test name') }} (EN)</label>
+              <input type="text"
+                     wire:model="nombreEn"
+                     class="form-control @error('nombreEn') is-invalid @enderror"
+                     placeholder="{{ __('E.g. Class sociometry') }}">
+              @error('nombreEn')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
             <div class="mb-1">
-              <label class="form-label fw-medium">{{ __('Description') }}</label>
+              <label class="form-label fw-medium">{{ __('Description') }} (ES)</label>
               <textarea wire:model="descripcion"
                         class="form-control @error('descripcion') is-invalid @enderror"
                         rows="3"
                         placeholder="{{ __('Optional description for the test...') }}"></textarea>
               @error('descripcion')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="mb-1 mt-3">
+              <label class="form-label fw-medium">{{ __('Description') }} (EN)</label>
+              <textarea wire:model="descripcionEn"
+                        class="form-control @error('descripcionEn') is-invalid @enderror"
+                        rows="3"
+                        placeholder="{{ __('Optional description for the test...') }}"></textarea>
+              @error('descripcionEn')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>
@@ -221,7 +250,7 @@
           </div>
           <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label fw-medium">{{ __('Test name') }} <span class="text-danger">*</span></label>
+              <label class="form-label fw-medium">{{ __('Test name') }} (ES) <span class="text-danger">*</span></label>
               <input type="text"
                      wire:model="nombre"
                      class="form-control @error('nombre') is-invalid @enderror">
@@ -229,12 +258,30 @@
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>
+            <div class="mb-3">
+              <label class="form-label fw-medium">{{ __('Test name') }} (EN)</label>
+              <input type="text"
+                     wire:model="nombreEn"
+                     class="form-control @error('nombreEn') is-invalid @enderror">
+              @error('nombreEn')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
             <div class="mb-1">
-              <label class="form-label fw-medium">{{ __('Description') }}</label>
+              <label class="form-label fw-medium">{{ __('Description') }} (ES)</label>
               <textarea wire:model="descripcion"
                         class="form-control @error('descripcion') is-invalid @enderror"
                         rows="3"></textarea>
               @error('descripcion')
+                <div class="invalid-feedback">{{ $message }}</div>
+              @enderror
+            </div>
+            <div class="mb-1 mt-3">
+              <label class="form-label fw-medium">{{ __('Description') }} (EN)</label>
+              <textarea wire:model="descripcionEn"
+                        class="form-control @error('descripcionEn') is-invalid @enderror"
+                        rows="3"></textarea>
+              @error('descripcionEn')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>

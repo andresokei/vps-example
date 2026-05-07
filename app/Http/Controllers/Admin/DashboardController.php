@@ -30,7 +30,7 @@ class DashboardController extends Controller
             ->get();
 
         $recentAssignments = AsignacionTest::query()
-            ->with(['profesor:id,name,email', 'grupo:id,nombre_grupo', 'test:id,nombre_test'])
+            ->with(['profesor:id,name,email', 'grupo:id,nombre_grupo', 'test:id,nombre_test,nombre_test_en'])
             ->withCount('respuestas')
             ->latest()
             ->limit(8)
@@ -81,26 +81,26 @@ class DashboardController extends Controller
                 ->map(fn (Test $test) => [
                     'type' => __('Test created'),
                     'icon' => 'bi-file-earmark-check',
-                    'title' => $test->nombre_test,
+                    'title' => $test->localized_nombre_test,
                     'detail' => $test->profesor?->name ?? __('Unknown professor'),
                     'created_at' => $test->created_at,
                 ]))
             ->merge($recentAssignments->map(fn (AsignacionTest $assignment) => [
                 'type' => __('Test assigned'),
                 'icon' => 'bi-clipboard-plus',
-                'title' => $assignment->test?->nombre_test ?? __('Untitled test'),
+                'title' => $assignment->test?->localized_nombre_test ?? __('Untitled test'),
                 'detail' => ($assignment->grupo?->nombre_grupo ?? __('Unknown group')).' / '.($assignment->profesor?->name ?? __('Unknown professor')),
                 'created_at' => $assignment->created_at,
             ]))
             ->merge(Respuesta::query()
-                ->with(['asignacion.profesor:id,name,email', 'asignacion.test:id,nombre_test'])
+                ->with(['asignacion.profesor:id,name,email', 'asignacion.test:id,nombre_test,nombre_test_en'])
                 ->latest()
                 ->limit(8)
                 ->get()
                 ->map(fn (Respuesta $response) => [
                     'type' => __('Response submitted'),
                     'icon' => 'bi-chat-square-text',
-                    'title' => $response->asignacion?->test?->nombre_test ?? __('Unknown test'),
+                    'title' => $response->asignacion?->test?->localized_nombre_test ?? __('Unknown test'),
                     'detail' => $response->asignacion?->profesor?->name ?? __('Unknown professor'),
                     'created_at' => $response->created_at,
                 ]))

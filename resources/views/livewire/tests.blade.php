@@ -30,7 +30,7 @@
                             <select wire:model="test_id" id="test_id" class="form-control" required>
                                 <option value="">Seleccione un test</option>
                                 @foreach ($tests as $test)
-                                    <option value="{{ $test->id }}">{{ $test->nombre_test }}</option>
+                                    <option value="{{ $test->id }}">{{ $test->localized_nombre_test }}</option>
                                 @endforeach
                             </select>
                             @error('test_id') <span class="text-danger">{{ $message }}</span> @enderror
@@ -52,7 +52,7 @@
                     @forelse ($asignaciones as $asignacion)
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <span>
-                                <strong>{{ $asignacion->test->nombre_test }}</strong> - Grupo: <strong>{{ $asignacion->grupo->nombre_grupo }}</strong>
+                                <strong>{{ $asignacion->test->localized_nombre_test }}</strong> - Grupo: <strong>{{ $asignacion->grupo->nombre_grupo }}</strong>
                             </span>
                             <span class="badge {{ $asignacion->estado == 'realizado' ? 'badge-success' : 'badge-warning' }}">
                                 {{ ucfirst($asignacion->estado) }}
@@ -79,7 +79,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title" id="detalleTestModalLabel">
                         @if($asignacionSeleccionada)
-                            {{ $asignacionSeleccionada->test->nombre_test }}
+                            {{ $asignacionSeleccionada->test->localized_nombre_test }}
                         @else
                             Detalles del Test
                         @endif

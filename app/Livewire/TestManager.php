@@ -17,11 +17,14 @@ class TestManager extends Component
 
     // Formulario de crear/editar test
     public $nombre = '';
+    public $nombreEn = '';
     public $descripcion = '';
+    public $descripcionEn = '';
     public $editingTestId = null;
 
     // Formulario de añadir pregunta
     public $preguntaTexto = '';
+    public $preguntaTextoEn = '';
     public $preguntaTipo = 'preferencia';
 
     public function mount(): void
@@ -54,7 +57,7 @@ class TestManager extends Component
 
     public function abrirModalCrear(): void
     {
-        $this->reset(['nombre', 'descripcion', 'editingTestId']);
+        $this->reset(['nombre', 'nombreEn', 'descripcion', 'descripcionEn', 'editingTestId']);
         $this->resetErrorBag();
         $this->dispatch('openModalCrearTest');
     }
@@ -68,16 +71,20 @@ class TestManager extends Component
                 'max:255',
                 Rule::unique('tests', 'nombre_test')->where('id_profesor', Auth::id()),
             ],
+            'nombreEn' => ['nullable', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:1000'],
+            'descripcionEn' => ['nullable', 'string', 'max:1000'],
         ]);
 
         Test::create([
             'nombre_test' => $this->nombre,
+            'nombre_test_en' => $this->nombreEn ?: null,
             'descripcion' => $this->descripcion ?: null,
+            'descripcion_en' => $this->descripcionEn ?: null,
             'id_profesor' => Auth::id(),
         ]);
 
-        $this->reset(['nombre', 'descripcion']);
+        $this->reset(['nombre', 'nombreEn', 'descripcion', 'descripcionEn']);
         $this->dispatch('closeModalCrearTest');
         $this->loadTests();
         $this->dispatch('refreshAssignedTests');
@@ -92,7 +99,9 @@ class TestManager extends Component
 
         $this->editingTestId = $test->id;
         $this->nombre = $test->nombre_test;
+        $this->nombreEn = $test->nombre_test_en ?? '';
         $this->descripcion = $test->descripcion ?? '';
+        $this->descripcionEn = $test->descripcion_en ?? '';
         $this->resetErrorBag();
         $this->dispatch('openModalEditarTest');
     }
@@ -112,15 +121,19 @@ class TestManager extends Component
                     ->where('id_profesor', Auth::id())
                     ->ignore($test->id),
             ],
+            'nombreEn' => ['nullable', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:1000'],
+            'descripcionEn' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $test->update([
             'nombre_test' => $this->nombre,
+            'nombre_test_en' => $this->nombreEn ?: null,
             'descripcion' => $this->descripcion ?: null,
+            'descripcion_en' => $this->descripcionEn ?: null,
         ]);
 
-        $this->reset(['nombre', 'descripcion', 'editingTestId']);
+        $this->reset(['nombre', 'nombreEn', 'descripcion', 'descripcionEn', 'editingTestId']);
         $this->dispatch('closeModalEditarTest');
         $this->loadTests();
         $this->dispatch('refreshAssignedTests');
@@ -160,7 +173,7 @@ class TestManager extends Component
             ->firstOrFail();
 
         $this->selectedTestId = $testId;
-        $this->reset(['preguntaTexto', 'preguntaTipo']);
+        $this->reset(['preguntaTexto', 'preguntaTextoEn', 'preguntaTipo']);
         $this->preguntaTipo = 'preferencia';
         $this->resetErrorBag();
         $this->loadPreguntas();
@@ -172,6 +185,7 @@ class TestManager extends Component
     {
         $this->validate([
             'preguntaTexto' => ['required', 'string', 'max:500'],
+            'preguntaTextoEn' => ['nullable', 'string', 'max:500'],
             'preguntaTipo'  => ['required', 'in:preferencia,rechazo'],
         ]);
 
@@ -184,11 +198,12 @@ class TestManager extends Component
         Pregunta::create([
             'test_id'        => $this->selectedTestId,
             'texto_pregunta' => $this->preguntaTexto,
+            'texto_pregunta_en' => $this->preguntaTextoEn ?: null,
             'tipo_pregunta'  => $this->preguntaTipo,
             'orden'          => $siguienteOrden,
         ]);
 
-        $this->reset(['preguntaTexto']);
+        $this->reset(['preguntaTexto', 'preguntaTextoEn']);
         $this->preguntaTipo = 'preferencia';
         $this->resetErrorBag('preguntaTexto');
         $this->loadPreguntas();

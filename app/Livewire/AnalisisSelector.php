@@ -138,7 +138,7 @@ class AnalisisSelector extends Component
 
         if ($asignacionInicial) {
             $assignment = AsignacionTest::query()
-                ->with('test:id,nombre_test')
+                ->with('test:id,nombre_test,nombre_test_en')
                 ->withCount('respuestas')
                 ->whereKey((int) $asignacionInicial)
                 ->where('profesor_id', Auth::id())
@@ -173,7 +173,7 @@ class AnalisisSelector extends Component
     private function loadAssignmentsForSelectedGroup(): void
     {
         $this->asignaciones = AsignacionTest::query()
-            ->with('test:id,nombre_test')
+            ->with('test:id,nombre_test,nombre_test_en')
             ->withCount('respuestas')
             ->where('grupo_id', $this->grupoSeleccionado)
             ->where('profesor_id', Auth::id())

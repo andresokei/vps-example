@@ -78,36 +78,42 @@ class DevelopmentDataSeeder extends Seeder
 
             $testA = Test::create([
                 'nombre_test' => 'Analisis de Interacciones en el Aula',
+                'nombre_test_en' => 'Classroom Interaction Analysis',
                 'descripcion' => 'Dataset demo para practicar la visualizacion sociometrica.',
+                'descripcion_en' => 'Demo dataset for practicing sociometric visualization.',
             ]);
 
             $testB = Test::create([
                 'nombre_test' => 'Evaluacion de Preferencias Sociales',
+                'nombre_test_en' => 'Social Preferences Assessment',
                 'descripcion' => 'Segundo test de ejemplo para asignaciones pendientes.',
+                'descripcion_en' => 'Second sample test for pending assignments.',
             ]);
 
             $questions = collect([
-                ['tipo_pregunta' => 'preferencia', 'texto_pregunta' => 'Con quien te gustaria trabajar en grupo?'],
-                ['tipo_pregunta' => 'rechazo', 'texto_pregunta' => 'Con quien preferirias no trabajar en grupo?'],
-                ['tipo_pregunta' => 'preferencia', 'texto_pregunta' => 'A quien elegirias para un proyecto de clase?'],
-                ['tipo_pregunta' => 'rechazo', 'texto_pregunta' => 'A quien preferirias no tener en tu equipo para un proyecto?'],
+                ['tipo_pregunta' => 'preferencia', 'texto_pregunta' => 'Con quien te gustaria trabajar en grupo?', 'texto_pregunta_en' => 'Who would you like to work with in a group?'],
+                ['tipo_pregunta' => 'rechazo', 'texto_pregunta' => 'Con quien preferirias no trabajar en grupo?', 'texto_pregunta_en' => 'Who would you prefer not to work with in a group?'],
+                ['tipo_pregunta' => 'preferencia', 'texto_pregunta' => 'A quien elegirias para un proyecto de clase?', 'texto_pregunta_en' => 'Who would you choose for a class project?'],
+                ['tipo_pregunta' => 'rechazo', 'texto_pregunta' => 'A quien preferirias no tener en tu equipo para un proyecto?', 'texto_pregunta_en' => 'Who would you prefer not to have on your team for a project?'],
             ])->map(fn (array $data, int $index) => Pregunta::create([
                 'test_id' => $testA->id,
                 'tipo_pregunta' => $data['tipo_pregunta'],
                 'texto_pregunta' => $data['texto_pregunta'],
+                'texto_pregunta_en' => $data['texto_pregunta_en'],
                 'orden' => $index + 1,
             ]));
 
             foreach ([
-                ['tipo_pregunta' => 'preferencia', 'texto_pregunta' => 'Con quien te sentarias en clase?'],
-                ['tipo_pregunta' => 'rechazo', 'texto_pregunta' => 'Con quien preferirias no sentarte?'],
-                ['tipo_pregunta' => 'preferencia', 'texto_pregunta' => 'A quien elegirias para compartir una actividad del recreo?'],
-                ['tipo_pregunta' => 'rechazo', 'texto_pregunta' => 'Con quien preferirias no compartir una actividad del recreo?'],
+                ['tipo_pregunta' => 'preferencia', 'texto_pregunta' => 'Con quien te sentarias en clase?', 'texto_pregunta_en' => 'Who would you sit with in class?'],
+                ['tipo_pregunta' => 'rechazo', 'texto_pregunta' => 'Con quien preferirias no sentarte?', 'texto_pregunta_en' => 'Who would you prefer not to sit with?'],
+                ['tipo_pregunta' => 'preferencia', 'texto_pregunta' => 'A quien elegirias para compartir una actividad del recreo?', 'texto_pregunta_en' => 'Who would you choose to share a recess activity with?'],
+                ['tipo_pregunta' => 'rechazo', 'texto_pregunta' => 'Con quien preferirias no compartir una actividad del recreo?', 'texto_pregunta_en' => 'Who would you prefer not to share a recess activity with?'],
             ] as $index => $data) {
                 Pregunta::create([
                     'test_id' => $testB->id,
                     'tipo_pregunta' => $data['tipo_pregunta'],
                     'texto_pregunta' => $data['texto_pregunta'],
+                    'texto_pregunta_en' => $data['texto_pregunta_en'],
                     'orden' => $index + 1,
                 ]);
             }

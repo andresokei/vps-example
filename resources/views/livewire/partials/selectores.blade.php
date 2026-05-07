@@ -26,7 +26,7 @@
           <option value="">{{ __('— Select an assignment —') }}</option>
           @foreach ($asignaciones as $asignacion)
             <option value="{{ $asignacion->id }}">
-              {{ optional($asignacion->test)->nombre_test ?: 'Test' }}
+              {{ optional($asignacion->test)->localized_nombre_test ?: 'Test' }}
               · {{ $asignacion->created_at->format('d/m/Y H:i') }}
               · {{ $asignacion->respuestas_count ?? 0 }} resp.
             </option>

@@ -135,7 +135,7 @@
           <tbody>
             @forelse ($recentAssignments as $assignment)
               <tr>
-                <td class="fw-semibold">{{ $assignment->test?->nombre_test ?? __('Untitled') }}</td>
+                <td class="fw-semibold">{{ $assignment->test?->localized_nombre_test ?? __('Untitled') }}</td>
                 <td>
                   <div>{{ $assignment->profesor?->name ?? __('Unknown') }}</div>
                   <div class="small text-muted">{{ $assignment->profesor?->email }}</div>

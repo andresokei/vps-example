@@ -25,7 +25,7 @@ class AnalisisController extends Controller
         $pdf = Pdf::loadView('pdf.analisis', [
             'analisis' => $analisis,
             'grupo' => $asignacion->grupo->nombre_grupo,
-            'test' => $asignacion->test->nombre_test,
+            'test' => $asignacion->test->localized_nombre_test,
         ])->setPaper('a4', 'portrait');
 
         $filename = 'analisis-' . str($asignacion->grupo->nombre_grupo)->slug() . '-' . $asignacion->id . '.pdf';

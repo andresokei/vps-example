@@ -23,7 +23,7 @@
         <option value="" disabled selected>{{ __('Select a test') }}</option>
         @foreach($tests as $t)
           <option value="{{ $t->id }}">
-            {{ $t->nombre_test }}
+            {{ $t->localized_nombre_test }}
             @if(!$t->id_profesor) · {{ __('template') }}@endif
             ({{ $t->preguntas_count }} {{ $t->preguntas_count === 1 ? __('question') : __('questions') }})
           </option>

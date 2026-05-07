@@ -23,7 +23,7 @@
       <tbody>
         @forelse ($asignaciones as $item)
           <tr>
-            <td>{{ $item->test->nombre_test }}</td>
+            <td>{{ $item->test->localized_nombre_test }}</td>
             <td>{{ $item->grupo->nombre_grupo }}</td>
 
             <td>
@@ -105,7 +105,7 @@
         <div class="modal-header">
           <div>
             <h5 class="modal-title" id="detalleTestModalLabel">
-              {{ $asignacionSeleccionada?->test->nombre_test ?? __('Test details') }}
+              {{ $asignacionSeleccionada?->test->localized_nombre_test ?? __('Test details') }}
             </h5>
             @if ($asignacionSeleccionada)
               <p class="text-muted small mb-0 mt-1">

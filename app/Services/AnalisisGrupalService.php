@@ -111,8 +111,8 @@ class AnalisisGrupalService
 
         $preguntas = Pregunta::whereIn('id', $links->pluck('pregunta_id')->filter()->unique()->values())
             ->orderBy('texto_pregunta')
-            ->get(['id', 'texto_pregunta as texto'])
-            ->map(fn ($p) => ['id' => (int) $p->id, 'texto' => $p->texto])
+            ->get(['id', 'texto_pregunta', 'texto_pregunta_en'])
+            ->map(fn ($p) => ['id' => (int) $p->id, 'texto' => $p->localized_texto_pregunta])
             ->values()
             ->toArray();
 
