@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\AnalisisController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
@@ -45,6 +47,11 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::get('/feedback', [FeedbackController::class, 'create'])->name('feedback.create');
+    Route::post('/feedback', [FeedbackController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('feedback.store');
+
     Route::get('/prueba-sociograma', function () {
         return view('prueba-sociograma');
     });
@@ -59,6 +66,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])
     ->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::get('/feedback', [AdminFeedbackController::class, 'index'])->name('feedback.index');
+        Route::patch('/feedback/{feedback}', [AdminFeedbackController::class, 'update'])->name('feedback.update');
         Route::post('/users/{user}/impersonate', [ImpersonationController::class, 'start'])
             ->name('users.impersonate');
         Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');

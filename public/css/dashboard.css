@@ -490,6 +490,11 @@ span.badge.badge-danger   { background-color: #fee2e2 !important; color: #991b1b
   color: var(--brand-color);
 }
 
+.feedback-table td:first-child {
+  min-width: 320px;
+  white-space: normal;
+}
+
 /* =====================================================================
    MODALS
    ===================================================================== */

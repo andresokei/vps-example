@@ -24,6 +24,14 @@
       </a>
     </li>
 
+    <li>
+      <a class="sidebar-link {{ request()->routeIs('feedback.*') ? 'active' : '' }}"
+         href="{{ route('feedback.create') }}">
+        <i class="bi bi-chat-dots nav-icon"></i>
+        {{ __('Feedback') }}
+      </a>
+    </li>
+
     @if ($canUseTeacherTools)
       <li class="sidebar-section-label">{{ __('Tools') }}</li>
 
@@ -68,6 +76,14 @@
            href="{{ route('admin.users.index') }}">
           <i class="bi bi-shield-lock nav-icon"></i>
           {{ __('Users') }}
+        </a>
+      </li>
+
+      <li>
+        <a class="sidebar-link {{ request()->routeIs('admin.feedback.*') ? 'active' : '' }}"
+           href="{{ route('admin.feedback.index') }}">
+          <i class="bi bi-inbox nav-icon"></i>
+          {{ __('Feedback') }}
         </a>
       </li>
     @endif
