@@ -26,6 +26,7 @@ class TestManager extends Component
     public $preguntaTexto = '';
     public $preguntaTextoEn = '';
     public $preguntaTipo = 'preferencia';
+    public bool $preguntaPermiteRespuestaVacia = false;
 
     public function mount(): void
     {
@@ -173,7 +174,7 @@ class TestManager extends Component
             ->firstOrFail();
 
         $this->selectedTestId = $testId;
-        $this->reset(['preguntaTexto', 'preguntaTextoEn', 'preguntaTipo']);
+        $this->reset(['preguntaTexto', 'preguntaTextoEn', 'preguntaTipo', 'preguntaPermiteRespuestaVacia']);
         $this->preguntaTipo = 'preferencia';
         $this->resetErrorBag();
         $this->loadPreguntas();
@@ -187,6 +188,7 @@ class TestManager extends Component
             'preguntaTexto' => ['required', 'string', 'max:500'],
             'preguntaTextoEn' => ['nullable', 'string', 'max:500'],
             'preguntaTipo'  => ['required', 'in:preferencia,rechazo'],
+            'preguntaPermiteRespuestaVacia' => ['boolean'],
         ]);
 
         Test::where('id', $this->selectedTestId)
@@ -200,14 +202,32 @@ class TestManager extends Component
             'texto_pregunta' => $this->preguntaTexto,
             'texto_pregunta_en' => $this->preguntaTextoEn ?: null,
             'tipo_pregunta'  => $this->preguntaTipo,
+            'permite_respuesta_vacia' => $this->preguntaPermiteRespuestaVacia,
             'orden'          => $siguienteOrden,
         ]);
 
-        $this->reset(['preguntaTexto', 'preguntaTextoEn']);
+        $this->reset(['preguntaTexto', 'preguntaTextoEn', 'preguntaPermiteRespuestaVacia']);
         $this->preguntaTipo = 'preferencia';
         $this->resetErrorBag('preguntaTexto');
         $this->loadPreguntas();
         $this->loadTests(); // actualiza el contador de preguntas
+    }
+
+    public function alternarPreguntaRespuestaVacia(int $preguntaId): void
+    {
+        Test::where('id', $this->selectedTestId)
+            ->where('id_profesor', Auth::id())
+            ->firstOrFail();
+
+        $pregunta = Pregunta::where('id', $preguntaId)
+            ->where('test_id', $this->selectedTestId)
+            ->firstOrFail();
+
+        $pregunta->update([
+            'permite_respuesta_vacia' => ! $pregunta->permite_respuesta_vacia,
+        ]);
+
+        $this->loadPreguntas();
     }
 
     public function eliminarPregunta(int $preguntaId): void

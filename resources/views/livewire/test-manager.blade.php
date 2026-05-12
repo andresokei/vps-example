@@ -90,8 +90,17 @@
                     <i class="bi {{ $pregunta['tipo_pregunta'] === 'preferencia' ? 'bi-heart' : 'bi-x-circle' }} me-1"></i>
                     {{ $pregunta['tipo_pregunta'] === 'preferencia' ? __('Preference') : __('Rejection') }}
                   </span>
+                  <span class="badge {{ ($pregunta['permite_respuesta_vacia'] ?? false) ? 'bg-info-subtle text-info' : 'bg-secondary-subtle text-secondary' }} rounded-pill">
+                    <i class="bi {{ ($pregunta['permite_respuesta_vacia'] ?? false) ? 'bi-input-cursor' : 'bi-asterisk' }} me-1"></i>
+                    {{ ($pregunta['permite_respuesta_vacia'] ?? false) ? __('Optional') : __('Required') }}
+                  </span>
                 </div>
                 <div class="btn-group btn-group-sm flex-shrink-0">
+                  <button class="btn {{ ($pregunta['permite_respuesta_vacia'] ?? false) ? 'btn-info' : 'btn-outline-info' }}"
+                          wire:click="alternarPreguntaRespuestaVacia({{ $pregunta['id'] }})"
+                          title="{{ __('Allow blank answers') }}">
+                    <i class="bi bi-input-cursor"></i>
+                  </button>
                   <button class="btn btn-outline-secondary"
                           wire:click="moverPregunta({{ $pregunta['id'] }}, 'up')"
                           {{ $i === 0 ? 'disabled' : '' }}
@@ -148,6 +157,16 @@
               <option value="preferencia">{{ __('Preference') }}</option>
               <option value="rechazo">{{ __('Rejection') }}</option>
             </select>
+            <div class="form-check form-switch d-flex align-items-center gap-2 mb-0">
+              <input class="form-check-input"
+                     type="checkbox"
+                     role="switch"
+                     id="preguntaPermiteRespuestaVacia"
+                     wire:model="preguntaPermiteRespuestaVacia">
+              <label class="form-check-label small text-muted" for="preguntaPermiteRespuestaVacia">
+                {{ __('Allow blank answers') }}
+              </label>
+            </div>
             <button type="submit" class="btn btn-sm btn-primary">
               <i class="bi bi-plus-lg me-1"></i>{{ __('Add question') }}
             </button>

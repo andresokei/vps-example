@@ -170,12 +170,14 @@
 
         getQuestionBlocks(form).forEach((block) => {
             const questionId = block.dataset.questionId;
+            const allowsBlank = block.dataset.allowsBlank === 'true';
             const requiredSelections = block.querySelectorAll('.response-input').length;
             const syncedSelections = getInputSelections(block, maxSelections);
             const selections = syncedSelections.length > 0
                 ? syncedSelections
                 : getSelectedButtonSelections(block, maxSelections);
-            const questionValid = selections.length === Math.min(requiredSelections, maxSelections);
+            const targetSelections = Math.min(requiredSelections, maxSelections);
+            const questionValid = allowsBlank || selections.length === targetSelections;
             const questionFallback = form.dataset.msgQuestionFallback ?? 'Question';
             const title = block.querySelector('.test-form__question-title')?.textContent?.trim() ?? `${questionFallback} ${questionId}`;
 
@@ -184,7 +186,7 @@
             block.classList.toggle('is-invalid', !questionValid);
 
             if (!questionValid) {
-                incompleteQuestions.push(`${title} (${selections.length}/${Math.min(requiredSelections, maxSelections)})`);
+                incompleteQuestions.push(`${title} (${selections.length}/${targetSelections})`);
                 firstInvalidBlock = firstInvalidBlock ?? block;
             }
 

@@ -6,6 +6,7 @@ use App\Models\AsignacionTest;
 use App\Models\Estudiante;
 use App\Models\Pregunta;
 use App\Models\Relacion;
+use App\Models\Respuesta;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -76,6 +77,14 @@ class AnalisisGrupalService
             ->whereColumn('alumno_a_id', '<>', 'alumno_b_id')
             ->get();
 
+        $respondieron = max(
+            Respuesta::where('asignacion_test_id', $asignacionTestId)
+                ->whereIn('alumno_id', $idsGrupoArray)
+                ->distinct('alumno_id')
+                ->count('alumno_id'),
+            $rel->pluck('alumno_a_id')->unique()->count()
+        );
+
         $dir = $rel->mapWithKeys(fn ($r) => [
             $r->alumno_a_id . '-' . $r->alumno_b_id => $r->tipo_relacion,
         ]);
@@ -125,7 +134,7 @@ class AnalisisGrupalService
             'preguntas' => $preguntas,
         ];
 
-        $metricas = $this->calcularMetricasRed($alumnos, $rel);
+        $metricas = $this->calcularMetricasRed($alumnos, $rel, $respondieron);
         $centralidades = $this->calcularCentralidades($alumnos, $rel);
         $comunidades = $this->detectarComunidades($alumnos, $rel);
         $roles = $this->calcularRoles($centralidades, $comunidades);
@@ -193,14 +202,13 @@ class AnalisisGrupalService
         return compact('labels', 'data');
     }
 
-    private function calcularMetricasRed(Collection $alumnos, Collection $rel): array
+    private function calcularMetricasRed(Collection $alumnos, Collection $rel, int $respondieron): array
     {
         $n = $alumnos->count();
         $m = $rel->count();
         $pref = $rel->where('tipo_relacion', 'preferido')->values();
         $rech = $rel->where('tipo_relacion', 'rechazado')->values();
 
-        $respondieron = $rel->pluck('alumno_a_id')->unique()->count();
         $participacion = $n > 0 ? round($respondieron / $n, 4) : 0.0;
         $density = $n > 1 ? round($m / ($n * ($n - 1)), 4) : 0.0;
 

@@ -148,6 +148,71 @@ it('guarda respuestas y relaciones al enviar el test correctamente', function ()
     ]);
 });
 
+it('permite enviar preguntas opcionales en blanco y registra la participacion', function () {
+    ['asignacion' => $asignacion, 'pregPref' => $pregPref, 'pregRec' => $pregRec, 'alumnos' => $alumnos] = crearAsignacionConAlumnos();
+
+    $pregPref->update(['permite_respuesta_vacia' => true]);
+    $pregRec->update(['permite_respuesta_vacia' => true]);
+
+    $respondiente = $alumnos[0];
+
+    $this->withSession(['test_access.assignment_id' => $asignacion->id])
+        ->post(route('test.submit', $asignacion), [
+            'estudiante_id' => $respondiente->id,
+        ])
+        ->assertRedirect(route('test.success'));
+
+    $this->assertDatabaseCount('respuestas', 2);
+    $this->assertDatabaseHas('respuestas', [
+        'asignacion_test_id' => $asignacion->id,
+        'alumno_id' => $respondiente->id,
+        'pregunta_id' => $pregPref->id,
+        'respuesta' => null,
+    ]);
+    $this->assertDatabaseHas('respuestas', [
+        'asignacion_test_id' => $asignacion->id,
+        'alumno_id' => $respondiente->id,
+        'pregunta_id' => $pregRec->id,
+        'respuesta' => null,
+    ]);
+    $this->assertDatabaseCount('relaciones', 0);
+
+    expect($asignacion->fresh()->estado)->toBe('en progreso');
+
+    $analisis = app(AnalisisGrupalService::class)->generar($asignacion->grupo_id, $asignacion->id, true);
+
+    expect($analisis['totales']['respondieron'])->toBe(1)
+        ->and($analisis['totales']['relaciones'])->toBe(0);
+
+    $this->withSession(['test_access.assignment_id' => $asignacion->id])
+        ->post(route('test.submit', $asignacion), [
+            'estudiante_id' => $respondiente->id,
+        ])
+        ->assertSessionHasErrors('estudiante_id');
+});
+
+it('permite responder parcialmente una pregunta opcional', function () {
+    ['asignacion' => $asignacion, 'pregPref' => $pregPref, 'pregRec' => $pregRec, 'alumnos' => $alumnos] = crearAsignacionConAlumnos();
+
+    $pregRec->update(['permite_respuesta_vacia' => true]);
+
+    $respondiente = $alumnos[0];
+    $otros = $alumnos->filter(fn ($a) => $a->id !== $respondiente->id)->values();
+
+    $this->withSession(['test_access.assignment_id' => $asignacion->id])
+        ->post(route('test.submit', $asignacion), [
+            'estudiante_id' => $respondiente->id,
+            'respuesta_' . $pregPref->id . '_1' => $otros[0]->id,
+            'respuesta_' . $pregPref->id . '_2' => $otros[1]->id,
+            'respuesta_' . $pregPref->id . '_3' => $otros[2]->id,
+            'respuesta_' . $pregRec->id . '_1' => $otros[2]->id,
+        ])
+        ->assertRedirect(route('test.success'));
+
+    $this->assertDatabaseCount('respuestas', 4);
+    $this->assertDatabaseCount('relaciones', 4);
+});
+
 it('ajusta el numero de selecciones requeridas cuando el grupo tiene menos de cuatro alumnos', function () {
     ['asignacion' => $asignacion, 'pregPref' => $pregPref, 'pregRec' => $pregRec, 'alumnos' => $alumnos] = crearAsignacionConAlumnos(numAlumnos: 3);
 
@@ -157,7 +222,7 @@ it('ajusta el numero de selecciones requeridas cuando el grupo tiene menos de cu
     $this->withSession(['test_access.assignment_id' => $asignacion->id])
         ->get(route('test.realizar', $asignacion))
         ->assertOk()
-        ->assertSeeText('Each question requires 2')
+        ->assertSeeText('Required questions need 2')
         ->assertSeeText('distinct selections.');
 
     $this->withSession(['test_access.assignment_id' => $asignacion->id])

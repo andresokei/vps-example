@@ -61,8 +61,8 @@
                         </select>
                         <p class="public-help">
                             {{ $selectionCount === 1
-                                ? __('Each question requires :count distinct selection.', ['count' => $selectionCount])
-                                : __('Each question requires :count distinct selections.', ['count' => $selectionCount]) }}
+                                ? __('Required questions need :count distinct selection.', ['count' => $selectionCount])
+                                : __('Required questions need :count distinct selections.', ['count' => $selectionCount]) }}
                         </p>
                     </div>
 
@@ -72,9 +72,13 @@
                                 class="test-form__question @error('respuesta_'.$pregunta->id.'_1') is-invalid @enderror"
                                 data-question-id="{{ $pregunta->id }}"
                                 data-question-type="{{ $pregunta->tipo_pregunta }}"
+                                data-allows-blank="{{ $pregunta->permite_respuesta_vacia ? 'true' : 'false' }}"
                             >
                                 <div class="test-form__question-header">
                                     <h2 class="test-form__question-title">{{ $pregunta->localized_texto_pregunta }}</h2>
+                                    @if ($pregunta->permite_respuesta_vacia)
+                                        <span class="test-form__question-badge test-form__question-badge--optional">{{ __('Optional') }}</span>
+                                    @endif
                                 </div>
 
                                 <input type="hidden" name="tipo_relacion_{{ $pregunta->id }}" value="{{ $pregunta->tipo_pregunta }}">
@@ -133,5 +137,5 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/test-form.js') }}?v=202605071300"></script>
+<script src="{{ asset('js/test-form.js') }}?v=202605121200"></script>
 @endpush

@@ -356,5 +356,10 @@
     "You can only choose :count classmates per question.": "Solo puedes elegir :count companeros por pregunta.",
     "Review:": "Revisa:",
     "Complete all required selections before submitting the test.": "Completa todas las selecciones requeridas antes de enviar el test.",
-    "Question": "Pregunta"
+    "Question": "Pregunta",
+    "Required questions need :count distinct selection.": "Las preguntas obligatorias necesitan :count seleccion distinta.",
+    "Required questions need :count distinct selections.": "Las preguntas obligatorias necesitan :count selecciones distintas.",
+    "Optional": "Opcional",
+    "Required": "Obligatoria",
+    "Allow blank answers": "Permitir respuestas en blanco"
 }

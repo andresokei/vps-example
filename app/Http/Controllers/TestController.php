@@ -141,9 +141,11 @@ class TestController extends Controller
         ];
 
         foreach ($asignacion->test->preguntas as $pregunta) {
+            $requiredRule = $pregunta->permite_respuesta_vacia ? 'nullable' : 'required';
+
             for ($i = 1; $i <= $selectionCount; $i++) {
                 $rules['respuesta_'.$pregunta->id.'_'.$i] = [
-                    'required',
+                    $requiredRule,
                     'integer',
                     Rule::in($studentIds),
                 ];
@@ -168,7 +170,17 @@ class TestController extends Controller
             $choices = [];
 
             for ($i = 1; $i <= $selectionCount; $i++) {
-                $choices[] = (int) $validated['respuesta_'.$pregunta->id.'_'.$i];
+                $value = $validated['respuesta_'.$pregunta->id.'_'.$i] ?? null;
+
+                if ($value === null || $value === '') {
+                    continue;
+                }
+
+                $choices[] = (int) $value;
+            }
+
+            if (! $pregunta->permite_respuesta_vacia && count($choices) !== $selectionCount) {
+                $errors['respuesta_'.$pregunta->id.'_1'] = __('Complete all required selections before submitting the test.');
             }
 
             if (in_array($studentId, $choices, true)) {
@@ -191,23 +203,47 @@ class TestController extends Controller
                 $rows = [];
 
                 foreach ($asignacion->test->preguntas as $pregunta) {
-                    foreach (range(1, $selectionCount) as $i) {
-                        $respuesta = (int) $validated['respuesta_'.$pregunta->id.'_'.$i];
+                    $questionRows = [];
 
-                        $rows[] = [
+                    foreach (range(1, $selectionCount) as $i) {
+                        $respuesta = $validated['respuesta_'.$pregunta->id.'_'.$i] ?? null;
+
+                        if ($respuesta === null || $respuesta === '') {
+                            continue;
+                        }
+
+                        $questionRows[] = [
                             'alumno_id' => $studentId,
                             'asignacion_test_id' => $asignacion->id,
                             'pregunta_id' => $pregunta->id,
-                            'respuesta' => (string) $respuesta,
+                            'respuesta' => (string) (int) $respuesta,
                             'orden_preferencia' => $i,
                             'tipo_relacion' => $pregunta->tipo_pregunta,
                             'created_at' => $timestamp,
                             'updated_at' => $timestamp,
                         ];
                     }
+
+                    if ($questionRows === [] && $pregunta->permite_respuesta_vacia) {
+                        $questionRows[] = [
+                            'alumno_id' => $studentId,
+                            'asignacion_test_id' => $asignacion->id,
+                            'pregunta_id' => $pregunta->id,
+                            'respuesta' => null,
+                            'orden_preferencia' => 1,
+                            'tipo_relacion' => $pregunta->tipo_pregunta,
+                            'created_at' => $timestamp,
+                            'updated_at' => $timestamp,
+                        ];
+                    }
+
+                    array_push($rows, ...$questionRows);
                 }
 
-                DB::table('respuestas')->insert($rows);
+                if ($rows !== []) {
+                    DB::table('respuestas')->insert($rows);
+                }
+
                 Relacion::generarDesdeRespuestas((int) $asignacion->id);
             });
         } catch (QueryException $e) {

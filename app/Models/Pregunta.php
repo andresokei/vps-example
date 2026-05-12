@@ -11,7 +11,18 @@ class Pregunta extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['test_id', 'tipo_pregunta', 'texto_pregunta', 'texto_pregunta_en', 'orden'];
+    protected $fillable = [
+        'test_id',
+        'tipo_pregunta',
+        'permite_respuesta_vacia',
+        'texto_pregunta',
+        'texto_pregunta_en',
+        'orden',
+    ];
+
+    protected $casts = [
+        'permite_respuesta_vacia' => 'boolean',
+    ];
 
     protected $appends = ['localized_texto_pregunta'];
 
