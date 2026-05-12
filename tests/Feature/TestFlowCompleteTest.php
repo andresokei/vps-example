@@ -157,6 +157,12 @@ it('permite enviar preguntas opcionales en blanco y registra la participacion', 
     $respondiente = $alumnos[0];
 
     $this->withSession(['test_access.assignment_id' => $asignacion->id])
+        ->get(route('test.realizar', $asignacion))
+        ->assertOk()
+        ->assertDontSeeText('Optional')
+        ->assertDontSee('test-form__question-badge--optional', false);
+
+    $this->withSession(['test_access.assignment_id' => $asignacion->id])
         ->post(route('test.submit', $asignacion), [
             'estudiante_id' => $respondiente->id,
         ])
@@ -222,8 +228,7 @@ it('ajusta el numero de selecciones requeridas cuando el grupo tiene menos de cu
     $this->withSession(['test_access.assignment_id' => $asignacion->id])
         ->get(route('test.realizar', $asignacion))
         ->assertOk()
-        ->assertSeeText('Required questions need 2')
-        ->assertSeeText('distinct selections.');
+        ->assertSeeText('Choose different classmates for each question.');
 
     $this->withSession(['test_access.assignment_id' => $asignacion->id])
         ->post(route('test.submit', $asignacion), [

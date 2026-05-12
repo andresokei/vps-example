@@ -357,8 +357,7 @@
     "Review:": "Revisa:",
     "Complete all required selections before submitting the test.": "Completa todas las selecciones requeridas antes de enviar el test.",
     "Question": "Pregunta",
-    "Required questions need :count distinct selection.": "Las preguntas obligatorias necesitan :count seleccion distinta.",
-    "Required questions need :count distinct selections.": "Las preguntas obligatorias necesitan :count selecciones distintas.",
+    "Choose different classmates for each question.": "Elige companeros distintos para responder cada pregunta.",
     "Optional": "Opcional",
     "Required": "Obligatoria",
     "Allow blank answers": "Permitir respuestas en blanco"

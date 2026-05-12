@@ -60,9 +60,7 @@
                             @endforeach
                         </select>
                         <p class="public-help">
-                            {{ $selectionCount === 1
-                                ? __('Required questions need :count distinct selection.', ['count' => $selectionCount])
-                                : __('Required questions need :count distinct selections.', ['count' => $selectionCount]) }}
+                            {{ __('Choose different classmates for each question.') }}
                         </p>
                     </div>
 
@@ -76,9 +74,6 @@
                             >
                                 <div class="test-form__question-header">
                                     <h2 class="test-form__question-title">{{ $pregunta->localized_texto_pregunta }}</h2>
-                                    @if ($pregunta->permite_respuesta_vacia)
-                                        <span class="test-form__question-badge test-form__question-badge--optional">{{ __('Optional') }}</span>
-                                    @endif
                                 </div>
 
                                 <input type="hidden" name="tipo_relacion_{{ $pregunta->id }}" value="{{ $pregunta->tipo_pregunta }}">
