@@ -20,6 +20,7 @@ class TestManager extends Component
     public $nombreEn = '';
     public $descripcion = '';
     public $descripcionEn = '';
+    public int $maxRespuestas = 3;
     public $editingTestId = null;
 
     // Formulario de añadir pregunta
@@ -58,7 +59,7 @@ class TestManager extends Component
 
     public function abrirModalCrear(): void
     {
-        $this->reset(['nombre', 'nombreEn', 'descripcion', 'descripcionEn', 'editingTestId']);
+        $this->reset(['nombre', 'nombreEn', 'descripcion', 'descripcionEn', 'maxRespuestas', 'editingTestId']);
         $this->resetErrorBag();
         $this->dispatch('openModalCrearTest');
     }
@@ -75,6 +76,7 @@ class TestManager extends Component
             'nombreEn' => ['nullable', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:1000'],
             'descripcionEn' => ['nullable', 'string', 'max:1000'],
+            'maxRespuestas' => ['required', 'integer', 'between:1,10'],
         ]);
 
         Test::create([
@@ -82,10 +84,11 @@ class TestManager extends Component
             'nombre_test_en' => $this->nombreEn ?: null,
             'descripcion' => $this->descripcion ?: null,
             'descripcion_en' => $this->descripcionEn ?: null,
+            'max_respuestas' => $this->maxRespuestas,
             'id_profesor' => Auth::id(),
         ]);
 
-        $this->reset(['nombre', 'nombreEn', 'descripcion', 'descripcionEn']);
+        $this->reset(['nombre', 'nombreEn', 'descripcion', 'descripcionEn', 'maxRespuestas']);
         $this->dispatch('closeModalCrearTest');
         $this->loadTests();
         $this->dispatch('refreshAssignedTests');
@@ -103,6 +106,7 @@ class TestManager extends Component
         $this->nombreEn = $test->nombre_test_en ?? '';
         $this->descripcion = $test->descripcion ?? '';
         $this->descripcionEn = $test->descripcion_en ?? '';
+        $this->maxRespuestas = $test->max_respuestas;
         $this->resetErrorBag();
         $this->dispatch('openModalEditarTest');
     }
@@ -125,16 +129,24 @@ class TestManager extends Component
             'nombreEn' => ['nullable', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:1000'],
             'descripcionEn' => ['nullable', 'string', 'max:1000'],
+            'maxRespuestas' => ['required', 'integer', 'between:1,10'],
         ]);
+
+        if ($test->max_respuestas !== $this->maxRespuestas &&
+            AsignacionTest::where('test_id', $test->id)->whereHas('respuestas')->exists()) {
+            $this->addError('maxRespuestas', __('The number of choices cannot be changed after students have answered this test.'));
+            return;
+        }
 
         $test->update([
             'nombre_test' => $this->nombre,
             'nombre_test_en' => $this->nombreEn ?: null,
             'descripcion' => $this->descripcion ?: null,
             'descripcion_en' => $this->descripcionEn ?: null,
+            'max_respuestas' => $this->maxRespuestas,
         ]);
 
-        $this->reset(['nombre', 'nombreEn', 'descripcion', 'descripcionEn', 'editingTestId']);
+        $this->reset(['nombre', 'nombreEn', 'descripcion', 'descripcionEn', 'maxRespuestas', 'editingTestId']);
         $this->dispatch('closeModalEditarTest');
         $this->loadTests();
         $this->dispatch('refreshAssignedTests');
