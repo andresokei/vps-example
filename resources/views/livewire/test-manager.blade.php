@@ -35,6 +35,7 @@
                 <small class="text-muted">
                   {{ $test->preguntas_count }}
                   {{ $test->preguntas_count === 1 ? __('question') : __('questions') }}
+                  · {{ __(':count choices per question', ['count' => $test->max_respuestas]) }}
                 </small>
               </div>
               <div class="btn-group btn-group-sm flex-shrink-0" @click.stop>
@@ -240,6 +241,16 @@
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
             </div>
+            <div class="mb-1 mt-3">
+              <label class="form-label fw-medium" for="crearMaxRespuestas">{{ __('Choices per question') }}</label>
+              <select id="crearMaxRespuestas" wire:model="maxRespuestas"
+                      class="form-select @error('maxRespuestas') is-invalid @enderror">
+                @for ($i = 1; $i <= 10; $i++)
+                  <option value="{{ $i }}">{{ $i }}</option>
+                @endfor
+              </select>
+              @error('maxRespuestas')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
@@ -303,6 +314,16 @@
               @error('descripcionEn')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
+            </div>
+            <div class="mb-1 mt-3">
+              <label class="form-label fw-medium" for="editarMaxRespuestas">{{ __('Choices per question') }}</label>
+              <select id="editarMaxRespuestas" wire:model="maxRespuestas"
+                      class="form-select @error('maxRespuestas') is-invalid @enderror">
+                @for ($i = 1; $i <= 10; $i++)
+                  <option value="{{ $i }}">{{ $i }}</option>
+                @endfor
+              </select>
+              @error('maxRespuestas')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
           </div>
           <div class="modal-footer">
