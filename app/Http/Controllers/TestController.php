@@ -84,7 +84,7 @@ class TestController extends Controller
             ]);
         }
 
-        $selectionCount = min(3, max($estudiantes->count() - 1, 0));
+        $selectionCount = min($asignacion->test->max_respuestas, max($estudiantes->count() - 1, 0));
 
         if ($selectionCount < 1) {
             $this->forgetAssignmentAccess($request);
@@ -128,7 +128,7 @@ class TestController extends Controller
             ]);
         }
 
-        $selectionCount = min(3, max(count($studentIds) - 1, 0));
+        $selectionCount = min($asignacion->test->max_respuestas, max(count($studentIds) - 1, 0));
 
         if ($selectionCount < 1) {
             throw ValidationException::withMessages([
@@ -197,8 +197,7 @@ class TestController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($asignacion, $studentId, $validated) {
-                $selectionCount = min(3, max($asignacion->grupo->estudiantes->count() - 1, 0));
+            DB::transaction(function () use ($asignacion, $studentId, $validated, $selectionCount) {
                 $timestamp = now();
                 $rows = [];
 
