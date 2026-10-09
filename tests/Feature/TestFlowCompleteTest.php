@@ -6,9 +6,11 @@ use App\Models\Grupo;
 use App\Models\Pregunta;
 use App\Models\Test;
 use App\Models\User;
+use App\Livewire\TestManager;
 use App\Services\AnalisisGrupalService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Livewire\Livewire;
 
 uses(Tests\TestCase::class, RefreshDatabase::class);
 
@@ -242,6 +244,67 @@ it('ajusta el numero de selecciones requeridas cuando el grupo tiene menos de cu
 
     $this->assertDatabaseCount('respuestas', 4);
     $this->assertDatabaseCount('relaciones', 4);
+});
+
+it('permite configurar cuatro elecciones y las conserva en las respuestas y relaciones', function () {
+    $this->withoutVite();
+    ['test' => $test, 'asignacion' => $asignacion, 'pregPref' => $pregPref, 'pregRec' => $pregRec, 'alumnos' => $alumnos] = crearAsignacionConAlumnos(numAlumnos: 5);
+    $test->update(['max_respuestas' => 4]);
+
+    $this->withSession(['test_access.assignment_id' => $asignacion->id])
+        ->get(route('test.realizar', $asignacion))
+        ->assertOk()
+        ->assertSee('data-max-selections="4"', false)
+        ->assertSee('name="respuesta_'.$pregPref->id.'_4"', false);
+
+    $respondiente = $alumnos[0];
+    $otros = $alumnos->slice(1)->values();
+    $payload = ['estudiante_id' => $respondiente->id];
+
+    foreach ([$pregPref, $pregRec] as $pregunta) {
+        foreach ($otros as $index => $alumno) {
+            $payload['respuesta_'.$pregunta->id.'_'.($index + 1)] = $alumno->id;
+        }
+    }
+
+    $this->withSession(['test_access.assignment_id' => $asignacion->id])
+        ->post(route('test.submit', $asignacion), $payload)
+        ->assertRedirect(route('test.success'));
+
+    $this->assertDatabaseHas('respuestas', [
+        'asignacion_test_id' => $asignacion->id,
+        'pregunta_id' => $pregPref->id,
+        'orden_preferencia' => 4,
+        'respuesta' => (string) $otros[3]->id,
+    ]);
+    $this->assertDatabaseCount('respuestas', 8);
+    $this->assertDatabaseCount('relaciones', 8);
+});
+
+it('impide cambiar el numero de elecciones de un test con respuestas', function () {
+    $this->withoutVite();
+    ['profesor' => $profesor, 'test' => $test, 'asignacion' => $asignacion, 'pregPref' => $pregPref, 'alumnos' => $alumnos] = crearAsignacionConAlumnos();
+    $test->update(['id_profesor' => $profesor->id]);
+
+    DB::table('respuestas')->insert([
+        'alumno_id' => $alumnos[0]->id,
+        'asignacion_test_id' => $asignacion->id,
+        'pregunta_id' => $pregPref->id,
+        'respuesta' => (string) $alumnos[1]->id,
+        'orden_preferencia' => 1,
+        'tipo_relacion' => 'preferencia',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    Livewire::actingAs($profesor)
+        ->test(TestManager::class)
+        ->call('abrirModalEditar', $test->id)
+        ->set('maxRespuestas', 4)
+        ->call('actualizarTest')
+        ->assertHasErrors('maxRespuestas');
+
+    expect($test->fresh()->max_respuestas)->toBe(3);
 });
 
 it('impide que el mismo alumno responda dos veces', function () {
