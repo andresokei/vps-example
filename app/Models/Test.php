@@ -14,7 +14,9 @@ class Test extends Model
     protected $table = 'tests';
 
     // Define los campos que se pueden llenar
-    protected $fillable = ['nombre_test', 'nombre_test_en', 'descripcion', 'descripcion_en', 'id_profesor'];
+    protected $fillable = ['nombre_test', 'nombre_test_en', 'descripcion', 'descripcion_en', 'max_respuestas', 'id_profesor'];
+
+    protected $casts = ['max_respuestas' => 'integer'];
 
     protected $appends = ['localized_nombre_test', 'localized_descripcion'];
 
