@@ -14,6 +14,9 @@
       $matrix['directions'] = array_map(fn ($i) => __('reciprocity.out'.$i), range(0, 3));
       $matrix['diagonal'] = __('reciprocity.skip');
     @endphp
+    @if (!collect($matrix['data'])->contains(fn ($cell) => $cell['v'] !== 0))
+      <p class="alert alert-info" role="status">{{ __('reciprocity.empty') }}</p>
+    @endif
     <script type="application/json" id="reciprocity-data">@json($matrix)</script>
     <div style="overflow-x:auto">
     <div class="heatmap-wrapper" style="min-width:{{ max(350, count($matrix['labels']) * 21 + 110) }}px;height:{{ max(400, count($matrix['labels']) * 21 + 90) }}px">

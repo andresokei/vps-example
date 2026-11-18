@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'empty' => "The responses for this assignment contain no choices or rejections between students in this group, so all cells are unmarked.",
     'axis' => "Row: respondent. Column: classmate. Select a cell to see both directions.",
     'signs' => "+ choice · − rejection · ± choice and rejection on different questions; a dot (·) indicates neither",
     'none' => "Neither choice nor rejection in this direction",

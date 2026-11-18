@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'empty' => "Las respuestas de esta asignación no contienen elecciones ni rechazos entre los alumnos del grupo. Por eso todas las casillas aparecen sin marcar.",
     'axis' => "Fila: quien responde. Columna: a quién se refiere. Pulsa una casilla para ver ambos sentidos.",
     'signs' => "+ elección · − rechazo · ± elección y rechazo en preguntas distintas; el punto (·) indica que no hubo elección ni rechazo",
     'none' => "Sin elección ni rechazo en este sentido",
