@@ -55,6 +55,16 @@ class AssignedTests extends Component
         $this->asignacionSeleccionada = $this->decorateAssignment($asignacion);
     }
 
+    public function eliminarAsignacion(int $id): void
+    {
+        $assignment = $this->findAssignment($id);
+        abort_unless($assignment, 404);
+        $assignment->delete();
+        $this->resetModal();
+        $this->loadAsignaciones();
+        $this->setResult('Asignación eliminada.');
+    }
+
     public function cerrarAsignacion(int $id): void
     {
         $asignacion = $this->findAssignment($id);

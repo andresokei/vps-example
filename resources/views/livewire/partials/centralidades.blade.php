@@ -27,7 +27,7 @@
             <tr
               data-student-id="{{ $c['id'] }}"
               data-name="{{ $c['name'] }}"
-              data-in-degree="{{ $c['inDegree'] }}"
+              data-preference-in="{{ $c['preferenceInDegree'] }}" data-in-degree="{{ $c['inDegree'] }}"
               data-out-degree="{{ $c['outDegree'] }}"
               data-betweenness="{{ $c['betweenness'] }}"
               data-closeness="{{ $c['closeness'] }}"

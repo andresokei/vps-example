@@ -63,6 +63,7 @@ class AnalisisSelector extends Component
         }
 
         $this->asignacionTestId = $this->defaultAssignmentId();
+        $this->updatedAsignacionTestId();
     }
 
     public function updatedAsignacionTestId(): void
@@ -70,6 +71,9 @@ class AnalisisSelector extends Component
         $this->reset(['analisis']);
         $this->resultadoAnalisis = '';
         $this->resultadoTipo = 'info';
+        if ($this->asignaciones->firstWhere('id', $this->asignacionTestId)?->respuestas_count > 0) {
+            $this->procesarAnalisis(app(AnalisisGrupalService::class));
+        }
     }
 
     public function procesarAnalisis(AnalisisGrupalService $analisisGrupalService): void

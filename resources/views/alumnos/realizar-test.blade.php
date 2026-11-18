@@ -19,7 +19,7 @@
                 <form
                     id="testForm"
                     class="test-form"
-                    action="{{ route('test.submit', $asignacion) }}"
+                    action="{{ $teacher ? route('docente.guardar', [$asignacion, $alumno]) : route('test.submit', $asignacion) }}"
                     method="POST"
                     data-test-form
                     data-max-selections="{{ $selectionCount }}"
@@ -54,7 +54,8 @@
                         >
                             <option value="">{{ __('Select a student') }}</option>
                             @foreach($estudiantes as $estudiante)
-                                <option value="{{ $estudiante->id }}" @selected(old('estudiante_id') == $estudiante->id)>
+                                @continue($teacher && $alumno !== (int) $estudiante->id)
+                                <option value="{{ $estudiante->id }}" @selected(old('estudiante_id', $alumno) == $estudiante->id)>
                                     {{ $estudiante->nombre }}
                                 </option>
                             @endforeach
@@ -103,7 +104,7 @@
                                 </div>
 
                                 @for ($i = 1; $i <= $selectionCount; $i++)
-                                    <input type="hidden" name="respuesta_{{ $pregunta->id }}_{{ $i }}" class="response-input" value="{{ old('respuesta_'.$pregunta->id.'_'.$i) }}">
+                                    <input type="hidden" name="respuesta_{{ $pregunta->id }}_{{ $i }}" class="response-input" value="{{ old('respuesta_'.$pregunta->id.'_'.$i, $saved['respuesta_'.$pregunta->id.'_'.$i] ?? '') }}">
                                 @endfor
 
                                 @error('respuesta_'.$pregunta->id.'_1')
@@ -125,6 +126,12 @@
                         </button>
                     </div>
                 </form>
+                @if($teacher && $saved)
+                <form method="post" action="{{ route('docente.borrar', [$asignacion, $alumno]) }}" onsubmit="return confirm('¿Eliminar las respuestas de este alumno?')">
+                    @csrf @method('delete')
+                    <button type="submit">Eliminar respuestas de este alumno</button>
+                </form>
+                @endif
             </div>
         </div>
     </div>

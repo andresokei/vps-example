@@ -198,6 +198,8 @@
                   </div>
 
                   <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-sm btn-primary" href="{{ route('docente.editar', $asignacionSeleccionada) }}">Introducir o corregir respuestas</a>
+                    <button class="btn btn-sm btn-outline-danger" wire:click="eliminarAsignacion({{ $asignacionSeleccionada->id }})" wire:confirm="¿Eliminar esta asignación y todas sus respuestas? Esta acción es definitiva.">Eliminar asignación</button>
                     @if ($asignacionSeleccionada->can_export_pdf)
                       <a href="{{ route('analisis', ['grupo' => $asignacionSeleccionada->grupo_id, 'asignacion' => $asignacionSeleccionada->id]) }}"
                          class="btn btn-sm btn-primary">

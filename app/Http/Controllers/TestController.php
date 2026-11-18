@@ -50,11 +50,15 @@ class TestController extends Controller
 
     public function mostrarTest(Request $request, AsignacionTest $asignacion)
     {
-        if ($redirect = $this->redirectIfAssignmentAccessMissing($request, $asignacion)) {
+        $teacher = $request->routeIs('docente.*');
+        if ($teacher) {
+            abort_unless((int) $asignacion->profesor_id === (int) $request->user()->id, 403);
+        }
+        if (! $teacher && ($redirect = $this->redirectIfAssignmentAccessMissing($request, $asignacion))) {
             return $redirect;
         }
 
-        if ($asignacion->estado === 'aplicado') {
+        if (! $teacher && $asignacion->estado === 'aplicado') {
             $this->forgetAssignmentAccess($request);
 
             return redirect()->route('test.ingresar')->withErrors([
@@ -94,7 +98,20 @@ class TestController extends Controller
             ]);
         }
 
+        $alumno = (int) $request->route('alumno');
+        $saved = [];
+        if ($teacher) {
+            if (! $alumno) {
+                return view('alumnos.seleccionar', compact('asignacion', 'estudiantes'));
+            }
+            abort_unless($estudiantes->contains('id', $alumno), 404);
+            foreach ($asignacion->respuestas()->where('alumno_id', $alumno)->get() as $row) {
+                $saved['respuesta_'.$row->pregunta_id.'_'.$row->orden_preferencia] = $row->respuesta;
+            }
+        }
+
         return view('alumnos.realizar-test', [
+            'teacher' => $teacher, 'alumno' => $alumno, 'saved' => $saved,
             'test' => $asignacion->test,
             'estudiantes' => $estudiantes,
             'asignacion' => $asignacion,
@@ -104,13 +121,17 @@ class TestController extends Controller
 
     public function submitTest(Request $request, AsignacionTest $asignacion)
     {
-        if ($redirect = $this->redirectIfAssignmentAccessMissing($request, $asignacion)) {
+        $teacher = $request->routeIs('docente.*');
+        if ($teacher) {
+            abort_unless((int) $asignacion->profesor_id === (int) $request->user()->id, 403);
+        }
+        if (! $teacher && ($redirect = $this->redirectIfAssignmentAccessMissing($request, $asignacion))) {
             return $redirect;
         }
 
         $asignacion->loadMissing(['test.preguntas', 'grupo.estudiantes']);
 
-        if ($asignacion->estado === 'aplicado') {
+        if (! $teacher && $asignacion->estado === 'aplicado') {
             throw ValidationException::withMessages([
                 'clave_acceso' => __('Invalid access key or test unavailable.'),
             ]);
@@ -155,7 +176,11 @@ class TestController extends Controller
         $validated = $request->validate($rules);
         $studentId = (int) $validated['estudiante_id'];
 
-        if (
+        if ($teacher) {
+            abort_unless($studentId === (int) $request->route('alumno'), 422);
+        }
+
+        if (! $teacher &&
             Respuesta::where('asignacion_test_id', $asignacion->id)
                 ->where('alumno_id', $studentId)
                 ->exists()
@@ -197,7 +222,13 @@ class TestController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($asignacion, $studentId, $validated, $selectionCount) {
+            DB::transaction(function () use ($asignacion, $studentId, $validated, $selectionCount, $teacher) {
+                $locked = AsignacionTest::lockForUpdate()->findOrFail($asignacion->id);
+                if ($teacher) {
+                    $locked->respuestas()->where('alumno_id', $studentId)->delete();
+                } else {
+                    abort_if($locked->estado === 'aplicado', 409);
+                }
                 $timestamp = now();
                 $rows = [];
 
@@ -256,13 +287,34 @@ class TestController extends Controller
         }
 
         $asignacion->refresh();
-        $asignacion->recalcularEstado();
+        if (! $teacher || $asignacion->estado !== 'aplicado') {
+            $asignacion->recalcularEstado();
+        }
         app(AnalisisGrupalService::class)->invalidateForAssignment((int) $asignacion->grupo_id, (int) $asignacion->id);
+        if ($teacher) {
+            return redirect()->route('docente.editar', $asignacion)->with('status', __('Answers saved successfully'));
+        }
         $this->forgetAssignmentAccess($request);
 
         return redirect()
             ->route('test.success')
             ->with('status', __('Answers saved successfully'));
+    }
+
+    public function borrarRespuesta(Request $request, AsignacionTest $asignacion, int $alumno)
+    {
+        abort_unless((int) $asignacion->profesor_id === (int) $request->user()->id, 403);
+        abort_unless($asignacion->grupo->estudiantes()->whereKey($alumno)->exists(), 404);
+        DB::transaction(function () use ($asignacion, $alumno) {
+            $locked = AsignacionTest::lockForUpdate()->findOrFail($asignacion->id);
+            $locked->respuestas()->where('alumno_id', $alumno)->delete();
+            Relacion::generarDesdeRespuestas($locked->id);
+            if ($locked->estado !== 'aplicado') {
+                $locked->recalcularEstado();
+            }
+        });
+        app(AnalisisGrupalService::class)->invalidateForAssignment($asignacion->grupo_id, $asignacion->id);
+        return redirect()->route('docente.editar', $asignacion)->with('status', 'Respuestas eliminadas.');
     }
 
     private function redirectIfAssignmentAccessMissing(Request $request, AsignacionTest $asignacion): ?RedirectResponse

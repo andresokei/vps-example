@@ -22,7 +22,7 @@
             });
         };
 
-        registerRole(roles.aislados ?? [], 'Aislado', 'bg-danger');
+        registerRole(roles.aislados ?? [], 'Sin elecciones positivas recibidas', 'bg-danger');
         registerRole(roles.puentes ?? [], 'Puente', 'bg-info text-dark');
         registerRole(roles.leaders ?? [], 'Lider', 'bg-warning text-dark');
         registerRole(roles.cohesivos ?? [], 'Cohesivo', 'bg-success');
@@ -238,7 +238,7 @@
         const maxOutDeg = Math.max(...rowData.map(row => row.outDeg), 1);
 
         rowData.forEach(({ tr, inDeg, outDeg, studentId }) => {
-            const isIsolated = inDeg === 0 && outDeg === 0;
+            const isIsolated = Number(tr.dataset.preferenceIn) === 0;
             tr.classList.remove('table-row-leader', 'table-row-bridge', 'table-row-isolated');
 
             if (isIsolated) {
@@ -395,7 +395,9 @@
         });
         chosenStudents.forEach(id => visibleIds.add(id));
 
-        analysis.drawSociograma(state.origNodes.filter(node => visibleIds.has(node.id)), links);
+        const allQuestions = state.origLinks.every(link => chosenQuestions.includes(link.pregunta_id));
+        const showWholeGroup = !onlyMatch && !chosenStudents.length && (!chosenQuestions.length || allQuestions);
+        analysis.drawSociograma(showWholeGroup ? state.origNodes : state.origNodes.filter(node => visibleIds.has(node.id)), links);
     };
 
     analysis.drawSociograma = function drawSociograma(nodesData, linksData) {
@@ -418,7 +420,7 @@
         const nodes = new vis.DataSet(nodesData.map(node => ({
             id: node.id,
             label: node.label,
-            group: (markIsolados && (node.metricas?.preferencias_recibidas ?? 0) + (node.metricas?.rechazos_recibidos ?? 0) === 0)
+            group: (markIsolados && node.isIsolate)
                 ? 'isolated'
                 : 'default',
             value: 10 + (node.metricas?.preferencias_recibidas ?? 0) + (node.metricas?.rechazos_recibidos ?? 0),

@@ -14,10 +14,10 @@ $rolesMeta = [
     'tooltip' => __('Students with highest betweenness: connect different subgroups'),
   ],
   'aislados'  => [
-    'label'   => __('Isolated'),
+    'label'   => __('Not chosen'),
     'icon'    => 'bi-person-slash',
     'color'   => 'danger',
-    'tooltip' => __('Students with no relationships (neither chosen nor choose)'),
+    'tooltip' => __('Not chosen'),
   ],
   'cohesivos' => [
     'label'   => __('Cohesive group'),

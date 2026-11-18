@@ -35,6 +35,12 @@ Route::middleware(['auth'])->group(function () {
         return view('tests.index');
     })->middleware(['verified', 'role:profesor|admin'])->name('tests.index');
 
+    Route::middleware(['verified', 'role:profesor|admin'])->prefix('docente/asignaciones/{asignacion}')->group(function () {
+        Route::get('/respuestas/{alumno?}', [TestController::class, 'mostrarTest'])->whereNumber('alumno')->name('docente.editar');
+        Route::post('/respuestas/{alumno}', [TestController::class, 'submitTest'])->whereNumber('alumno')->name('docente.guardar');
+        Route::delete('/respuestas/{alumno}', [TestController::class, 'borrarRespuesta'])->whereNumber('alumno')->name('docente.borrar');
+    });
+
     Route::get('/analisis', [AnalisisController::class, 'index'])
         ->middleware(['verified', 'role:profesor|admin'])
         ->name('analisis');

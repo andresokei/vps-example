@@ -109,7 +109,7 @@ class AnalisisGrupalService
         $nodes = $alumnos->map(fn ($a) => [
             'id' => (int) $a->id,
             'label' => $a->nombre,
-            'isIsolate' => (($prefRec[$a->id] ?? 0) + ($rechRec[$a->id] ?? 0) + ($prefOut[$a->id] ?? 0) + ($rechOut[$a->id] ?? 0)) === 0,
+            'isIsolate' => ($prefRec[$a->id] ?? 0) === 0,
             'metricas' => [
                 'preferencias_recibidas' => (int) ($prefRec[$a->id] ?? 0),
                 'rechazos_recibidos' => (int) ($rechRec[$a->id] ?? 0),
@@ -169,7 +169,7 @@ class AnalisisGrupalService
 
     public function cacheKey(int $grupoId, int $asignacionTestId): string
     {
-        return "analisis-grupal:grupo:{$grupoId}:asignacion:{$asignacionTestId}";
+        return "analisis-grupal:v2:grupo:{$grupoId}:asignacion:{$asignacionTestId}";
     }
 
     private function obtenerAlumnosGrupo(int $grupoId): Collection
@@ -188,8 +188,7 @@ class AnalisisGrupalService
         $labels = [];
         $data = [];
 
-        $conteo
-            ->filter(fn ($v) => (int) $v > 0)
+        $alumnos->mapWithKeys(fn ($student) => [$student->id => $conteo[$student->id] ?? 0])
             ->sortDesc()
             ->each(function ($value, $studentId) use ($alumnos, &$labels, &$data) {
                 $nombre = optional($alumnos->firstWhere('id', (int) $studentId))->nombre;
@@ -458,7 +457,7 @@ class AnalisisGrupalService
             ->all();
 
         $aislados = collect($centralidades)
-            ->filter(fn ($c) => (($c['inDegree'] ?? 0) + ($c['outDegree'] ?? 0)) === 0)
+            ->filter(fn ($c) => ($c['preferenceInDegree'] ?? 0) === 0)
             ->pluck('name')
             ->values()
             ->all();
@@ -505,8 +504,8 @@ class AnalisisGrupalService
                     $AB === 'preferido' && $BA === 'preferido' => 4,
                     $AB === 'rechazado' && $BA === 'rechazado' => 3,
                     ($AB === 'preferido' && $BA === 'rechazado') || ($AB === 'rechazado' && $BA === 'preferido') => 5,
-                    $AB === 'preferido' || $BA === 'preferido' => 2,
-                    $AB === 'rechazado' || $BA === 'rechazado' => 1,
+                    $AB === 'preferido' => 2,
+                    $AB === 'rechazado' => 1,
                     default => 0,
                 };
             }
