@@ -5,6 +5,7 @@
     const state = analysis.state;
 
     document.addEventListener('livewire:init', () => {
+        Livewire.hook('morphed', () => requestAnimationFrame(drawVisibleMatrix));
         Livewire.on('actualizarGraficoPreferencias', payload => {
             const data = analysis.normalizeLivewirePayload(payload);
             if (data?.labels && data?.data) {
@@ -26,10 +27,13 @@
 
     });
 
-    document.addEventListener('click', event => {
-        const cell = event.target.closest('[data-matrix-cell]');
-        if (cell) cell.closest('.reciprocity').querySelector('.matrix-detail').textContent = cell.title;
-    });
+    function drawVisibleMatrix() {
+        const canvas = document.getElementById('heatmapReciprocidad');
+        const payload = document.getElementById('reciprocity-data');
+        if (canvas?.offsetWidth && payload) {
+            analysis.renderMatrizReciprocidad(JSON.parse(payload.textContent));
+        }
+    }
 
     let currentContainer;
     let currentData;
@@ -54,6 +58,8 @@
         if (event.target.id === 'tab-sociograma-btn') {
             drawVisibleGraph();
         }
+
+        if (event.target.id === 'tab-reciprocidad-btn') drawVisibleMatrix();
 
         if (event.target.id === 'tab-detalles-btn') {
             analysis.refreshAnalysisUi();

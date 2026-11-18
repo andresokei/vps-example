@@ -18,6 +18,16 @@
 
     const state = analysis.state;
 
+    const HEAT_COLORS = {
+        0: 'rgba(240,240,240,0.4)',
+        1: 'rgba(220,53,69,0.30)',
+        2: 'rgba(40,167,69,0.35)',
+        3: 'rgba(220,53,69,0.85)',
+        4: 'rgba(99,102,241,0.85)',
+        5: 'rgba(255,153,0,0.75)',
+        6: 'rgba(153,86,175,0.75)',
+    };
+
     analysis.normalizeLivewirePayload = function normalizeLivewirePayload(payload) {
         return Array.isArray(payload) ? payload[0] : payload;
     };
@@ -100,4 +110,100 @@
         }
     };
 
+    analysis.renderMatrizReciprocidad = function renderMatrizReciprocidad({ labels, data: rawData, types, directions, diagonal }) {
+        const canvas = document.getElementById('heatmapReciprocidad');
+        if (!canvas) return;
+
+        Chart.getChart(canvas)?.destroy();
+
+        if (!labels?.length || !rawData?.length) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = '14px Inter';
+            ctx.fillStyle = '#6c757d';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('No hay datos suficientes.', canvas.width / 2, canvas.height / 2);
+            return;
+        }
+
+        new Chart(canvas, {
+            type: 'matrix',
+            data: {
+                datasets: [{
+                    label: 'Reciprocidad',
+                    data: rawData.map(cell => ({ ...cell, x: labels[cell.x], y: labels[cell.y] })),
+                    width: ({ chart }) => (chart.chartArea?.width ?? chart.width) / labels.length - 1,
+                    height: ({ chart }) => (chart.chartArea?.height ?? chart.height) / labels.length - 1,
+                    borderWidth: 1,
+                    borderColor: '#fff',
+                    backgroundColor: ctx => HEAT_COLORS[ctx.raw?.v ?? 0] ?? HEAT_COLORS[0],
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'category',
+                        labels,
+                        offset: true,
+                        position: 'top',
+                        grid: { display: false },
+                        ticks: {
+                            font: { family: 'Inter', size: 11 },
+                            autoSkip: false,
+                            maxRotation: 60,
+                            color: '#495057',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Destino ->',
+                            font: { family: 'Inter', size: 11 },
+                            color: '#6c757d',
+                        },
+                    },
+                    y: {
+                        type: 'category',
+                        labels,
+                        offset: true,
+                        reverse: false,
+                        grid: { display: false },
+                        ticks: {
+                            font: { family: 'Inter', size: 11 },
+                            autoSkip: false,
+                            color: '#495057',
+                        },
+                        title: {
+                            display: true,
+                            text: '<- Origen',
+                            font: { family: 'Inter', size: 11 },
+                            color: '#6c757d',
+                        },
+                    },
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: () => '',
+                            label: ({ raw }) => raw.x === raw.y ? diagonal : [
+                                raw.y + ' → ' + raw.x + ': ' + directions[raw.out],
+                                raw.x + ' → ' + raw.y + ': ' + directions[raw.back],
+                            ],
+                        },
+                    },
+                },
+            },
+        });
+
+        const legend = document.getElementById('reciprocity-legend');
+        legend.innerHTML = Object.entries(types)
+            .map(([value, label]) => `
+                <span class="d-flex align-items-center gap-1 small">
+                  <span style="width:14px;height:14px;border-radius:3px;display:inline-block;background:${HEAT_COLORS[value]};border:1px solid #dee2e6;"></span>
+                  ${label}
+                </span>
+            `)
+            .join('');
+    };
 })();

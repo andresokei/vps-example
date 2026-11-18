@@ -30,13 +30,15 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+
+  <script src="{{ asset('vendor/chart-matrix/chartjs-chart-matrix.min.js') }}"></script>
 
   @livewireScripts
 
-  <script src="{{ asset('js/analisis/shared.js') }}?v=20261118c"></script>
+  <script src="{{ asset('js/analisis/shared.js') }}?v=20261118d"></script>
   <script src="{{ asset('js/analisis/sociograma.js') }}?v=20261118b"></script>
-  <script src="{{ asset('js/analisis.js') }}?v=20261118c"></script>
+  <script src="{{ asset('js/analisis.js') }}?v=20261118d"></script>
 
   <script>
     (function () {
