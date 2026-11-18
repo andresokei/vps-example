@@ -169,7 +169,7 @@ class AnalisisGrupalService
 
     public function cacheKey(int $grupoId, int $asignacionTestId): string
     {
-        return "analisis-grupal:v2:grupo:{$grupoId}:asignacion:{$asignacionTestId}";
+        return "analisis-grupal:v3:grupo:{$grupoId}:asignacion:{$asignacionTestId}";
     }
 
     private function obtenerAlumnosGrupo(int $grupoId): Collection
@@ -479,42 +479,32 @@ class AnalisisGrupalService
         $indexOf = $alumnos->pluck('id')->map(fn ($v) => (int) $v)->flip();
         $n = count($labels);
 
-        $M = array_fill(0, $n, array_fill(0, $n, 0));
-
-        $dir = [];
+        // Each direction may contain both types across different questions.
+        $choices = [];
         foreach ($rel as $r) {
-            $i = $indexOf[(int) $r->alumno_a_id] ?? null;
-            $j = $indexOf[(int) $r->alumno_b_id] ?? null;
-            if ($i === null || $j === null || $i === $j) {
+            $from = $indexOf[(int) $r->alumno_a_id] ?? null;
+            $to = $indexOf[(int) $r->alumno_b_id] ?? null;
+            if ($from === null || $to === null || $from === $to) {
                 continue;
             }
-            $dir["$i-$j"] = $r->tipo_relacion;
-        }
-
-        for ($i = 0; $i < $n; $i++) {
-            for ($j = 0; $j < $n; $j++) {
-                if ($i === $j) {
-                    continue;
-                }
-
-                $AB = $dir["$i-$j"] ?? null;
-                $BA = $dir["$j-$i"] ?? null;
-
-                $M[$i][$j] = match (true) {
-                    $AB === 'preferido' && $BA === 'preferido' => 4,
-                    $AB === 'rechazado' && $BA === 'rechazado' => 3,
-                    ($AB === 'preferido' && $BA === 'rechazado') || ($AB === 'rechazado' && $BA === 'preferido') => 5,
-                    $AB === 'preferido' => 2,
-                    $AB === 'rechazado' => 1,
-                    default => 0,
-                };
-            }
+            $type = $r->tipo_relacion === 'preferido' ? 1 : 2;
+            $choices[$from][$to] = ($choices[$from][$to] ?? 0) | $type;
         }
 
         $data = [];
-        for ($i = 0; $i < $n; $i++) {
-            for ($j = 0; $j < $n; $j++) {
-                $data[] = ['x' => $j, 'y' => $i, 'v' => $M[$i][$j]];
+        for ($row = 0; $row < $n; $row++) {
+            for ($column = 0; $column < $n; $column++) {
+                $out = $choices[$row][$column] ?? 0;
+                $back = $choices[$column][$row] ?? 0;
+                $value = match (true) {
+                    $out === 0 => 0,
+                    $out === 3 || $back === 3 => 6,
+                    $back === 0 => $out === 1 ? 2 : 1,
+                    $out !== $back => 5,
+                    $out === 1 => 4,
+                    default => 3,
+                };
+                $data[] = ['x' => $column, 'y' => $row, 'v' => $value, 'out' => $out, 'back' => $back];
             }
         }
 

@@ -24,18 +24,11 @@
             setTimeout(analysis.refreshAnalysisUi, 250);
         });
 
-        Livewire.on('actualizarMatrizReciprocidad', payload => {
-            const data = analysis.normalizeLivewirePayload(payload);
-            if (!data?.labels || !data?.data) return;
+    });
 
-            const canvas = document.getElementById('heatmapReciprocidad');
-            if (!canvas || canvas.offsetParent === null) {
-                state.heatmapPending = data;
-                return;
-            }
-
-            analysis.renderMatrizReciprocidad(data.labels, data.data);
-        });
+    document.addEventListener('click', event => {
+        const cell = event.target.closest('[data-matrix-cell]');
+        if (cell) cell.closest('.reciprocity').querySelector('.matrix-detail').textContent = cell.title;
     });
 
     let currentContainer;
@@ -66,9 +59,5 @@
             analysis.refreshAnalysisUi();
         }
 
-        if (event.target.id === 'tab-reciprocidad-btn' && state.heatmapPending) {
-            analysis.renderMatrizReciprocidad(state.heatmapPending.labels, state.heatmapPending.data);
-            state.heatmapPending = null;
-        }
     });
 })();

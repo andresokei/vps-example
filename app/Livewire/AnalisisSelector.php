@@ -219,7 +219,6 @@ class AnalisisSelector extends Component
         $this->dispatch('actualizarSociograma', $enrichedSociograma);
         $this->dispatch('actualizarGraficoPreferencias', $full['preferencias']);
         $this->dispatch('actualizarGraficoRechazos', $full['rechazos']);
-        $this->dispatch('actualizarMatrizReciprocidad', $full['reciprocidad']);
 
         $this->resultadoTipo = 'success';
         $this->resultadoAnalisis = __('Analysis generated successfully.');
