@@ -94,6 +94,18 @@ it('preselecciona grupo y asignacion al abrir el analisis desde una asignacion c
     expect($component->instance()->analisis['totales']['respondieron'] ?? 0)->toBe(1);
 });
 
+it('mantiene el contador al volver a procesar la asignacion', function () {
+    ['profesor' => $profesor, 'grupo' => $grupo, 'asignacion' => $asignacion] = crearAsignacionConAnalisisDisponible();
+    $this->actingAs($profesor);
+    Livewire::test(AnalisisSelector::class, [
+        'grupoInicial' => $grupo->id,
+        'asignacionInicial' => $asignacion->id,
+    ])->assertSee('3 resp.')
+        ->call('procesarAnalisis')->assertSee('3 resp.')
+        ->call('procesarAnalisis')->assertSee('3 resp.');
+    expect($asignacion->respuestas()->count())->toBe(3);
+});
+
 it('no regenera relaciones al previsualizar analisis en modo admin solo lectura', function () {
     ['profesor' => $profesor, 'grupo' => $grupo, 'asignacion' => $asignacion] = crearAsignacionConAnalisisDisponible();
 

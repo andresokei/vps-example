@@ -46,6 +46,14 @@ class AnalisisSelector extends Component
         $this->hydrateInitialSelection($grupoInicial, $asignacionInicial);
     }
 
+    public function hydrate(): void
+    {
+        // Livewire restores Eloquent collections by ID, without withCount attributes.
+        if ($this->grupoSeleccionado !== '') {
+            $this->loadAssignmentsForSelectedGroup();
+        }
+    }
+
     public function updatedGrupoSeleccionado(): void
     {
         $this->resetEstadoAnalisis();
