@@ -407,7 +407,7 @@
         state.sociogramaNetwork?.destroy();
         state.sociogramaNetwork = null;
 
-        if (!nodesData.length || !linksData.length) {
+        if (!nodesData.length) {
             cont.innerHTML = '<div class="alert alert-info m-3">No hay datos suficientes para el filtro aplicado.</div>';
             return;
         }

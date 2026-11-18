@@ -35,9 +35,9 @@
 
   @livewireScripts
 
-  <script src="{{ asset('js/analisis/shared.js') }}"></script>
-  <script src="{{ asset('js/analisis/sociograma.js') }}"></script>
-  <script src="{{ asset('js/analisis.js') }}"></script>
+  <script src="{{ asset('js/analisis/shared.js') }}?v=20261118b"></script>
+  <script src="{{ asset('js/analisis/sociograma.js') }}?v=20261118b"></script>
+  <script src="{{ asset('js/analisis.js') }}?v=20261118b"></script>
 
   <script>
     (function () {

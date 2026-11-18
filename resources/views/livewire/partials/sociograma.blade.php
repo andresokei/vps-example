@@ -89,7 +89,9 @@
         <span class="legend-item"><i class="legend-line legend-line--rech"></i> {{ __('Rejection') }}</span>
         <span class="legend-item"><i class="legend-line legend-line--match"></i> {{ __('Mutual match') }}</span>
       </div>
-      <div id="sociograma"></div>
+      <div id="sociograma" wire:ignore></div>
+      @php($graphData = array_merge($datos['sociograma'], ['roles' => $datos['roles'], 'centralities' => $datos['centralities']]))
+      <script type="application/json" id="soc-data">@json($graphData)</script>
     </div>
   </div>
 </div>

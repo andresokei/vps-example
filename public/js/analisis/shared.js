@@ -51,21 +51,21 @@
         analysis.initBootstrapTooltips();
     };
 
+    let visReady;
     analysis.cargarVisJS = function cargarVisJS() {
-        return new Promise((ok, fail) => {
-            if (window.vis) return ok();
-
-            const css = document.createElement('link');
-            css.rel = 'stylesheet';
-            css.href = 'https://unpkg.com/vis-network/dist/vis-network.min.css';
-            document.head.appendChild(css);
-
-            const js = document.createElement('script');
-            js.src = 'https://unpkg.com/vis-network/dist/vis-network.min.js';
-            js.onload = ok;
-            js.onerror = fail;
-            document.head.appendChild(js);
-        });
+        if (!visReady) {
+            visReady = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = '/vendor/vis-network/vis-network.min.js?v=9.1.9';
+                script.onload = resolve;
+                script.onerror = () => {
+                    visReady = null;
+                    reject(new Error('No se pudo cargar vis-network'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+        return visReady;
     };
 
     analysis.renderBar = function renderBar(canvasId, labels, data, esRechazos, intento = 0) {

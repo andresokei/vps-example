@@ -19,8 +19,8 @@
             }
         });
 
-        Livewire.on('actualizarSociograma', payload => {
-            analysis.renderizarSociograma(payload);
+        Livewire.on('actualizarSociograma', () => {
+            requestAnimationFrame(drawVisibleGraph);
             setTimeout(analysis.refreshAnalysisUi, 250);
         });
 
@@ -38,10 +38,28 @@
         });
     });
 
-    document.addEventListener('shown.bs.tab', event => {
-        if (event.target.id === 'tab-sociograma-btn' && state.sociogramaNetwork) {
+    let currentContainer;
+    let currentData;
+    function drawVisibleGraph() {
+        const container = document.getElementById('sociograma');
+        const json = document.getElementById('soc-data')?.textContent;
+        if (!container?.offsetWidth || !json) return;
+        if (currentContainer === container && currentData === json && state.sociogramaNetwork) {
             state.sociogramaNetwork.redraw();
             state.sociogramaNetwork.fit();
+            return;
+        }
+        currentContainer = container;
+        currentData = json;
+        const graph = JSON.parse(json);
+        const metrics = new Map(graph.centralities.map(row => [row.id, row]));
+        graph.nodes.forEach(node => { node.centrality = metrics.get(node.id); });
+        analysis.renderizarSociograma(graph);
+    }
+
+    document.addEventListener('shown.bs.tab', event => {
+        if (event.target.id === 'tab-sociograma-btn') {
+            drawVisibleGraph();
         }
 
         if (event.target.id === 'tab-detalles-btn') {
