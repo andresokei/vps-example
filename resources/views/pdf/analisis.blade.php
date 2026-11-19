@@ -72,7 +72,7 @@
 
 {{-- ── Roles ── --}}
 <h2>{{ __('Detected Roles') }}</h2>
-<table class="roles">
+<table class="roles"><tr>
   @foreach(['leaders' => __('Leaders'), 'puentes' => __('Bridges'), 'aislados' => __('Not chosen'), 'cohesivos' => __('Cohesive group')] as $key => $label)
   <td>
     <strong>{{ $label }}</strong>
@@ -83,7 +83,7 @@
     @endforelse
   </td>
   @endforeach
-</table>
+</tr></table>
 
 {{-- ── Comunidades ── --}}
 <h2>{{ __('Detected Communities') }}</h2>
@@ -95,12 +95,13 @@
 
 {{-- ── Preferencias recibidas ── --}}
 @if(!empty($analisis['preferencias']['labels']))
-<h2>{{ __('Received Preferences') }}</h2>
+<div style="page-break-before:always"></div>
+@php $highest = max(1, max($analisis['preferencias']['data'])); @endphp
 <table class="data">
-  <thead><tr><th>{{ __('Student') }}</th><th>{{ __('Times chosen') }}</th></tr></thead>
+  <thead><tr><th colspan="2" style="background:white;color:#1a3a5c;font-size:13px;padding:8px 0">{{ __('Received Preferences') }}</th></tr><tr><th>{{ __('Student') }}</th><th>{{ __('Times chosen') }}</th></tr></thead>
   <tbody>
     @foreach($analisis['preferencias']['labels'] as $i => $nombre)
-      <tr><td>{{ $nombre }}</td><td>{{ $analisis['preferencias']['data'][$i] ?? 0 }}</td></tr>
+      <tr><td>{{ $nombre }}</td><td style="width:48%">{{ $analisis['preferencias']['data'][$i] ?? 0 }}<div style="height:3px;font-size:1px;background:#36885c;width:{{ 100 * ($analisis['preferencias']['data'][$i] ?? 0) / $highest }}%"></div></td></tr>
     @endforeach
   </tbody>
 </table>
@@ -108,18 +109,20 @@
 
 {{-- ── Rechazos recibidos ── --}}
 @if(!empty($analisis['rechazos']['labels']))
-<h2>{{ __('Received Rejections') }}</h2>
+@php $highest = max(1, max($analisis['rechazos']['data'])); @endphp
 <table class="data">
-  <thead><tr><th>{{ __('Student') }}</th><th>{{ __('Times rejected') }}</th></tr></thead>
+  <thead><tr><th colspan="2" style="background:white;color:#1a3a5c;font-size:13px;padding:8px 0">{{ __('Received Rejections') }}</th></tr><tr><th>{{ __('Student') }}</th><th>{{ __('Times rejected') }}</th></tr></thead>
   <tbody>
     @foreach($analisis['rechazos']['labels'] as $i => $nombre)
-      <tr><td>{{ $nombre }}</td><td>{{ $analisis['rechazos']['data'][$i] ?? 0 }}</td></tr>
+      <tr><td>{{ $nombre }}</td><td style="width:48%">{{ $analisis['rechazos']['data'][$i] ?? 0 }}<div style="height:3px;font-size:1px;background:#c25b6a;width:{{ 100 * ($analisis['rechazos']['data'][$i] ?? 0) / $highest }}%"></div></td></tr>
     @endforeach
   </tbody>
 </table>
 @endif
 
-<h2>{{ __('Sociogram') }} · {{ __('Reciprocity') }}</h2>
+@include('pdf.grafo', ['graph' => $analisis['sociograma']])
+@include('pdf.matriz', ['matrix' => $analisis['reciprocidad']])
+<h2>{{ __('Relations') }}</h2>
 @php
   $names = collect($analisis['sociograma']['nodes'])->pluck('label', 'id');
   $questions = collect($analisis['sociograma']['preguntas'])->pluck('texto', 'id');
