@@ -3,16 +3,13 @@
     <h1 class="page-title">
       <i class="bi bi-graph-up me-2 text-primary"></i>{{ __('Group Analysis') }}
     </h1>
-    <p class="page-subtitle">{{ __('Select a group and an assignment to generate the sociometric analysis.') }}</p>
   </div>
 
   @include('livewire.partials.selectores')
 
   @if ($resultadoAnalisis)
     <div class="alert alert-{{ $resultadoTipo ?? 'info' }} d-flex align-items-center gap-2 mb-4">
-      @if(($resultadoTipo ?? 'info') === 'success')
-        <i class="bi bi-check-circle-fill flex-shrink-0"></i>
-      @elseif(($resultadoTipo ?? 'info') === 'warning')
+      @if(($resultadoTipo ?? 'info') === 'warning')
         <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
       @elseif($resultadoTipo === 'danger')
         <i class="bi bi-x-circle-fill flex-shrink-0"></i>
@@ -23,15 +20,7 @@
     </div>
   @endif
 
-  @if (!empty($analisis))
-    <div class="d-flex justify-content-end mb-3">
-      <a href="{{ route('analisis.pdf', $asignacionTestId) }}"
-         target="_blank"
-         class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-file-earmark-pdf me-1"></i> {{ __('Export PDF') }}
-      </a>
-    </div>
-
+  @if ($actual && !empty($analisis))
     <ul class="nav nav-tabs-analisis mb-0" id="analisisTabs" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="tab-resumen-btn"
@@ -65,7 +54,7 @@
 
     <div class="tab-content tab-content-analisis" id="analisisTabContent">
       <div class="tab-pane fade show active" id="tab-resumen" role="tabpanel" aria-labelledby="tab-resumen-btn">
-        @include('livewire.partials.resumen', ['datos' => $analisis])
+        @include('livewire.partials.resumen', ['datos' => $analisis, 'selecciones' => $actual->selecciones_count])
         @include('livewire.partials.barras', ['datos' => $analisis])
       </div>
 

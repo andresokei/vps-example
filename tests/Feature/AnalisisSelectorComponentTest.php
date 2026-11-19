@@ -88,22 +88,70 @@ it('preselecciona grupo y asignacion al abrir el analisis desde una asignacion c
     ])
         ->assertSet('grupoSeleccionado', (string) $grupo->id)
         ->assertSet('asignacionTestId', $asignacion->id)
-        ->assertSee(__('Analysis generated successfully.'));
+        ->assertSee(route('analisis.pdf', $asignacion))
+        ->assertDontSee(__('Analysis generated successfully.'));
 
     expect($component->instance()->analisis)->not->toBeEmpty();
     expect($component->instance()->analisis['totales']['respondieron'] ?? 0)->toBe(1);
 });
 
-it('mantiene el contador al volver a procesar la asignacion', function () {
+it('abre un unico test y mantiene el total de selecciones en el resumen', function () {
     ['profesor' => $profesor, 'grupo' => $grupo, 'asignacion' => $asignacion] = crearAsignacionConAnalisisDisponible();
     $this->actingAs($profesor);
-    Livewire::test(AnalisisSelector::class, [
-        'grupoInicial' => $grupo->id,
-        'asignacionInicial' => $asignacion->id,
-    ])->assertSee(__('audit.participation', ['people' => 1, 'total' => 4, 'choices' => 3]))
-        ->call('procesarAnalisis')->assertSee(__('audit.participation', ['people' => 1, 'total' => 4, 'choices' => 3]))
-        ->call('procesarAnalisis')->assertSee(__('audit.participation', ['people' => 1, 'total' => 4, 'choices' => 3]));
+    $contador = __('analysis_screen.choices').':</span> <strong>3</strong>';
+    Livewire::test(AnalisisSelector::class)
+        ->set('grupoSeleccionado', (string) $grupo->id)
+        ->assertSet('asignacionTestId', $asignacion->id)
+        ->assertSeeHtml($contador)
+        ->call('$refresh')->assertSeeHtml($contador)
+        ->assertDontSee(__('analysis_screen.change'))
+        ->set('grupoSeleccionado', '')
+        ->assertSet('analisis', [])->assertDontSeeHtml('id="analisisTabs"');
     expect($asignacion->respuestas()->count())->toBe(3);
+});
+
+it('distingue dos pases del mismo test y enlaza solo los resultados de la asignacion elegida', function () {
+    ['profesor' => $profesor, 'grupo' => $grupo, 'asignacion' => $primera] = crearAsignacionConAnalisisDisponible();
+    $profesor->grantProfesorAccess();
+    $segunda = $primera->replicate();
+    $segunda->clave_acceso = 'NOVIEMBRE';
+    $segunda->estado = 'pendiente';
+    $segunda->save();
+    $this->actingAs($profesor);
+    $lista = route('analisis', ['grupo' => $grupo->id]);
+    $enlace = fn ($a) => route('analisis', ['grupo' => $grupo->id, 'asignacion' => $a->id]);
+
+    $this->get($lista)->assertOk()->assertSeeText(__('analysis_screen.choose'))
+        ->assertSeeInOrder([$enlace($segunda), $enlace($primera)])
+        ->assertSeeText(__('analysis_screen.respondents', ['people' => 1, 'total' => 4]))
+        ->assertDontSeeHtml('id="analisisTabs"')->assertDontSeeText(__('analysis_screen.choices'));
+    $this->get($enlace($segunda))->assertOk()->assertSeeText(__('analysis_screen.no_answers'))
+        ->assertSee($lista)->assertDontSeeHtml('id="soc-data"')->assertDontSee(route('analisis.pdf', $primera));
+    $this->get($enlace($primera))->assertOk()->assertSeeText(__('analysis_screen.change'))
+        ->assertSee(route('analisis.pdf', $primera))->assertSeeHtml('id="soc-data"')
+        ->assertSeeHtml('id="reciprocity-data"')->assertDontSee(route('analisis.pdf', $segunda));
+    Livewire::test(AnalisisSelector::class)->set('grupoSeleccionado', (string) $grupo->id)
+        ->assertSet('asignacionTestId', null)->assertSet('analisis', [])->assertSee(__('analysis_screen.choose'));
+
+    $respuesta = $primera->respuestas()->firstOrFail()->replicate();
+    $respuesta->asignacion_test_id = $segunda->id;
+    $respuesta->save();
+    $resumen = fn ($n) => __('analysis_screen.choices').':</span> <strong>'.$n.'</strong>';
+    $this->get($lista)->assertSeeText(__('analysis_screen.choose'))->assertDontSeeHtml('id="soc-data"');
+    $this->get($enlace($segunda))->assertSeeHtml($resumen(1))->assertSee(route('analisis.pdf', $segunda));
+    $this->get($enlace($primera))->assertSeeHtml($resumen(3))->assertSee(route('analisis.pdf', $primera));
+});
+
+it('diferencia un grupo sin asignaciones de una unica asignacion sin respuestas', function () {
+    ['profesor' => $profesor, 'grupo' => $grupo, 'asignacion' => $asignacion] = crearAsignacionConAnalisisDisponible();
+    $asignacion->respuestas()->delete();
+    $vacio = $profesor->grupos()->create(['nombre_grupo' => 'Sin asignaciones']);
+    $this->actingAs($profesor);
+    Livewire::test(AnalisisSelector::class, ['grupoInicial' => $grupo->id])
+        ->assertSet('asignacionTestId', $asignacion->id)->assertSee(__('analysis_screen.no_answers'))
+        ->assertDontSeeHtml('id="analisisTabs"')->assertDontSee(route('analisis.pdf', $asignacion))
+        ->set('grupoSeleccionado', (string) $vacio->id)->assertSet('asignacionTestId', null)
+        ->assertSee(__('No test assignments found for this group.'))->assertDontSee(__('analysis_screen.no_answers'));
 });
 
 it('no regenera relaciones al previsualizar analisis en modo admin solo lectura', function () {

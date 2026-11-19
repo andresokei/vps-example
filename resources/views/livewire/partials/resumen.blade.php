@@ -60,6 +60,7 @@ $metrics = [
       <div class="d-flex flex-wrap gap-4" style="font-size:0.875rem;">
         <span><span class="text-muted">{{ __('Students') }}:</span> <strong>{{ $datos['totales']['alumnos'] ?? 0 }}</strong></span>
         <span><span class="text-muted">{{ __('Answered') }}:</span> <strong>{{ $datos['totales']['respondieron'] ?? 0 }}</strong></span>
+        <span><span class="text-muted">{{ __('analysis_screen.choices') }}:</span> <strong>{{ $selecciones }}</strong></span>
         <span><span class="text-muted">{{ __('Relations') }}:</span> <strong>{{ $datos['totales']['relaciones'] ?? 0 }}</strong></span>
         <span><span class="text-muted">{{ __('Preferences') }}:</span> <strong>{{ $datos['totales']['preferencias'] ?? 0 }}</strong></span>
         <span><span class="text-muted">{{ __('Rejections') }}:</span> <strong>{{ $datos['totales']['rechazos'] ?? 0 }}</strong></span>

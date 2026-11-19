@@ -56,22 +56,17 @@ class AnalisisSelector extends Component
 
     public function updatedGrupoSeleccionado(): void
     {
-        $this->resetEstadoAnalisis();
+        $this->asignacionTestId = null;
+        $this->asignaciones = collect();
+        $this->analisis = [];
+        $this->resultadoAnalisis = '';
+        $this->resultadoTipo = 'info';
 
         if (! $this->grupoSeleccionado) {
             return;
         }
 
-        $this->loadAssignmentsForSelectedGroup();
-
-        if ($this->asignaciones->isEmpty()) {
-            $this->resultadoTipo = 'info';
-            $this->resultadoAnalisis = __('No test assignments found for this group.');
-            return;
-        }
-
-        $this->asignacionTestId = $this->defaultAssignmentId();
-        $this->updatedAsignacionTestId();
+        $this->seleccionarAsignacionInicial();
     }
 
     public function updatedAsignacionTestId(): void
@@ -136,6 +131,7 @@ class AnalisisSelector extends Component
     public function render()
     {
         return view('livewire.analisis-selector', [
+            'actual' => $this->asignaciones->firstWhere('id', $this->asignacionTestId),
             'grupos' => $this->grupos,
             'asignaciones' => $this->asignaciones,
             'resultadoAnalisis' => $this->resultadoAnalisis,
@@ -146,40 +142,35 @@ class AnalisisSelector extends Component
 
     private function hydrateInitialSelection($grupoInicial, $asignacionInicial): void
     {
-        $assignment = null;
-
-        if ($asignacionInicial) {
-            $assignment = AsignacionTest::query()
-                ->with('test:id,nombre_test,nombre_test_en')
-                ->withCount('respuestas')
-                ->whereKey((int) $asignacionInicial)
-                ->where('profesor_id', Auth::id())
-                ->first();
+        $groupId = $grupoInicial;
+        if (! $groupId && $asignacionInicial) {
+            $groupId = AsignacionTest::where('profesor_id', Auth::id())
+                ->whereKey($asignacionInicial)->value('grupo_id');
         }
-
-        $groupId = $assignment?->grupo_id ?? ($grupoInicial ? (int) $grupoInicial : null);
 
         if (! $groupId || ! $this->grupos->contains('id', $groupId)) {
             return;
         }
 
         $this->grupoSeleccionado = (string) $groupId;
+        $this->seleccionarAsignacionInicial($asignacionInicial);
+    }
+
+    private function seleccionarAsignacionInicial(?int $solicitada = null): void
+    {
         $this->loadAssignmentsForSelectedGroup();
 
-        if ($this->asignaciones->isEmpty()) {
-            return;
+        if ($solicitada !== null) {
+            $this->asignacionTestId = $this->asignaciones->firstWhere('id', $solicitada)?->id;
+            if ($this->asignacionTestId === null) {
+                $this->resultadoTipo = 'warning';
+                $this->resultadoAnalisis = __('The selected assignment is not valid for this group.');
+                return;
+            }
+        } else {
+            $this->asignacionTestId = $this->asignaciones->count() === 1 ? $this->asignaciones->first()->id : null;
         }
-
-        $selectedAssignment = $assignment
-            && $this->asignaciones->contains('id', $assignment->id)
-                ? $assignment
-                : $this->asignaciones->firstWhere('id', $this->defaultAssignmentId());
-
-        $this->asignacionTestId = $selectedAssignment?->id;
-
-        if (($selectedAssignment->respuestas_count ?? 0) > 0) {
-            $this->procesarAnalisis(app(AnalisisGrupalService::class));
-        }
+        $this->updatedAsignacionTestId();
     }
 
     private function loadAssignmentsForSelectedGroup(): void
@@ -193,14 +184,8 @@ class AnalisisSelector extends Component
             ->where('grupo_id', $this->grupoSeleccionado)
             ->where('profesor_id', Auth::id())
             ->orderByDesc('created_at')
+            ->orderByDesc('id')
             ->get();
-    }
-
-    private function defaultAssignmentId(): ?int
-    {
-        return $this->asignaciones
-            ->first(fn ($asignacion) => (int) ($asignacion->respuestas_count ?? 0) > 0)
-            ?->id ?? $this->asignaciones->first()?->id;
     }
 
     private function cargarResultado(array $full): void
@@ -230,15 +215,6 @@ class AnalisisSelector extends Component
         $this->dispatch('actualizarSociograma', $enrichedSociograma);
         $this->dispatch('actualizarGraficoPreferencias', $full['preferencias']);
         $this->dispatch('actualizarGraficoRechazos', $full['rechazos']);
-
-        $this->resultadoTipo = 'success';
-        $this->resultadoAnalisis = __('Analysis generated successfully.');
-    }
-
-    private function resetEstadoAnalisis(): void
-    {
-        $this->reset(['asignacionTestId', 'asignaciones', 'resultadoAnalisis', 'analisis']);
-        $this->resultadoTipo = 'info';
     }
 
     private function relacionesDesactualizadas(int $asignacionTestId): bool
