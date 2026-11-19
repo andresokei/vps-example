@@ -122,6 +122,7 @@
 
 @include('pdf.grafo', ['graph' => $analisis['sociograma']])
 @include('pdf.matriz', ['matrix' => $analisis['reciprocidad']])
+<div style="page-break-before:always"></div>
 <h2>{{ __('Relations') }}</h2>
 @php
   $names = collect($analisis['sociograma']['nodes'])->pluck('label', 'id');

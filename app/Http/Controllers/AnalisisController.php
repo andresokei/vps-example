@@ -26,7 +26,7 @@ class AnalisisController extends Controller
             'analisis' => $analisis,
             'grupo' => $asignacion->grupo->nombre_grupo,
             'test' => $asignacion->test->localized_nombre_test,
-        ])->setPaper('a4', 'portrait');
+        ])->setPaper('a4', 'landscape');
 
         $filename = 'analisis-' . str($asignacion->grupo->nombre_grupo)->slug() . '-' . $asignacion->id . '.pdf';
 

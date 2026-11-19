@@ -77,6 +77,22 @@ function crearAsignacionConAnalisisDisponible(): array
     return compact('profesor', 'grupo', 'test', 'pregunta', 'asignacion', 'alumnos');
 }
 
+it('permite copiar por separado el enlace, la clave y el acceso completo', function () {
+    ['profesor' => $profesor, 'asignacion' => $asignacion] = crearAsignacionConAnalisisDisponible();
+    $this->actingAs($profesor);
+    $html = Livewire::test(\App\Livewire\AssignedTests::class)
+        ->call('seleccionarAsignacion', $asignacion->id)->html();
+    $dom = new DOMDocument();
+    $dom->loadHTML($html, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
+    $buttons = (new DOMXPath($dom))->query('//button[@data-copy-text]');
+    $values = [];
+    foreach ($buttons as $button) {
+        $values[] = $button->getAttribute('data-copy-text');
+    }
+    $url = route('test.ingresar');
+    expect($values)->toContain($url, $asignacion->clave_acceso, "Enlace: $url\nClave: {$asignacion->clave_acceso}");
+});
+
 it('preselecciona grupo y asignacion al abrir el analisis desde una asignacion concreta', function () {
     ['profesor' => $profesor, 'grupo' => $grupo, 'asignacion' => $asignacion] = crearAsignacionConAnalisisDisponible();
 

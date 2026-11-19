@@ -177,6 +177,11 @@
                 <a href="{{ $asignacionSeleccionada->entry_url }}" target="_blank" class="text-primary">
                   {{ $asignacionSeleccionada->entry_url }}
                 </a>
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        data-copy-text="{{ $asignacionSeleccionada->entry_url }}"
+                        data-copy-label="{{ __('Student link') }}">
+                  <i class="bi bi-link-45deg me-1"></i>{{ __('Copy link only') }}
+                </button>
                 <button type="button"
                         class="btn btn-sm btn-outline-secondary"
                         data-copy-text="{{ $asignacionSeleccionada->share_text }}"
@@ -291,8 +296,11 @@
           area.style.left = '-9999px';
           document.body.appendChild(area);
           area.select();
-          document.execCommand('copy');
-          area.remove();
+          try {
+            if (!document.execCommand('copy')) throw new Error('Copy failed');
+          } finally {
+            area.remove();
+          }
         }
 
         document.addEventListener('click', async function (event) {
