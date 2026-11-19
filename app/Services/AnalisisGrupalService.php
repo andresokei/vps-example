@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\AsignacionTest;
-use App\Models\Estudiante;
 use App\Models\Pregunta;
 use App\Models\Relacion;
 use App\Models\Respuesta;
@@ -67,7 +66,8 @@ class AnalisisGrupalService
             'asignacion_test_id' => $asignacionTestId,
         ]);
 
-        $alumnos = $this->obtenerAlumnosGrupo($grupoId);
+        $assignment = AsignacionTest::where('grupo_id', $grupoId)->findOrFail($asignacionTestId);
+        $alumnos = $assignment->alumnado();
         $idsGrupo = $alumnos->pluck('id');
         $idsGrupoArray = $idsGrupo->all();
 
@@ -85,19 +85,25 @@ class AnalisisGrupalService
             $rel->pluck('alumno_a_id')->unique()->count()
         );
 
-        $dir = $rel->mapWithKeys(fn ($r) => [
-            $r->alumno_a_id . '-' . $r->alumno_b_id => $r->tipo_relacion,
-        ]);
+        $preferences = $rel->where('tipo_relacion', 'preferido')
+            ->mapWithKeys(fn ($edge) => [$edge->alumno_a_id.'-'.$edge->alumno_b_id => true]);
 
-        $links = $rel->map(function ($r) use ($dir) {
-            $recip = $dir[$r->alumno_b_id . '-' . $r->alumno_a_id] ?? null;
+        // Relations summarize each pair; answers retain all the questions behind it.
+        $questionsByEdge = Respuesta::query()->join('preguntas', 'preguntas.id', '=', 'respuestas.pregunta_id')
+            ->where('asignacion_test_id', $asignacionTestId)->whereNotNull('respuesta')
+            ->get(['alumno_id','respuesta','pregunta_id','preguntas.tipo_pregunta'])
+            ->groupBy(fn ($row) => $row->alumno_id.'-'.(int)$row->respuesta.'-'.($row->tipo_pregunta === 'rechazo' ? 'rechazado' : 'preferido'));
 
+        $links = $rel->map(function ($r) use ($preferences, $questionsByEdge) {
+            $key = $r->alumno_a_id.'-'.$r->alumno_b_id.'-'.$r->tipo_relacion;
+            $questions = $questionsByEdge->get($key)?->pluck('pregunta_id')->map(fn ($id) => (int)$id)->unique()->values()->all();
             return [
                 'source' => (int) $r->alumno_a_id,
                 'target' => (int) $r->alumno_b_id,
                 'tipo' => $r->tipo_relacion,
-                'isMatch' => $recip === 'preferido' && $r->tipo_relacion === 'preferido',
+                'isMatch' => $preferences->has($r->alumno_b_id.'-'.$r->alumno_a_id) && $r->tipo_relacion === 'preferido',
                 'pregunta_id' => (int) $r->pregunta_id,
+                'preguntas_ids' => $questions ?: [(int)$r->pregunta_id],
             ];
         })->values();
 
@@ -118,7 +124,7 @@ class AnalisisGrupalService
             ],
         ])->values();
 
-        $preguntas = Pregunta::whereIn('id', $links->pluck('pregunta_id')->filter()->unique()->values())
+        $preguntas = Pregunta::whereIn('id', $links->pluck('preguntas_ids')->flatten()->filter()->unique()->values())
             ->orderBy('texto_pregunta')
             ->get(['id', 'texto_pregunta', 'texto_pregunta_en'])
             ->map(fn ($p) => ['id' => (int) $p->id, 'texto' => $p->localized_texto_pregunta])
@@ -169,18 +175,7 @@ class AnalisisGrupalService
 
     public function cacheKey(int $grupoId, int $asignacionTestId): string
     {
-        return "analisis-grupal:v3:grupo:{$grupoId}:asignacion:{$asignacionTestId}";
-    }
-
-    private function obtenerAlumnosGrupo(int $grupoId): Collection
-    {
-        return Estudiante::whereIn('id', function ($q) use ($grupoId) {
-            $q->select('id_estudiante')
-                ->from('estudiantes_grupos')
-                ->where('id_grupo', $grupoId);
-        })
-            ->orderBy('nombre')
-            ->get();
+        return "analisis-grupal:v4:grupo:{$grupoId}:asignacion:{$asignacionTestId}";
     }
 
     private function prepararSerieBarras(Collection $alumnos, Collection $conteo): array
@@ -209,7 +204,8 @@ class AnalisisGrupalService
         $rech = $rel->where('tipo_relacion', 'rechazado')->values();
 
         $participacion = $n > 0 ? round($respondieron / $n, 4) : 0.0;
-        $density = $n > 1 ? round($m / ($n * ($n - 1)), 4) : 0.0;
+        $directionCount = $rel->map(fn ($edge) => $edge->alumno_a_id.'-'.$edge->alumno_b_id)->unique()->count();
+        $density = $n > 1 ? round($directionCount / ($n * ($n - 1)), 4) : 0.0;
 
         $prefKeys = $pref->map(fn ($r) => $r->alumno_a_id . '-' . $r->alumno_b_id)->flip();
         $reciprocalPrefEdges = 0;

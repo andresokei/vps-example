@@ -629,26 +629,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Lógica para el botón "Seleccionar todas"
-  const selectAllBtn = document.getElementById('select-all-preguntas');
-  if (selectAllBtn) {
-    selectAllBtn.addEventListener('click', function() {
-      const checkboxes = document.querySelectorAll('.question-check');
-      // Verificar si todos están marcados
-      const allChecked = [...checkboxes].every(cb => cb.checked);
-      
-      // Marcar o desmarcar todos según corresponda
-      checkboxes.forEach(cb => {
-        cb.checked = !allChecked;
-      });
-      
-      // Llamar a la función que aplica los filtros
-      if (typeof applyFilters === 'function') {
-        applyFilters();
-      }
-    });
-  }
-  
   // Efecto de carga suave para el gráfico
   const sociograma = document.getElementById('sociograma');
   if (sociograma) {

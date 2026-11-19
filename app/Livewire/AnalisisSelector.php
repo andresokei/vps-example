@@ -186,7 +186,10 @@ class AnalisisSelector extends Component
     {
         $this->asignaciones = AsignacionTest::query()
             ->with('test:id,nombre_test,nombre_test_en')
-            ->withCount('respuestas')
+            ->with('grupo.estudiantes:id')
+            ->withCount(['respuestas', 'respuestas as selecciones_count' => fn ($q) => $q->whereNotNull('respuesta')])
+            ->addSelect(['participantes_count' => Respuesta::selectRaw('count(distinct alumno_id)')
+                ->whereColumn('respuestas.asignacion_test_id', 'asignaciones_test.id')])
             ->where('grupo_id', $this->grupoSeleccionado)
             ->where('profesor_id', Auth::id())
             ->orderByDesc('created_at')

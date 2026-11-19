@@ -183,9 +183,14 @@
             </div>
         `).join('');
 
+        const escapeText = name => {
+            const span = document.createElement('span');
+            span.textContent = name;
+            return span.innerHTML;
+        };
         const listHtml = (items, emptyText, className) => (
             items.length
-                ? items.map(name => `<span class="badge ${className} me-1 mb-1 fw-normal">${name}</span>`).join('')
+                ? items.map(name => `<span class="badge ${className} me-1 mb-1 fw-normal">${escapeText(name)}</span>`).join('')
                 : `<span class="text-muted" style="font-size:0.8rem;">${emptyText}</span>`
         );
 
@@ -301,52 +306,46 @@
         if (!wrapper) return;
 
         const selAlumnos = wrapper.querySelector('#soc-select');
-        const preguntasContainer = wrapper.querySelector('#soc-preguntas-filter-options');
         const toggleMatch = wrapper.querySelector('#soc-onlyMatch');
         const toggleIsol = wrapper.querySelector('#soc-markIsol');
         const resetButton = wrapper.querySelector('#soc-reset');
-        const selectAllPreguntasButton = wrapper.querySelector('#select-all-preguntas');
 
-        if (!selAlumnos || !preguntasContainer || !toggleMatch || !toggleIsol || !resetButton) return;
+        if (!selAlumnos || !toggleMatch || !toggleIsol || !resetButton) return;
 
         selAlumnos.innerHTML = '';
         [...state.origNodes]
             .sort((a, b) => a.label.localeCompare(b.label))
-            .forEach(node => selAlumnos.insertAdjacentHTML('beforeend', `<option value="${node.id}">${node.label}</option>`));
+            .forEach(node => selAlumnos.add(new Option(node.label, String(node.id))));
 
         selAlumnos.selectedIndex = -1;
 
         if (wrapper.dataset.listenersReady) return;
         wrapper.dataset.listenersReady = '1';
 
-        selAlumnos.addEventListener('change', analysis.applyFilters);
-        preguntasContainer.querySelectorAll('input[type="checkbox"]')
-            .forEach(cb => cb.addEventListener('change', analysis.applyFilters));
-
-        if (selectAllPreguntasButton) {
-            selectAllPreguntasButton.addEventListener('click', event => {
+        wrapper.addEventListener('change', event => {
+            if (event.target.matches('#soc-select, #soc-onlyMatch, #soc-markIsol, #soc-preguntas-filter-options input[type="checkbox"]')) {
+                analysis.applyFilters();
+            }
+        });
+        wrapper.addEventListener('click', event => {
+            if (event.target.closest('#select-all-preguntas')) {
                 event.preventDefault();
-                const checkboxes = [...preguntasContainer.querySelectorAll('input[type="checkbox"]')];
+                const checkboxes = [...wrapper.querySelectorAll('#soc-preguntas-filter-options input[type="checkbox"]')];
                 const allChecked = checkboxes.every(cb => cb.checked);
                 checkboxes.forEach(cb => {
                     cb.checked = !allChecked;
                 });
                 analysis.applyFilters();
-            });
-        }
-
-        toggleMatch.addEventListener('change', analysis.applyFilters);
-        toggleIsol.addEventListener('change', analysis.applyFilters);
-
-        resetButton.addEventListener('click', () => {
-            [...selAlumnos.options].forEach(option => {
+            }
+            if (!event.target.closest('#soc-reset')) return;
+            [...wrapper.querySelector('#soc-select').options].forEach(option => {
                 option.selected = false;
             });
-            preguntasContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            wrapper.querySelectorAll('#soc-preguntas-filter-options input[type="checkbox"]').forEach(cb => {
                 cb.checked = false;
             });
-            toggleMatch.checked = false;
-            toggleIsol.checked = true;
+            wrapper.querySelector('#soc-onlyMatch').checked = false;
+            wrapper.querySelector('#soc-markIsol').checked = true;
             analysis.applyFilters();
         });
     };
@@ -382,11 +381,15 @@
             if (cb.id !== 'select-all-preguntas' && cb.checked) chosenQuestions.push(+cb.value);
         });
 
-        const links = state.origLinks.filter(link =>
-            (!onlyMatch || link.isMatch) &&
-            (chosenStudents.length === 0 || chosenStudents.includes(link.source) || chosenStudents.includes(link.target)) &&
-            (chosenQuestions.length === 0 || chosenQuestions.includes(link.pregunta_id))
-        );
+        const matchesQuestion = link => !chosenQuestions.length ||
+            (link.preguntas_ids ?? [link.pregunta_id]).some(id => chosenQuestions.includes(id));
+        const byQuestion = state.origLinks.filter(matchesQuestion);
+        const preferences = new Set(byQuestion.filter(link => link.tipo === 'preferido')
+            .map(link => link.source + '-' + link.target));
+        const links = byQuestion.map(link => ({
+            ...link, isMatch: link.tipo === 'preferido' && preferences.has(link.target + '-' + link.source),
+        })).filter(link => (!onlyMatch || link.isMatch) &&
+            (!chosenStudents.length || chosenStudents.includes(link.source) || chosenStudents.includes(link.target)));
 
         const visibleIds = new Set();
         links.forEach(link => {
@@ -395,7 +398,7 @@
         });
         chosenStudents.forEach(id => visibleIds.add(id));
 
-        const allQuestions = state.origLinks.every(link => chosenQuestions.includes(link.pregunta_id));
+        const allQuestions = state.origPreguntas.every(question => chosenQuestions.includes(question.id));
         const showWholeGroup = !onlyMatch && !chosenStudents.length && (!chosenQuestions.length || allQuestions);
         analysis.drawSociograma(showWholeGroup ? state.origNodes : state.origNodes.filter(node => visibleIds.has(node.id)), links);
     };
@@ -424,7 +427,6 @@
                 ? 'isolated'
                 : 'default',
             value: 10 + (node.metricas?.preferencias_recibidas ?? 0) + (node.metricas?.rechazos_recibidos ?? 0),
-            title: node.label,
             metricas: node.metricas,
         })));
 
@@ -476,11 +478,12 @@
         let tip = null;
         let timer = null;
 
-        const showTooltip = (x, y, html) => {
+        const showTooltip = (x, y, text) => {
             tip?.remove();
             tip = document.createElement('div');
             tip.className = 'sociograma-tooltip';
-            tip.innerHTML = html;
+            tip.textContent = text;
+            tip.style.whiteSpace = 'pre-line';
             tip.style.top = `${y + 10}px`;
             tip.style.left = `${x + 10}px`;
             document.body.appendChild(tip);
@@ -499,8 +502,8 @@
                 showTooltip(
                     event.clientX,
                     event.clientY,
-                    `<strong>${hoveredNode.title}</strong><br>
-                     Pref. recibidas: ${hoveredNode.metricas?.preferencias_recibidas ?? 0}<br>
+                    `${hoveredNode.label}
+                     Pref. recibidas: ${hoveredNode.metricas?.preferencias_recibidas ?? 0}
                      Rech. recibidos: ${hoveredNode.metricas?.rechazos_recibidos ?? 0}`
                 );
             }, 80);
@@ -511,8 +514,8 @@
             clearTimeout(timer);
             timer = setTimeout(() => {
                 const hoveredEdge = edges.get(edge);
-                const fromName = nodes.get(hoveredEdge.from).title;
-                const toName = nodes.get(hoveredEdge.to).title;
+                const fromName = nodes.get(hoveredEdge.from).label;
+                const toName = nodes.get(hoveredEdge.to).label;
                 const relationText = hoveredEdge.isMatch
                     ? 'tiene match mutuo con'
                     : hoveredEdge.tipo === 'preferido'

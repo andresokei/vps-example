@@ -100,9 +100,9 @@ it('mantiene el contador al volver a procesar la asignacion', function () {
     Livewire::test(AnalisisSelector::class, [
         'grupoInicial' => $grupo->id,
         'asignacionInicial' => $asignacion->id,
-    ])->assertSee('3 resp.')
-        ->call('procesarAnalisis')->assertSee('3 resp.')
-        ->call('procesarAnalisis')->assertSee('3 resp.');
+    ])->assertSee(__('audit.participation', ['people' => 1, 'total' => 4, 'choices' => 3]))
+        ->call('procesarAnalisis')->assertSee(__('audit.participation', ['people' => 1, 'total' => 4, 'choices' => 3]))
+        ->call('procesarAnalisis')->assertSee(__('audit.participation', ['people' => 1, 'total' => 4, 'choices' => 3]));
     expect($asignacion->respuestas()->count())->toBe(3);
 });
 
@@ -121,4 +121,28 @@ it('no regenera relaciones al previsualizar analisis en modo admin solo lectura'
         ->assertSee(__('This analysis needs to be regenerated before it can be previewed in read-only admin mode.'));
 
     expect(Relacion::where('asignacion_test_id', $asignacion->id)->count())->toBe(0);
+});
+
+it('conserva las preguntas repetidas y cuenta una vez cada par dirigido en la densidad', function () {
+    ['grupo' => $grupo, 'test' => $test, 'asignacion' => $asignacion, 'alumnos' => $alumnos] = crearAsignacionConAnalisisDisponible();
+    $original = $asignacion->respuestas()->where('orden_preferencia', 1)->firstOrFail();
+    foreach (['preferencia', 'rechazo'] as $tipo) {
+        $pregunta = $test->preguntas()->create(['tipo_pregunta' => $tipo, 'texto_pregunta' => 'Otra pregunta']);
+        $respuesta = $original->replicate();
+        $respuesta->pregunta_id = $pregunta->id;
+        $respuesta->tipo_relacion = $tipo;
+        $respuesta->save();
+    }
+    $reciproca = $original->replicate();
+    $reciproca->alumno_id = $alumnos[1]->id;
+    $reciproca->respuesta = (string) $alumnos[0]->id;
+    $reciproca->save();
+
+    Relacion::generarDesdeRespuestas($asignacion->id);
+    $analisis = app(\App\Services\AnalisisGrupalService::class)->generar($grupo->id, $asignacion->id);
+    $enlace = collect($analisis['sociograma']['links'])->where('source', $alumnos[0]->id)
+        ->where('target', $alumnos[1]->id)->firstWhere('tipo', 'preferido');
+    expect($enlace['preguntas_ids'])->toHaveCount(2)
+        ->and($enlace['isMatch'])->toBeTrue()
+        ->and(abs($analisis['density'] - 4 / 12))->toBeLessThan(0.0001);
 });

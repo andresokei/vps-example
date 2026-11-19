@@ -7,6 +7,7 @@ use App\Models\Pregunta;
 use App\Models\Test;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class TestManager extends Component
@@ -153,6 +154,28 @@ class TestManager extends Component
         session()->flash('message', __('Test updated successfully.'));
     }
 
+    public function duplicarTest(int $id): void
+    {
+        $copy = DB::transaction(function () use ($id) {
+            $original = Test::where('id_profesor', Auth::id())->lockForUpdate()->findOrFail($id);
+            $copy = $original->replicate();
+            for ($number = 1; ; $number++) {
+                $name = mb_substr($original->nombre_test, 0, 225).' ('.__('audit.copy').' '.$number.')';
+                if (!Test::where('id_profesor', Auth::id())->where('nombre_test', $name)->exists()) break;
+            }
+            $copy->nombre_test = $name;
+            $copy->nombre_test_en = $original->nombre_test_en
+                ? mb_substr($original->nombre_test_en, 0, 225).' (copy '.$number.')' : null;
+            $copy->save();
+            foreach ($original->preguntas as $question) {
+                $copy->preguntas()->save($question->replicate());
+            }
+            return $copy;
+        });
+        $this->loadTests();
+        $this->seleccionarTest($copy->id);
+    }
+
     public function eliminarTest(int $testId): void
     {
         $test = Test::where('id', $testId)
@@ -244,22 +267,20 @@ class TestManager extends Component
 
     public function eliminarPregunta(int $preguntaId): void
     {
-        $pregunta = Pregunta::where('id', $preguntaId)
-            ->where('test_id', $this->selectedTestId)
-            ->firstOrFail();
-
-        // Verificar ownership a través del test
-        Test::where('id', $this->selectedTestId)
-            ->where('id_profesor', Auth::id())
-            ->firstOrFail();
-
-        $ordenEliminada = $pregunta->orden;
-        $pregunta->delete();
-
-        // Reordenar las siguientes
-        Pregunta::where('test_id', $this->selectedTestId)
-            ->where('orden', '>', $ordenEliminada)
-            ->decrement('orden');
+        $deleted = DB::transaction(function () use ($preguntaId) {
+            $test = Test::where('id_profesor', Auth::id())->lockForUpdate()->findOrFail($this->selectedTestId);
+            $pregunta = $test->preguntas()->lockForUpdate()->findOrFail($preguntaId);
+            if (\App\Models\Respuesta::where('pregunta_id', $preguntaId)->exists()) {
+                return false;
+            }
+            $pregunta->delete();
+            Pregunta::where('test_id', $test->id)->where('orden', '>', $pregunta->orden)->decrement('orden');
+            return true;
+        });
+        if (!$deleted) {
+            session()->flash('error', __('audit.question_used'));
+            return;
+        }
 
         $this->loadPreguntas();
         $this->loadTests();

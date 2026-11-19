@@ -36,7 +36,7 @@ class TestController extends Controller
         if (
             ! $asignacion ||
             ! $asignacion->test ||
-            $asignacion->grupo?->estudiantes->isEmpty()
+            $asignacion->alumnado()->isEmpty()
         ) {
             return back()->withErrors([
                 'clave_acceso' => __('Invalid access key or test unavailable.'),
@@ -76,9 +76,7 @@ class TestController extends Controller
             ]);
         }
 
-        $estudiantes = $asignacion->grupo->estudiantes()
-            ->orderBy('nombre')
-            ->get(['estudiantes.id', 'nombre']);
+        $estudiantes = $asignacion->alumnado();
 
         if ($estudiantes->isEmpty()) {
             $this->forgetAssignmentAccess($request);
@@ -137,7 +135,7 @@ class TestController extends Controller
             ]);
         }
 
-        $studentIds = $asignacion->grupo->estudiantes
+        $studentIds = $asignacion->alumnado()
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->values()
@@ -222,8 +220,16 @@ class TestController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($asignacion, $studentId, $validated, $selectionCount, $teacher) {
+            DB::transaction(function () use ($asignacion, $studentId, $validated, $selectionCount, $teacher, $studentIds) {
                 $locked = AsignacionTest::lockForUpdate()->findOrFail($asignacion->id);
+                $roster = $locked->alumnado()->modelKeys();
+                if (array_diff($studentIds, $roster) || array_diff($roster, $studentIds)) {
+                    throw ValidationException::withMessages(['estudiante_id' => __('audit.roster_changed')]);
+                }
+                if ($locked->alumnado_ids === null) {
+                    $locked->alumnado_ids = $roster;
+                    $locked->save();
+                }
                 if ($teacher) {
                     $locked->respuestas()->where('alumno_id', $studentId)->delete();
                 } else {
@@ -304,7 +310,7 @@ class TestController extends Controller
     public function borrarRespuesta(Request $request, AsignacionTest $asignacion, int $alumno)
     {
         abort_unless((int) $asignacion->profesor_id === (int) $request->user()->id, 403);
-        abort_unless($asignacion->grupo->estudiantes()->whereKey($alumno)->exists(), 404);
+        abort_unless($asignacion->alumnado()->contains('id', $alumno), 404);
         DB::transaction(function () use ($asignacion, $alumno) {
             $locked = AsignacionTest::lockForUpdate()->findOrFail($asignacion->id);
             $locked->respuestas()->where('alumno_id', $alumno)->delete();

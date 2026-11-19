@@ -28,7 +28,7 @@
             <option value="{{ $asignacion->id }}">
               {{ optional($asignacion->test)->localized_nombre_test ?: 'Test' }}
               · {{ $asignacion->created_at->format('d/m/Y H:i') }}
-              · {{ $asignacion->respuestas_count ?? 0 }} resp.
+              · {{ __('audit.participation', ['people' => $asignacion->participantes_count, 'total' => count($asignacion->alumnado_ids ?? $asignacion->grupo->estudiantes), 'choices' => $asignacion->selecciones_count]) }}
             </option>
           @endforeach
         </select>

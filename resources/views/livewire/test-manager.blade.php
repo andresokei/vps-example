@@ -40,6 +40,8 @@
               </div>
               <div class="btn-group btn-group-sm flex-shrink-0" @click.stop>
                 <button class="btn btn-outline-secondary"
+                        wire:click.stop="duplicarTest({{ $test->id }})" title="{{ __('audit.duplicate') }}" aria-label="{{ __('audit.duplicate') }}"><i class="bi bi-files"></i></button>
+                <button class="btn btn-outline-secondary"
                         wire:click.stop="abrirModalEditar({{ $test->id }})"
                         title="{{ __('Edit test') }}">
                   <i class="bi bi-pencil"></i>

@@ -102,12 +102,11 @@ class GroupManager extends Component
         $path = $this->csvFile->getRealPath();
         $file = fopen($path, 'r');
         $rows = 0;
-        $addedStudents = 0;
+        $names = [];
 
         while (($data = fgetcsv($file)) !== false && $rows < 1000) {
-            if (! empty($data[0])) {
-                $this->addStudentToGroup(trim($data[0]));
-                $addedStudents++;
+            if (trim($data[0] ?? '') !== '') {
+                $names[] = trim($data[0]);
             }
 
             $rows++;
@@ -115,10 +114,7 @@ class GroupManager extends Component
 
         fclose($file);
         $this->reset('csvFile');
-        $this->loadGroupStudents();
-        $this->dispatch('onboarding-progress-updated');
-
-        session()->flash('message', __(':count students added from CSV.', ['count' => $addedStudents]));
+        $this->importNames($names);
     }
 
     public function addStudentFromList()
@@ -130,43 +126,34 @@ class GroupManager extends Component
         }
 
         $names = array_filter(array_map('trim', explode(',', $this->studentNames)));
-        $addedStudents = 0;
-
-        foreach ($names as $name) {
-            $this->addStudentToGroup($name);
-            $addedStudents++;
-        }
-
-        $this->loadGroupStudents();
         $this->reset('studentNames');
-        $this->dispatch('onboarding-progress-updated');
-
-        session()->flash('message', __(':count students added.', ['count' => $addedStudents]));
+        $this->importNames($names);
     }
 
-    private function addStudentToGroup($studentName)
+    private function importNames(array $names): void
     {
-        DB::transaction(function () use ($studentName) {
+        $addedStudents = 0;
+        foreach ($names as $name) {
+            if ($this->addStudentToGroup($name)) $addedStudents++;
+        }
+        $this->loadGroupStudents();
+        $this->dispatch('onboarding-progress-updated');
+
+        $message = __('audit.import', ['added' => $addedStudents, 'existing' => count($names) - $addedStudents]);
+        session()->flash('message', $message.($addedStudents < count($names) ? ' '.__('audit.homonyms') : ''));
+    }
+
+    private function addStudentToGroup($studentName): bool
+    {
+        return DB::transaction(function () use ($studentName) {
             $group = Grupo::where('id', $this->selectedGroup)
                 ->where('id_profesor', Auth::id())
-                ->firstOrFail();
+                ->lockForUpdate()->firstOrFail();
 
-            $studentName = trim($studentName);
-            if ($studentName === '') {
-                return;
-            }
-
-            $student = $group->estudiantes()
-                ->where('nombre', $studentName)
-                ->first();
-
-            if (! $student) {
-                $student = Estudiante::create(['nombre' => $studentName]);
-            }
-
-            if (! $group->estudiantes()->where('id_estudiante', $student->id)->exists()) {
-                $group->estudiantes()->attach($student->id);
-            }
+            if ($group->estudiantes()->where('nombre', $studentName)->exists()) return false;
+            $student = Estudiante::create(['nombre' => $studentName]);
+            $group->estudiantes()->attach($student->id);
+            return true;
         });
     }
 

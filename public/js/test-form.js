@@ -10,7 +10,7 @@
     }
 
     function getQuestionBlocks(form) {
-        return Array.from(form.querySelectorAll('[data-question-id]'));
+        return Array.from(form.querySelectorAll('.test-form__question[data-question-id]'));
     }
 
     function getUniqueSelections(values, maxSelections) {
@@ -46,7 +46,11 @@
         };
 
         container.className = `public-alert public-alert--${type}`;
-        container.innerHTML = `<i class="fas ${iconMap[type] ?? iconMap.danger}"></i><span>${message}</span>`;
+        const icon = document.createElement('i');
+        icon.className = 'fas ' + (iconMap[type] ?? iconMap.danger);
+        const label = document.createElement('span');
+        label.textContent = message;
+        container.replaceChildren(icon, label);
         container.hidden = false;
     }
 
@@ -86,20 +90,29 @@
 
             if (uniqueSelections.length === 0) {
                 const emptySelection = form?.dataset.msgEmptySelection ?? 'No one selected yet.';
-                list.innerHTML = `<span class="test-form__selection-empty">${emptySelection}</span>`;
+                const hint = document.createElement('span');
+                hint.className = 'test-form__selection-empty';
+                hint.textContent = emptySelection;
+                list.appendChild(hint);
             } else {
                 uniqueSelections.forEach((studentId, index) => {
                     const choice = block.querySelector(`[data-student-choice][data-student-id="${studentId}"]`);
                     const studentFallback = form?.dataset.msgStudentFallback ?? 'Student';
                     const name = choice?.dataset.studentName ?? `${studentFallback} ${studentId}`;
 
-                    list.insertAdjacentHTML(
-                        'beforeend',
-                        `<button type="button" class="selected-student-item" data-selected-chip data-question-id="${questionId}" data-student-id="${studentId}">
-                            <span class="order">${index + 1}</span>
-                            <span>${name}</span>
-                        </button>`
-                    );
+                    const chip = document.createElement('button');
+                    chip.type = 'button';
+                    chip.className = 'selected-student-item';
+                    chip.dataset.selectedChip = '';
+                    chip.dataset.questionId = questionId;
+                    chip.dataset.studentId = studentId;
+                    const order = document.createElement('span');
+                    order.className = 'order';
+                    order.textContent = String(index + 1);
+                    const label = document.createElement('span');
+                    label.textContent = name;
+                    chip.append(order, label);
+                    list.appendChild(chip);
                 });
             }
         }

@@ -19,6 +19,16 @@ class AsignacionTest extends Model
         'estado',
     ];
 
+    protected $casts = ['alumnado_ids' => 'array'];
+
+    public function alumnado(): \Illuminate\Database\Eloquent\Collection
+    {
+        if ($this->alumnado_ids === null) {
+            return $this->grupo->estudiantes->sortBy('nombre')->values();
+        }
+        return Estudiante::whereKey($this->alumnado_ids)->orderBy('nombre')->orderBy('id')->get();
+    }
+
     public $timestamps = true;
 
 
@@ -51,7 +61,7 @@ class AsignacionTest extends Model
     public function recalcularEstado(): void
     {
         // nº alumnos del grupo
-        $totalAlumnos = $this->grupo->estudiantes()->count();
+        $totalAlumnos = $this->alumnado()->count();
 
         // nº alumnos que ya enviaron (distinct por alumno)
         $respondidos  = $this->respuestas()

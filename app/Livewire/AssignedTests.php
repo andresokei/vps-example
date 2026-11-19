@@ -163,10 +163,8 @@ class AssignedTests extends Component
 
     private function calculateProgress(AsignacionTest $asignacion, bool $withPendingStudents = false): array
     {
-        $studentIds = $asignacion->grupo?->estudiantes
-            ?->pluck('id')
-            ->map(fn ($id) => (int) $id)
-            ->all() ?? [];
+        $students = $asignacion->alumnado();
+        $studentIds = $students->modelKeys();
 
         $respondedIds = $asignacion->respuestas()
             ->distinct('alumno_id')
@@ -181,9 +179,9 @@ class AssignedTests extends Component
             return [$respondieron, $total];
         }
 
-        $pendingStudents = $asignacion->grupo?->estudiantes
-            ?->reject(fn ($student) => in_array((int) $student->id, $respondedIds, true))
-            ->values() ?? collect();
+        $pendingStudents = $students
+            ->reject(fn ($student) => in_array((int) $student->id, $respondedIds, true))
+            ->values();
 
         return [$respondieron, $total, $pendingStudents];
     }
