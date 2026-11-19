@@ -2,24 +2,20 @@
 
 namespace App\Livewire;
 
-use App\Models\Estudiante;
+use App\Livewire\Concerns\ManagesGroupStudents;
 use App\Models\Grupo;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 
 class GroupManager extends Component
 {
-    use WithFileUploads;
+    use ManagesGroupStudents;
 
     public $groupName;
     public $groups;
     public $selectedGroup = null;
-    public $studentNames = '';
-    public $csvFile;
-    public $groupStudents = [];
     public $groupToDelete = null;
 
     protected function rules()
@@ -31,8 +27,6 @@ class GroupManager extends Component
                 'max:255',
                 Rule::unique('grupos', 'nombre_grupo')->where('id_profesor', Auth::id()),
             ],
-            'studentNames' => ['nullable', 'string', 'max:500', 'regex:/^[\pL\s,]+$/u'],
-            'csvFile' => ['nullable', 'file', 'mimes:csv,txt', 'max:2048'],
         ];
     }
 
@@ -59,18 +53,9 @@ class GroupManager extends Component
         $this->dispatch('openModal');
     }
 
-    public function loadGroupStudents()
+    protected function rosterGroupId(): ?int
     {
-        if (! $this->selectedGroup) {
-            $this->groupStudents = [];
-            return;
-        }
-
-        $group = Grupo::where('id', $this->selectedGroup)
-            ->where('id_profesor', Auth::id())
-            ->first();
-
-        $this->groupStudents = $group ? $group->estudiantes : [];
+        return $this->selectedGroup;
     }
 
     public function closeModal()
@@ -93,84 +78,6 @@ class GroupManager extends Component
         $this->loadGroups();
         $this->dispatch('refreshAssignedTests');
         $this->dispatch('onboarding-progress-updated');
-    }
-
-    public function uploadCSV()
-    {
-        $this->validateOnly('csvFile');
-
-        $path = $this->csvFile->getRealPath();
-        $file = fopen($path, 'r');
-        $rows = 0;
-        $names = [];
-
-        while (($data = fgetcsv($file)) !== false && $rows < 1000) {
-            if (trim($data[0] ?? '') !== '') {
-                $names[] = trim($data[0]);
-            }
-
-            $rows++;
-        }
-
-        fclose($file);
-        $this->reset('csvFile');
-        $this->importNames($names);
-    }
-
-    public function addStudentFromList()
-    {
-        $this->validateOnly('studentNames');
-
-        if (! $this->selectedGroup) {
-            return;
-        }
-
-        $names = array_filter(array_map('trim', explode(',', $this->studentNames)));
-        $this->reset('studentNames');
-        $this->importNames($names);
-    }
-
-    private function importNames(array $names): void
-    {
-        $addedStudents = 0;
-        foreach ($names as $name) {
-            if ($this->addStudentToGroup($name)) $addedStudents++;
-        }
-        $this->loadGroupStudents();
-        $this->dispatch('onboarding-progress-updated');
-
-        $message = __('audit.import', ['added' => $addedStudents, 'existing' => count($names) - $addedStudents]);
-        session()->flash('message', $message.($addedStudents < count($names) ? ' '.__('audit.homonyms') : ''));
-    }
-
-    private function addStudentToGroup($studentName): bool
-    {
-        return DB::transaction(function () use ($studentName) {
-            $group = Grupo::where('id', $this->selectedGroup)
-                ->where('id_profesor', Auth::id())
-                ->lockForUpdate()->firstOrFail();
-
-            if ($group->estudiantes()->where('nombre', $studentName)->exists()) return false;
-            $student = Estudiante::create(['nombre' => $studentName]);
-            $group->estudiantes()->attach($student->id);
-            return true;
-        });
-    }
-
-    public function removeStudentFromGroup($studentId)
-    {
-        if (! $this->selectedGroup) {
-            return;
-        }
-
-        $group = Grupo::where('id', $this->selectedGroup)
-            ->where('id_profesor', Auth::id())
-            ->firstOrFail();
-
-        $group->estudiantes()->detach($studentId);
-        $this->loadGroupStudents();
-
-        session()->flash('message', __('Student removed from group.'));
     }
 
     public function deleteGroup($groupId)

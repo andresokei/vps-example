@@ -2,43 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Grupo;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class GrupoController extends Controller
 {
-    // Listar los grupos del profesor
-    public function index()
+    public function index(Request $request)
     {
-        $grupos = Grupo::where('id_profesor', Auth::user()->id)->get();  // Solo los grupos del profesor autenticado
+        $grupos = $request->user()->grupos()->withCount('estudiantes')->orderBy('nombre_grupo')->get();
+
         return view('grupos.index', compact('grupos'));
     }
 
-    // Mostrar el formulario para crear un grupo
     public function create()
     {
-        $estudiantes = Auth::user()->grupos->flatMap->estudiantes;  // Obtener estudiantes de los grupos del profesor autenticado
-        return view('grupos.create', compact('estudiantes'));
+        return view('grupos.create');
     }
-    
 
-    // Guardar un nuevo grupo
     public function store(Request $request)
     {
-        DB::transaction(function () use ($request) {
-            $grupo = Grupo::create([
-                'nombre_grupo' => $request->nombre_grupo,
-                'id_profesor' => Auth::user()->id,
-            ]);
+        $user = $request->user();
+        $data = $request->validate([
+            'nombre_grupo' => ['required', 'string', 'max:255', Rule::unique('grupos')->where('id_profesor', $user->id)],
+            'estudiantes' => ['nullable', 'array'],
+            'estudiantes.*' => ['integer', 'distinct', Rule::exists('estudiantes_grupos', 'id_estudiante')
+                ->where(fn ($query) => $query->whereIn('id_grupo', $user->grupos()->select('id')))],
+        ]);
 
-            // Asignar estudiantes al grupo
-            $grupo->estudiantes()->attach($request->estudiantes);
+        $grupo = DB::transaction(function () use ($user, $data) {
+            $grupo = $user->grupos()->create(['nombre_grupo' => $data['nombre_grupo']]);
+            $grupo->estudiantes()->attach($data['estudiantes'] ?? []);
+            return $grupo;
         });
 
-        return redirect()->route('grupos.index');
+        return redirect()->route('grupos.show', $grupo)->with('message', __('Group created successfully.'));
+    }
+
+    public function show(Request $request, int $grupo)
+    {
+        $grupo = $request->user()->grupos()->findOrFail($grupo);
+
+        return view('grupos.show', compact('grupo'));
     }
 }
-

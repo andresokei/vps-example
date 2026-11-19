@@ -26,6 +26,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/grupos', [GrupoController::class, 'index'])->name('grupos.index');
     Route::get('/grupos/create', [GrupoController::class, 'create'])->name('grupos.create');
     Route::post('/grupos', [GrupoController::class, 'store'])->name('grupos.store');
+    Route::get('/grupos/{grupo}', [GrupoController::class, 'show'])->whereNumber('grupo')->name('grupos.show');
 
     Route::view('dashboard', 'dashboard')
         ->middleware(['verified'])

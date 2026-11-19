@@ -22,7 +22,7 @@
   <ul class="list-unstyled mb-0">
     @forelse ($groups as $group)
       <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
-        <span class="fw-medium">{{ $group->nombre_grupo }}</span>
+        <a class="fw-medium" href="{{ route('grupos.show', $group) }}">{{ $group->nombre_grupo }}</a>
         <div class="btn-group btn-group-sm">
           <button class="btn btn-outline-secondary"
                   wire:click.prevent="openModal({{ $group->id }})"
@@ -58,90 +58,7 @@
         </div>
 
         <div class="modal-body">
-          <ul class="nav nav-tabs mb-4" id="addStudentsTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link"
-                      id="csv-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#csv"
-                      type="button"
-                      role="tab">
-                {{ __('Import CSV') }}
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active"
-                      id="manual-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#manual"
-                      type="button"
-                      role="tab">
-                {{ __('Add manually') }}
-              </button>
-            </li>
-          </ul>
-
-          <div class="tab-content">
-            <div class="tab-pane fade" id="csv" role="tabpanel">
-              <div class="mb-3">
-                <label for="csvFileInput" class="form-label">{{ __('Select CSV file') }}</label>
-                <input type="file"
-                       class="form-control"
-                       id="csvFileInput"
-                       wire:model="csvFile">
-                <div class="form-text">{{ __('Format: one name per line.') }}</div>
-              </div>
-              @error('csvFile')
-                <div class="text-danger small mb-2">
-                  <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
-                </div>
-              @enderror
-              <div class="d-grid">
-                <button class="btn btn-primary"
-                        wire:click="uploadCSV"
-                        wire:loading.attr="disabled">
-                  <span wire:loading.remove wire:target="uploadCSV">
-                    <i class="bi bi-upload me-1"></i> {{ __('Import students') }}
-                  </span>
-                  <span wire:loading wire:target="uploadCSV">
-                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                    {{ __('Importing...') }}
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            <div class="tab-pane fade show active" id="manual" role="tabpanel">
-              <form wire:submit.prevent="addStudentFromList">
-                <div class="mb-3">
-                  <label for="studentNames" class="form-label">{{ __('Names separated by commas') }}</label>
-                  <textarea wire:model="studentNames"
-                            class="form-control"
-                            id="studentNames"
-                            rows="3"
-                            placeholder="{{ __('E.g.: Juan Perez, Maria Garcia') }}"></textarea>
-                  @error('studentNames')
-                    <div class="text-danger small mt-1">
-                      <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
-                    </div>
-                  @enderror
-                </div>
-                <div class="d-grid">
-                  <button type="submit"
-                          class="btn btn-primary"
-                          wire:loading.attr="disabled">
-                    <span wire:loading.remove wire:target="addStudentFromList">
-                      <i class="bi bi-plus-lg me-1"></i> {{ __('Add students to group') }}
-                    </span>
-                    <span wire:loading wire:target="addStudentFromList">
-                      <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                      {{ __('Adding...') }}
-                    </span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+          @include('livewire.partials.group-import')
 
           <div class="mt-4 pt-3 border-top">
             <div class="d-flex justify-content-between align-items-center mb-3">
