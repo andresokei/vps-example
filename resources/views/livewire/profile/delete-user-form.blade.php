@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Actions\Logout;
+use App\Services\DeleteUserAccountService;
 use Illuminate\Support\Facades\Auth;
 
 use function Livewire\Volt\rules;
@@ -13,7 +14,9 @@ rules(['password' => ['required', 'string', 'current_password']]);
 $deleteUser = function (Logout $logout) {
     $this->validate();
 
-    tap(Auth::user(), $logout(...))->delete();
+    $user = Auth::user();
+    $logout();
+    app(DeleteUserAccountService::class)->delete($user);
 
     $this->redirect('/', navigate: true);
 };
@@ -27,7 +30,7 @@ $deleteUser = function (Logout $logout) {
         </h2>
 
         <p class="mt-1 text-sm text-gray-600">
-            {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
+            {{ __('Deleting your account removes your groups and their results from the application. This action cannot be undone.') }}
         </p>
     </header>
 
@@ -44,7 +47,7 @@ $deleteUser = function (Logout $logout) {
             </h2>
 
             <p class="mt-1 text-sm text-gray-600">
-                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
+                {{ __('Enter your password to delete your account, groups and results from the application.') }}
             </p>
 
             <div class="mt-6">

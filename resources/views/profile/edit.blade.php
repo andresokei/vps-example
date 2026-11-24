@@ -137,7 +137,7 @@
       </div>
       <div class="card-body">
         <p class="text-muted mb-3" style="font-size:0.875rem;">
-          {{ __('Once your account is deleted, all data will be permanently removed. This action cannot be undone.') }}
+          {{ __('Deleting your account removes your groups and their results from the application. This action cannot be undone.') }}
         </p>
         <button type="button"
                 class="btn btn-outline-danger btn-sm"

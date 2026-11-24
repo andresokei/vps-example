@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\DeleteUserAccountService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,8 +50,7 @@ class ProfileController extends Controller
         $user = $request->user();
 
         Auth::logout();
-
-        $user->delete();
+        app(DeleteUserAccountService::class)->delete($user);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

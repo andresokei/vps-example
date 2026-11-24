@@ -7,8 +7,8 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Sociogram - @yield('title', 'Dashboard')</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{{ asset('vendor/bootstrap/5.3.3/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ asset('vendor/bootstrap-icons/1.11.3/bootstrap-icons.min.css') }}" rel="stylesheet">
   <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
   <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
   <link href="{{ asset('css/analisis.css') }}" rel="stylesheet">
@@ -29,15 +29,15 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+  <script src="{{ asset('vendor/bootstrap/5.3.3/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ asset('vendor/chartjs/4.5.1/chart.umd.min.js') }}"></script>
 
   <script src="{{ asset('vendor/chart-matrix/chartjs-chart-matrix.min.js') }}"></script>
 
   @livewireScripts
 
   <script src="{{ asset('js/analisis/shared.js') }}?v=20261118d"></script>
-  <script src="{{ asset('js/analisis/sociograma.js') }}?v=20261121"></script>
+  <script src="{{ asset('js/analisis/sociograma.js') }}?v=20261118b"></script>
   <script src="{{ asset('js/analisis.js') }}?v=20261118d"></script>
 
   <script>

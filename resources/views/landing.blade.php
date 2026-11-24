@@ -82,9 +82,9 @@
                     <div class="icon-wrap">
                         <i class="bi-shield-lock icon-feature text-gradient"></i>
                     </div>
-                    <h5 class="font-alt mb-2">{{ __('Privacy Assured') }}</h5>
+                    <h5 class="font-alt mb-2">{{ __('Manage your groups') }}</h5>
                     <p class="text-muted mb-0 small">
-                        {{ __("Your students' data is stored securely and never shared.") }}
+                        {{ __('Create groups and review each test from your dashboard.') }}
                     </p>
                 </div>
             </div>

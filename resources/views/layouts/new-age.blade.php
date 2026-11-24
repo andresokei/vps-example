@@ -9,12 +9,9 @@
         <link rel="icon" type="image/x-icon" href="{{ asset('assets/favicon.ico') }}" />
 
         <!-- Bootstrap icons-->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+        <link href="{{ asset('vendor/bootstrap-icons/1.5.0/bootstrap-icons.css') }}" rel="stylesheet" />
 
-        <!-- Google fonts-->
-        <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,600;1,600&amp;display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,300;0,500;0,600;0,700;1,300;1,500;1,600;1,700&amp;display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;1,400&amp;display=swap" rel="stylesheet" />
+        <link href="{{ asset('vendor/fonts/landing.css') }}" rel="stylesheet" />
 
         <!-- Core theme CSS (includes Bootstrap) -->
         <link href="{{ asset('css/styles.css') }}" rel="stylesheet" />
@@ -211,7 +208,7 @@
         </footer>
 
         <!-- Bootstrap core JS-->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="{{ asset('vendor/bootstrap/5.2.3/js/bootstrap.bundle.min.js') }}"></script>
 
         <!-- Core theme JS-->
         <script src="{{ asset('js/script.js') }}"></script>
