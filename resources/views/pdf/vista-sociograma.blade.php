@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="{{ app()->getLocale() }}"><head><meta charset="utf-8">
 <style>
-body { font: 11px DejaVu Sans, sans-serif; color: #24364a; }
+body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #24364a; }
 h1 { font-size: 20px; } h2 { font-size: 15px; }
 table { width: 100%; border-collapse: collapse; }
 td, th { text-align: left; padding: 4px 8px; border-bottom: 1px solid #dbe1ea; }
