@@ -81,6 +81,10 @@
           </span>
         </div>
 
+        <a class="btn btn-outline-secondary btn-sm mb-3" href="{{ route('tests.plantilla.exportar', $selectedTestId) }}">
+          <i class="bi bi-download me-1"></i>{{ __('plantillas.exportar') }}
+        </a>
+
         {{-- Lista de preguntas --}}
         @if (count($preguntas) > 0)
           <div class="list-group mb-3">

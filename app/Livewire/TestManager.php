@@ -33,6 +33,9 @@ class TestManager extends Component
     public function mount(): void
     {
         $this->loadTests();
+        if ($id = session('test_importado')) {
+            $this->seleccionarTest($id);
+        }
     }
 
     private function loadTests(): void

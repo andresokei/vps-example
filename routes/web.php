@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\PlantillaTestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/tests', function () {
         return view('tests.index');
     })->middleware(['verified', 'role:profesor|admin'])->name('tests.index');
+
+    Route::middleware(['verified', 'role:profesor|admin'])->group(function () {
+        Route::get('/tests/{test}/plantilla', [PlantillaTestController::class, 'exportar'])
+            ->whereNumber('test')->name('tests.plantilla.exportar');
+        Route::post('/tests/importar', [PlantillaTestController::class, 'importar'])->name('tests.plantilla.importar');
+    });
 
     Route::middleware(['verified', 'role:profesor|admin'])->prefix('docente/asignaciones/{asignacion}')->group(function () {
         Route::get('/respuestas/{alumno?}', [TestController::class, 'mostrarTest'])->whereNumber('alumno')->name('docente.editar');
