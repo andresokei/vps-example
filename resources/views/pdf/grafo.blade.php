@@ -1,6 +1,9 @@
-<div style="page-break-before:always"></div>
+@unless($standalone ?? false)<div style="page-break-before:always"></div>@endunless
 <h1>{{ __('Sociogram') }}</h1>
 <p style="color:#555">{{ $grupo }} · {{ $test }}</p>
+@if(!empty($students))<p>{{ __('Students') }} · {{ implode(', ', $students) }}</p>@endif
+@if(!empty($questions))<p>{{ __('report_view.questions') }} · {{ implode(' / ', $questions) }}</p>@endif
+@if(!empty($mutualOnly))<p>{{ __('Only matches') }}</p>@endif
 @php
     $positions = [];
     $nodes = $graph['nodes'];
@@ -18,12 +21,13 @@
 @endphp
 @if($count)
 @php
-    $svg = view('pdf.grafo-svg', compact('graph', 'nodes', 'positions', 'radius', 'rowHeight'))->render();
+    $svg = view('pdf.grafo-svg', compact('graph', 'nodes', 'positions', 'radius', 'rowHeight') + ['mark' => $mark ?? true])->render();
 @endphp
 <img style="width:100%" alt="{{ __('Sociogram') }}" src="data:image/svg+xml;base64,{{ base64_encode($svg) }}">
 <p><strong style="color:#117448">{{ __('Preference') }}</strong> &nbsp; / &nbsp;
-<strong style="color:#bd3547">{{ __('Rejection') }}</strong> &nbsp; · &nbsp;
-<span style="color:#bf3841">&#9679;</span> {{ __('Not chosen') }}</p>
+<strong style="color:#bd3547">{{ __('Rejection') }}</strong>
+@if($mark ?? true) &nbsp; · &nbsp; <span style="color:#bf3841">&#9679;</span> {{ __('Not chosen') }} @endif</p>
+<p>{{ __('report_view.arrow') }} @unless($standalone ?? false){{ __('report_view.tip') }}@endunless</p>
 @else
 <p>{{ __('No data.') }}</p>
 @endif

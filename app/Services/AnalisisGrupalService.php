@@ -77,13 +77,10 @@ class AnalisisGrupalService
             ->whereColumn('alumno_a_id', '<>', 'alumno_b_id')
             ->get();
 
-        $respondieron = max(
-            Respuesta::where('asignacion_test_id', $asignacionTestId)
-                ->whereIn('alumno_id', $idsGrupoArray)
-                ->distinct('alumno_id')
-                ->count('alumno_id'),
-            $rel->pluck('alumno_a_id')->unique()->count()
-        );
+        $respondents = Respuesta::where('asignacion_test_id', $asignacionTestId)
+            ->whereIn('alumno_id', $idsGrupoArray)->distinct()->pluck('alumno_id')
+            ->merge($rel->pluck('alumno_a_id'))->unique()->flip();
+        $respondieron = $respondents->count();
 
         $preferences = $rel->where('tipo_relacion', 'preferido')
             ->mapWithKeys(fn ($edge) => [$edge->alumno_a_id.'-'.$edge->alumno_b_id => true]);
@@ -147,6 +144,13 @@ class AnalisisGrupalService
         $reciprocidad = $this->matrizReciprocidadDesdeRelaciones($alumnos, $rel);
 
         $result = array_merge($metricas, [
+            'mayoria_rechazos' => $rel->where('tipo_relacion', 'rechazado')->groupBy('alumno_b_id')
+                ->map(function ($edges, $studentId) use ($respondents, $alumnos) {
+                    $eligible = $respondents->count() - (int) $respondents->has($studentId);
+                    $count = $edges->pluck('alumno_a_id')->unique()->count();
+                    return ['nombre' => $alumnos->find($studentId)->nombre, 'rechazan' => $count, 'posibles' => $eligible];
+                })->filter(fn ($row) => 2 * $row['rechazan'] > $row['posibles'])
+                ->sortBy('nombre')->values()->all(),
             'sociograma' => $grafo,
             'preferencias' => [
                 'labels' => $prefGraf['labels'],
@@ -175,7 +179,7 @@ class AnalisisGrupalService
 
     public function cacheKey(int $grupoId, int $asignacionTestId): string
     {
-        return "analisis-grupal:v4:grupo:{$grupoId}:asignacion:{$asignacionTestId}";
+        return "analisis-grupal:v5:grupo:{$grupoId}:asignacion:{$asignacionTestId}";
     }
 
     private function prepararSerieBarras(Collection $alumnos, Collection $conteo): array

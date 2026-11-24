@@ -361,23 +361,18 @@
     };
 
     analysis.applyFilters = function applyFilters() {
-        if (!state.origLinks.length) {
-            analysis.drawSociograma(state.origNodes, []);
-            return;
-        }
-
         const selAlumnos = document.getElementById('soc-select');
         const preguntasContainer = document.getElementById('soc-preguntas-filter-options');
         const toggleMatch = document.getElementById('soc-onlyMatch');
         const toggleIsol = document.getElementById('soc-markIsol');
 
-        if (!selAlumnos || !preguntasContainer || !toggleMatch || !toggleIsol) return;
+        if (!selAlumnos || !toggleMatch || !toggleIsol) return;
 
         const onlyMatch = toggleMatch.checked;
         const chosenStudents = [...selAlumnos.selectedOptions].map(option => +option.value);
         const chosenQuestions = [];
 
-        preguntasContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        preguntasContainer?.querySelectorAll('input[type="checkbox"]').forEach(cb => {
             if (cb.id !== 'select-all-preguntas' && cb.checked) chosenQuestions.push(+cb.value);
         });
 

@@ -49,6 +49,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/analisis/{asignacion}/pdf', [AnalisisController::class, 'exportarPdf'])
         ->middleware(['verified', 'role:profesor|admin'])
         ->name('analisis.pdf');
+    Route::get('/analisis/{asignacion}/sociograma/pdf', [AnalisisController::class, 'exportarSociograma'])
+        ->middleware(['verified', 'role:profesor|admin'])->name('analisis.sociograma.pdf');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

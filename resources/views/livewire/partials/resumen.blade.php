@@ -31,6 +31,10 @@ $metrics = [
 ];
 @endphp
 
+<div class="card card-body mb-3">
+  @include('livewire.partials.indicadores-participacion')
+</div>
+
 <div class="row g-3 mb-4">
   @foreach($metrics as $m)
     <div class="col-6 col-lg-3">

@@ -1,7 +1,10 @@
 {{-- Sociograma con grafo a pantalla completa --}}
 <div class="card sociograma-card shadow-sm mb-4 border-0">
-  <div class="card-header py-3 d-flex align-items-center">
+  <div class="card-header py-3 d-flex flex-wrap gap-2 align-items-center justify-content-between">
     <h5 class="mb-0 fw-semibold">{{ __('Sociogram') }}</h5>
+    <form method="get" id="soc-export-form" action="{{ route('analisis.sociograma.pdf', $asignacionTestId) }}">
+      <button type="submit" class="btn btn-sm btn-outline-primary">{{ __('report_view.export') }}</button>
+    </form>
   </div>
 
   <div id="soc-wrapper" class="socio-wrapper">
@@ -21,7 +24,7 @@
       {{-- Secciones de filtros --}}
       <div class="filter-section">
         <label class="filter-label">{{ __('Filter student(s)') }}</label>
-        <select id="soc-select" class="select-minimal" multiple></select>
+        <select id="soc-select" class="select-minimal" multiple name="alumnos[]" form="soc-export-form"></select>
       </div>
 
       <div class="filter-section">
@@ -35,7 +38,7 @@
           <div id="soc-preguntas-filter-options" class="questions-container">
             @foreach ($preguntas as $preg)
               <div class="question-card" data-id="{{ $preg['id'] }}">
-                <input type="checkbox" class="question-check" id="preg-{{ $preg['id'] }}" name="preguntas[]" value="{{ $preg['id'] }}">
+                <input type="checkbox" class="question-check" id="preg-{{ $preg['id'] }}" name="preguntas[]" value="{{ $preg['id'] }}" form="soc-export-form">
                 <label for="preg-{{ $preg['id'] }}" title="{{ $preg['texto'] }}">{{ $preg['texto'] }}</label>
               </div>
             @endforeach
@@ -57,7 +60,7 @@
       <div class="filter-section">
         <div class="options-container">
           <div class="option-toggle">
-            <input type="checkbox" id="soc-onlyMatch" class="toggle-input">
+            <input type="checkbox" id="soc-onlyMatch" class="toggle-input" form="soc-export-form" name="mutuas" value="1">
             <label for="soc-onlyMatch">
               <div class="toggle-control"></div>
               <span>{{ __('Only matches') }}</span>
@@ -65,7 +68,7 @@
           </div>
           
           <div class="option-toggle">
-            <input type="checkbox" id="soc-markIsol" class="toggle-input" checked>
+            <input type="checkbox" id="soc-markIsol" class="toggle-input" form="soc-export-form" name="marcar" value="1" checked>
             <label for="soc-markIsol">
               <div class="toggle-control"></div>
               <span>{{ __('Mark non-chosen') }}</span>

@@ -93,6 +93,32 @@ it('permite copiar por separado el enlace, la clave y el acceso completo', funct
     expect($values)->toContain($url, $asignacion->clave_acceso, "Enlace: $url\nClave: {$asignacion->clave_acceso}");
 });
 
+it('cuenta compañeros distintos y excluye la propia respuesta al calcular la mayoría', function () {
+    ['grupo' => $grupo, 'test' => $test, 'asignacion' => $a, 'alumnos' => $alumnos] = crearAsignacionConAnalisisDisponible();
+    foreach ([[1, 0], [2, 0], [1, 0], [1, 3], [1, 2]] as [$emisor, $destino]) {
+        $pregunta = $test->preguntas()->create(['tipo_pregunta' => 'rechazo', 'texto_pregunta' => 'Pregunta']);
+        $a->respuestas()->create(['alumno_id' => $alumnos[$emisor]->id, 'pregunta_id' => $pregunta->id,
+            'respuesta' => (string) $alumnos[$destino]->id, 'orden_preferencia' => 1, 'tipo_relacion' => 'rechazo']);
+    }
+    Relacion::generarDesdeRespuestas($a->id);
+    $datos = app(\App\Services\AnalisisGrupalService::class)->generar($grupo->id, $a->id);
+    expect($datos['totales']['respondieron'])->toBe(3)
+        ->and($datos['mayoria_rechazos'])->toBe([['nombre' => $alumnos[0]->nombre, 'rechazan' => 2, 'posibles' => 2]]);
+});
+
+it('exporta solo las relaciones de los alumnos y preguntas elegidos y recalcula las mutuas', function () {
+    $nodos = array_map(fn ($id) => ['id' => $id, 'label' => "Alumno $id"], [1, 2, 3]);
+    $enlace = fn ($a, $b, $preguntas) => ['source' => $a, 'target' => $b, 'tipo' => 'preferido', 'preguntas_ids' => $preguntas];
+    $graph = ['nodes' => $nodos, 'preguntas' => [['id' => 1, 'texto' => 'A'], ['id' => 2, 'texto' => 'B']],
+        'links' => [$enlace(1, 2, [1, 2]), $enlace(2, 1, [1]), $enlace(2, 3, [2])]];
+    $filtros = ['preguntas' => [2], 'alumnos' => [1]];
+    $view = \App\Services\VistaSociograma::filtrar($graph, $filtros);
+    expect(array_column($view['graph']['nodes'], 'id'))->toBe([1, 2])
+        ->and($view['graph']['links'])->toBe([$graph['links'][0]]);
+    $mutuas = \App\Services\VistaSociograma::filtrar($graph, $filtros + ['mutuas' => 1]);
+    expect($mutuas['graph']['links'])->toBe([])->and(array_column($mutuas['graph']['nodes'], 'id'))->toBe([1]);
+});
+
 it('preselecciona grupo y asignacion al abrir el analisis desde una asignacion concreta', function () {
     ['profesor' => $profesor, 'grupo' => $grupo, 'asignacion' => $asignacion] = crearAsignacionConAnalisisDisponible();
 
