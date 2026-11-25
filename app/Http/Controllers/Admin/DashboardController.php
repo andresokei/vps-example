@@ -9,6 +9,7 @@ use App\Models\Respuesta;
 use App\Models\Test;
 use App\Models\User;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -122,6 +123,13 @@ class DashboardController extends Controller
                 'responses' => Respuesta::count(),
                 'responses7Days' => Respuesta::where('created_at', '>=', $since7Days)->count(),
             ],
+            'landingVisits' => DB::table('landing_visits')->selectRaw('locale, SUM(sessions) AS total')
+                ->groupBy('locale')->pluck('total', 'locale'),
+            'landingCohorts' => User::whereNotNull('signup_landing_locale')
+                ->selectRaw('signup_landing_locale, COUNT(*) AS signups')
+                ->selectRaw('SUM(CASE WHEN created_at <= ? THEN 1 ELSE 0 END) AS mature', [$since7Days])
+                ->selectRaw('SUM(CASE WHEN created_at <= ? AND first_week_classroom_at IS NOT NULL THEN 1 ELSE 0 END) AS activated', [$since7Days])
+                ->groupBy('signup_landing_locale')->get()->keyBy('signup_landing_locale'),
             'assignmentStatusCounts' => $assignmentStatusCounts,
             'recentUsers' => $recentUsers,
             'recentAssignments' => $recentAssignments,

@@ -42,6 +42,11 @@ class AssignTests extends Component
     public function mount()
     {
         $this->reload();
+        if (request()->query('starter') === 'classroom') {
+            $template = $this->tests->first(fn (Test $test) => $test->id_profesor === null
+                && $test->nombre_test_en === 'Classroom Interaction Analysis');
+            $this->test_id = $template?->id ?? '';
+        }
     }
 
     public function reload(): void

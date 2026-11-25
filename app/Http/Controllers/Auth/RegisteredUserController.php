@@ -17,8 +17,12 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
+        if ($request->query('starter') === 'classroom') {
+            $request->session()->put('url.intended', route('dashboard', ['starter' => 'classroom']));
+        }
+
         return view('auth.register');
     }
 
@@ -43,6 +47,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'signup_landing_locale' => $request->session()->get('signup_landing_locale'),
         ]);
 
         $user->grantProfesorAccess();
@@ -50,6 +55,10 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+
+        if ($request->session()->get('url.intended') === route('dashboard', ['starter' => 'classroom'])) {
+            return to_route('dashboard', ['starter' => 'classroom']);
+        }
 
         return redirect(route('dashboard', absolute: false));
     }

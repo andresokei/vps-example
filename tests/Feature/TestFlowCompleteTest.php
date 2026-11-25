@@ -51,6 +51,24 @@ function crearAsignacionConAlumnos(int $numAlumnos = 4, string $estado = 'pendie
     return compact('profesor', 'grupo', 'test', 'pregPref', 'pregRec', 'asignacion', 'alumnos');
 }
 
+it('records first-week activation only after five different participants in one assignment', function (int $daysOld) {
+    ['profesor' => $teacher, 'asignacion' => $assignment, 'pregPref' => $positive,
+        'pregRec' => $negative, 'alumnos' => $students] = crearAsignacionConAlumnos(5);
+    $teacher->forceFill(['signup_landing_locale' => 'en', 'created_at' => now()->subDays($daysOld)])->save();
+    foreach ($students as $index => $student) {
+        $others = $students->where('id', '!=', $student->id)->values();
+        $answers = ['estudiante_id' => $student->id];
+        foreach ([$positive, $negative] as $question) {
+            foreach ([1, 2, 3] as $slot) {
+                $answers['respuesta_'.$question->id.'_'.$slot] = $others[$slot - 1]->id;
+            }
+        }
+        $this->withSession(['test_access.assignment_id' => $assignment->id])
+            ->post(route('test.submit', $assignment), $answers)->assertRedirect(route('test.success'));
+        expect($teacher->fresh()->first_week_classroom_at !== null)->toBe($index === 4 && $daysOld < 7);
+    }
+})->with([1, 8]);
+
 it('permite acceder al formulario de ingreso de clave', function () {
     $this->get(route('test.ingresar'))->assertOk();
 });

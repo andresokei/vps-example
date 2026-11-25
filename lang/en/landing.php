@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'create' => 'Create an account',
+    'free' => 'Get started for free. No credit card needed.',
+    'name' => 'Name',
+    'email' => 'Email address',
+    'password' => 'Password',
+    'confirm' => 'Confirm password',
+    'register' => 'Register',
+    'existing' => 'Already have an account?',
+    'signin' => 'Log in',
+    'welcome' => 'Welcome back',
+    'credentials' => 'Enter your details to continue.',
+    'forgot' => 'Forgot your password?',
+    'remember' => 'Remember me',
+    'no_account' => 'Need an account?',
+    'signup' => 'Sign up for free',
+    'cohorts' => 'From the landing page to the first classroom',
+    'scope' => 'Cumulative since tracking began. Visits count guest sessions once per language and may include automated traffic. Signups use the last landing page visited in the same session.',
+    'language' => 'Landing page',
+    'visits' => 'Guest sessions',
+    'signups' => 'Signups',
+    'mature' => 'Signups at least 7 days old',
+    'activated' => 'Reached 5 students',
+    'rate' => '7-day activation',
+    'definition' => 'Activation requires saved answers from five distinct students on one assignment within seven days of signup. The rate includes only signups with a full seven days of observation.',
+];

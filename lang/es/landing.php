@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'create' => 'Crear cuenta',
+    'free' => 'Comienza gratis, sin tarjeta de crédito.',
+    'name' => 'Nombre',
+    'email' => 'Correo electrónico',
+    'password' => 'Contraseña',
+    'confirm' => 'Confirmar contraseña',
+    'register' => 'Registrarse',
+    'existing' => '¿Ya tienes cuenta?',
+    'signin' => 'Iniciar sesión',
+    'welcome' => 'Bienvenido de vuelta',
+    'credentials' => 'Ingresa tus datos para continuar.',
+    'forgot' => '¿Olvidaste tu contraseña?',
+    'remember' => 'Recuérdame',
+    'no_account' => '¿No tienes cuenta?',
+    'signup' => 'Regístrate gratis',
+    'cohorts' => 'De la portada a la primera clase',
+    'scope' => 'Acumulado desde el inicio de la medición. Las visitas cuentan sesiones sin identificar una vez por idioma y pueden incluir tráfico automático. Cada alta se atribuye a la última portada vista en esa sesión.',
+    'language' => 'Portada',
+    'visits' => 'Sesiones sin identificar',
+    'signups' => 'Altas',
+    'mature' => 'Altas con 7 días completos',
+    'activated' => 'Llegaron a 5 alumnos',
+    'rate' => 'Activación en 7 días',
+    'definition' => 'Una cuenta se activa cuando cinco alumnos distintos tienen respuestas guardadas en la misma prueba durante los primeros siete días. La tasa solo incluye altas que ya han tenido siete días completos.',
+];
