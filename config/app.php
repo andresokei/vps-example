@@ -120,6 +120,9 @@ return [
 
     'admin_email' => env('ADMIN_EMAIL'),
 
+    // Interruptor del envío automático de avisos a docentes (asignaciones sin respuestas). Apagado por defecto.
+    'recordatorios_asignaciones' => (bool) env('RECORDATORIOS_ASIGNACIONES', false),
+
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
