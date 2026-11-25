@@ -13,6 +13,8 @@
   </a>
 </div>
 
+@include('admin.landing-cohorts')
+
 <div class="row g-3 mb-4">
   <div class="col-sm-6 col-xl-3">
     <div class="admin-stat">

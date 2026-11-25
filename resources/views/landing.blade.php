@@ -1,6 +1,14 @@
 @extends('layouts.new-age')
 
-@section('title', 'Sociogram – ' . __('Understand your class like never before'))
+@section('title', $english ? 'How to create a classroom sociogram | Sociogram' : 'Sociogram – ' . __('Understand your class like never before'))
+@section('description', $english ? 'Create a classroom sociogram with a ready-to-use teacher template. See a worked example and learn how to read student choices.' : 'Crea un sociograma de aula con plantillas para docentes y analiza las relaciones de tu grupo.')
+
+@push('head')
+    <link rel="canonical" href="{{ $english ? url('/en').'/' : url('/') }}">
+    <link rel="alternate" hreflang="es" href="{{ url('/') }}">
+    <link rel="alternate" hreflang="en" href="{{ url('/en').'/' }}">
+    <link rel="alternate" hreflang="x-default" href="{{ url('/') }}">
+@endpush
 
 @section('content')
 
@@ -12,14 +20,14 @@
                 <div class="mb-5 mb-lg-0 text-center text-lg-start">
                     <span class="badge-pill-landing">{{ __('For teachers') }}</span>
                     <h1 class="display-1 lh-1 mb-3">
-                        {{ __('Understand your class like never before') }}
+                        {{ $english ? 'Create a classroom sociogram' : __('Understand your class like never before') }}
                     </h1>
                     <p class="lead fw-normal text-muted mb-5">
                         {{ __('Sociogram turns sociometric tests into visual maps of relationships. Identify leaders, isolated students and group dynamics in minutes, directly from your browser.') }}
                     </p>
                     <div class="d-flex flex-column flex-lg-row align-items-center gap-3">
-                        <a class="btn btn-primary rounded-pill px-4 py-2" href="{{ route('register') }}">
-                            {{ __('Sign up free') }}
+                        <a class="btn btn-primary rounded-pill px-4 py-2" href="{{ $english ? '#classroom-example' : route('register') }}">
+                            {{ $english ? 'Explore the classroom template' : __('Sign up free') }}
                         </a>
                         <a class="btn btn-link text-muted text-decoration-none" href="{{ route('login') }}">
                             {{ __('Already have an account? Log in →') }}
@@ -29,12 +37,16 @@
             </div>
             <div class="col-lg-6">
                 <div class="masthead-device-mockup">
-                    <img src="{{ asset('assets/img/1.png') }}" alt="Vista previa de Sociogram" style="max-width: 100%;">
+                    <img src="{{ asset('assets/img/1.png') }}" alt="{{ $english ? 'Preview of the Sociogram teacher dashboard' : 'Vista previa de Sociogram' }}" style="max-width: 100%;">
                 </div>
             </div>
         </div>
     </div>
 </header>
+
+@if($english)
+    @include('partials.classroom-example')
+@endif
 
 <!-- Features -->
 <section id="features">

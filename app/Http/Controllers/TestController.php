@@ -280,6 +280,13 @@ class TestController extends Controller
                     DB::table('respuestas')->insert($rows);
                 }
 
+                $cohort = DB::table('users')->where('id', $locked->profesor_id)
+                    ->whereNotNull('signup_landing_locale')->whereNull('first_week_classroom_at')
+                    ->where('created_at', '>', $timestamp->copy()->subDays(7));
+                if ($cohort->exists() && $locked->respuestas()->distinct()->count('alumno_id') >= 5) {
+                    $cohort->update(['first_week_classroom_at' => $timestamp]);
+                }
+
                 Relacion::generarDesdeRespuestas((int) $asignacion->id);
             });
         } catch (QueryException $e) {

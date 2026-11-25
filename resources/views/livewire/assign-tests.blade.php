@@ -1,6 +1,9 @@
 <div>
   @if ($grupos->isEmpty())
     <div class="text-center py-4">
+      @if($test_id)
+        <p class="fw-semibold">{{ $tests->firstWhere('id', $test_id)?->localized_nombre_test }}</p>
+      @endif
       <i class="bi bi-diagram-3 text-muted d-block mb-2" style="font-size:2rem;"></i>
       <p class="text-muted mb-1" style="font-size:0.9rem;">{{ __('No groups yet.') }}</p>
       <p class="text-muted" style="font-size:0.8rem;">{{ __('Create a group first to be able to assign tests.') }}</p>

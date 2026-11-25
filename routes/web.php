@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AnalisisController;
+use App\Http\Controllers\DesactivarAvisosController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FeedbackController as AdminFeedbackController;
 use App\Http\Controllers\Admin\ImpersonationController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PlantillaTestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TestController;
@@ -15,9 +17,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/locale', [LocaleController::class, 'switch'])->name('locale.switch');
 
-Route::get('/', function () {
-    return view('landing');
-})->name('landing');
+Route::get('/', [LandingController::class, 'show'])->name('landing');
+Route::match(['get', 'post'], '/avisos/baja/{user}', DesactivarAvisosController::class)
+    ->middleware(['signed', 'throttle:20,1'])->whereNumber('user')->name('avisos.baja');
+Route::get('/en', [LandingController::class, 'show'])->name('landing.en');
 
 Route::get('/pruebas', function () {
     return view('pruebas');

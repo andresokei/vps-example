@@ -21,7 +21,7 @@
         <!-- Panel izquierdo: marca -->
         <div class="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 text-white"
              style="background: linear-gradient(135deg, #1a21c8 0%, #2937f0 45%, #9f1ae2 100%);">
-            <a href="/" class="mb-8 opacity-90 hover:opacity-100 transition-opacity">
+            <a href="{{ app()->getLocale() === 'en' ? url('/en').'/' : url('/') }}" class="mb-8 opacity-90 hover:opacity-100 transition-opacity">
                 <img src="{{ asset('assets/img/logo.png') }}" alt="Sociogram Logo" class="w-20 h-auto mx-auto">
             </a>
             <h1 class="text-5xl font-bold mb-4 tracking-tight" style="font-family: 'Kanit', sans-serif;">
@@ -49,7 +49,7 @@
 
                 <!-- Logo para móvil -->
                 <div class="mb-8 lg:hidden text-center">
-                    <a href="/">
+                    <a href="{{ app()->getLocale() === 'en' ? url('/en').'/' : url('/') }}">
                         <img src="{{ asset('assets/img/logo.png') }}" alt="Sociogram Logo" class="w-12 h-auto mx-auto mb-3">
                     </a>
                     <p class="text-lg font-bold text-gray-800" style="font-family: 'Kanit', sans-serif;">Sociogram</p>
@@ -58,7 +58,7 @@
                 {{ $slot }}
 
                 <p class="mt-6 text-center text-sm text-gray-400">
-                    <a href="/" class="hover:text-gray-600 transition-colors">{{ __('← Back to home') }}</a>
+                    <a href="{{ app()->getLocale() === 'en' ? url('/en').'/' : url('/') }}" class="hover:text-gray-600 transition-colors">{{ __('← Back to home') }}</a>
                 </p>
             </div>
         </div>

@@ -12,10 +12,17 @@ use Illuminate\Validation\Rule;
 class GrupoController extends Controller
 {
     // Listar los grupos del profesor
-    public function index()
+    public function index(Request $request)
     {
-        $grupos = Grupo::where('id_profesor', Auth::user()->id)->get();  // Solo los grupos del profesor autenticado
+        $grupos = $request->user()->grupos()->withCount('estudiantes')->orderBy('nombre_grupo')->get();
         return view('grupos.index', compact('grupos'));
+    }
+
+    public function show(Request $request, int $grupo)
+    {
+        $grupo = $request->user()->grupos()->findOrFail($grupo);
+
+        return view('grupos.show', compact('grupo'));
     }
 
     // Mostrar el formulario para crear un grupo
@@ -30,7 +37,10 @@ class GrupoController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nombre_grupo' => ['required', 'string', 'max:255'],
+            'nombre_grupo' => [
+                'required', 'string', 'max:255',
+                Rule::unique('grupos', 'nombre_grupo')->where('id_profesor', Auth::id()),
+            ],
             'estudiantes' => ['sometimes', 'array', 'max:1000'],
             'estudiantes.*' => [
                 'required',
@@ -47,7 +57,7 @@ class GrupoController extends Controller
             ],
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $grupo = DB::transaction(function () use ($validated) {
             $grupo = Grupo::create([
                 'nombre_grupo' => $validated['nombre_grupo'],
                 'id_profesor' => Auth::user()->id,
@@ -55,8 +65,10 @@ class GrupoController extends Controller
 
             // Asignar estudiantes al grupo
             $grupo->estudiantes()->attach($validated['estudiantes'] ?? []);
+
+            return $grupo;
         });
 
-        return redirect()->route('grupos.index');
+        return redirect()->route('grupos.show', $grupo);
     }
 }

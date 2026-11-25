@@ -29,6 +29,11 @@
                 {{-- Language Switcher --}}
                 <div class="landing-lang-switcher">
                     @foreach(['es' => 'ES', 'en' => 'EN'] as $lang => $label)
+                        @if(request()->routeIs('landing', 'landing.en'))
+                            <a href="{{ $lang === 'en' ? url('/en').'/' : url('/') }}" hreflang="{{ $lang }}" lang="{{ $lang }}"
+                               aria-label="{{ $lang === 'en' ? 'English' : 'Español' }}"
+                               class="lang-text-btn text-decoration-none {{ app()->getLocale() === $lang ? 'lang-text-btn--active' : 'lang-text-btn--inactive' }}">{{ $label }}</a>
+                        @else
                         <form action="{{ route('locale.switch') }}" method="POST" style="display:inline;">
                             @csrf
                             <input type="hidden" name="locale" value="{{ $lang }}">
@@ -37,6 +42,7 @@
                                 {{ $label }}
                             </button>
                         </form>
+                        @endif
                         @if(!$loop->last)<span class="lang-sep">|</span>@endif
                     @endforeach
                 </div>

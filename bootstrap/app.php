@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
 
+        // Baja con un clic desde el cliente de correo (POST sin sesión); la URL va firmada.
+        $middleware->validateCsrfTokens(except: ['avisos/baja/*']);
+
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\BlockWritesDuringImpersonation::class,
